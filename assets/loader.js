@@ -41,7 +41,13 @@
       if (!manifestResponse.ok) throw new Error(`University index returned ${manifestResponse.status}.`);
       const manifest = await manifestResponse.json();
       const available = manifest.universities || [];
-      if (!available.length) throw new Error('No universities are listed in universities/index.json.');
+      if (!available.length) {
+        status.classList.add('load-error');
+        status.textContent = 'No university catalogs are published yet. To add one, copy the fictional template in template/university-template, build its catalog, and register it in universities/index.json.';
+        document.getElementById('university-select').disabled = true;
+        document.getElementById('app').setAttribute('aria-busy', 'false');
+        return null;
+      }
 
       const requested = new URLSearchParams(window.location.search).get('university');
       const selected = available.find(item => item.slug === requested)

@@ -3,8 +3,8 @@
   "department": {
     "code": "SAMPLE",
     "name": "Sample Studies",
-    "school": "Example College",
-    "source_url": "https://catalog.example.edu/courses/sample/"
+    "school": "Fictional School of Sample Studies",
+    "source_url": "https://catalog.example.invalid/courses/sample/"
   },
   "courses": [
     {
@@ -14,24 +14,24 @@
       "level": "undergraduate",
       "title": "Introduction to Sample Studies",
       "credits": "4",
-      "description": "An example introductory course used to demonstrate the data format.",
+      "description": "A fictional introductory course used only to demonstrate the data format.",
       "prerequisites": "",
       "corequisites": "",
       "restrictions": "",
       "repeatable": "No",
-      "source_url": "https://catalog.example.edu/courses/sample/101",
+      "source_url": "https://catalog.example.invalid/courses/sample/101",
       "source_catalog": "2026-2027 undergraduate catalog",
       "tags": ["foundations", "undergraduate"],
       "offering_history": [
         {
           "term_code": "2026SP",
           "offering_status": "held",
-          "source_url": "https://classes.example.edu/2026-spring/sample101"
+          "source_url": "https://classes.example.invalid/2026-spring/sample101"
         },
         {
           "term_code": "2026FA",
           "offering_status": "scheduled",
-          "source_url": "https://classes.example.edu/2026-fall/sample101"
+          "source_url": "https://classes.example.invalid/2026-fall/sample101"
         }
       ]
     },
@@ -42,19 +42,19 @@
       "level": "undergraduate",
       "title": "Intermediate Sample Analysis",
       "credits": "4",
-      "description": "An example follow-on course.",
+      "description": "A fictional follow-on course used only for development tests.",
       "prerequisites": "SAMPLE101 with a grade of C or better.",
       "corequisites": "",
       "restrictions": "",
       "repeatable": "No",
-      "source_url": "https://catalog.example.edu/courses/sample/201",
+      "source_url": "https://catalog.example.invalid/courses/sample/201",
       "source_catalog": "2026-2027 undergraduate catalog",
       "tags": ["analysis", "undergraduate"],
       "offering_history": [
         {
           "term_code": "2026SP",
           "offering_status": "held",
-          "source_url": "https://classes.example.edu/2026-spring/sample201"
+          "source_url": "https://classes.example.invalid/2026-spring/sample201"
         }
       ]
     }
