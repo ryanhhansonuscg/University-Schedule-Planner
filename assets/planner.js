@@ -29,15 +29,14 @@
 
   function loadPlan() {
     try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      return saved && typeof saved === 'object' ? saved : {};
+      return PlannerCore.deserializePlan(localStorage.getItem(storageKey));
     } catch {
       return {};
     }
   }
 
   function savePlan() {
-    localStorage.setItem(storageKey, JSON.stringify(plan));
+    localStorage.setItem(storageKey, PlannerCore.serializePlan(plan));
   }
 
   function dateValue(value) {
@@ -53,15 +52,7 @@
   }
 
   function planningTerms() {
-    const calendar = activeCalendar();
-    if (!calendar) return [];
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    const horizon = new Date(now);
-    horizon.setFullYear(horizon.getFullYear() + 4);
-    return (calendar.terms || [])
-      .filter(term => term.planning_enabled && dateValue(term.end_date) >= now && dateValue(term.start_date) <= horizon)
-      .sort((a, b) => dateValue(a.start_date) - dateValue(b.start_date));
+    return PlannerCore.planningTerms(data.academic_calendars, plannerCalendar.value);
   }
 
   function configurePlanner() {
@@ -95,19 +86,7 @@
     renderPlan();
   }
 
-  function resolveCourse(value) {
-    const raw = value.trim();
-    if (!raw) return null;
-    const direct = courseByCode.get(raw.toUpperCase());
-    if (direct) return direct;
-    const codePrefix = raw.match(/^([A-Za-z]{2,}\s*\d{2,4}[A-Za-z]?)/)?.[1].replace(/\s/g, '').toUpperCase();
-    if (codePrefix && courseByCode.has(codePrefix)) return courseByCode.get(codePrefix);
-    const normalized = raw.toLowerCase();
-    const exactTitle = courses.find(course => course.title.toLowerCase() === normalized);
-    if (exactTitle) return exactTitle;
-    const partial = courses.filter(course => course.title.toLowerCase().includes(normalized));
-    return partial.length === 1 ? partial[0] : null;
-  }
+  function resolveCourse(value) { return PlannerCore.resolveCourse(courses, value); }
 
   function renderPlan() {
     const terms = planningTerms();
@@ -196,7 +175,7 @@
           issues += 1;
           return;
         }
-        const missing = edges.filter(edge => edge.target === code && edge.kind === 'prerequisite' && !seen.has(edge.source));
+        const missing = PlannerCore.prerequisiteMissing(edges, code, seen).map(source => ({ source }));
         if (missing.length) {
           addIssue('error', `Possible missing prerequisite for ${code}`, `${term.name}: complete ${[...new Set(missing.map(edge => edge.source))].join(', ')} earlier, or verify an alternative in the catalog wording.`);
           issues += 1;
@@ -239,7 +218,7 @@
       rows.push([term.name, code, course?.title || '', course?.credits || '']);
     }));
     if (rows.length === 1) return;
-    const csv = `\uFEFF${rows.map(row => row.map(csvCell).join(',')).join('\r\n')}\r\n`;
+    const csv = PlannerCore.scheduleCsv(planningTerms(), plan, courses);
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
     link.href = url;
@@ -250,34 +229,7 @@
     URL.revokeObjectURL(url);
   }
 
-  function parseCsv(text) {
-    const rows = [];
-    let row = [];
-    let cell = '';
-    let quoted = false;
-    for (let index = 0; index < text.length; index += 1) {
-      const character = text[index];
-      if (quoted) {
-        if (character === '"' && text[index + 1] === '"') {
-          cell += '"';
-          index += 1;
-        } else if (character === '"') quoted = false;
-        else cell += character;
-      } else if (character === '"') quoted = true;
-      else if (character === ',') {
-        row.push(cell.trim());
-        cell = '';
-      } else if (character === '\n') {
-        row.push(cell.trim());
-        if (row.some(value => value)) rows.push(row);
-        row = [];
-        cell = '';
-      } else if (character !== '\r' && character !== '\uFEFF') cell += character;
-    }
-    row.push(cell.trim());
-    if (row.some(value => value)) rows.push(row);
-    return rows;
-  }
+  function parseCsv(text) { return PlannerCore.parseCsv(text); }
 
   function normalizedHeader(value) {
     return value.toLowerCase().replace(/[^a-z0-9]/g, '');

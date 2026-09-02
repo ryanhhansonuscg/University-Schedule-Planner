@@ -28,14 +28,19 @@ class DataError(ValueError):
 
 def read_json(path: Path) -> dict:
     try:
-        return json.loads(path.read_text(encoding="utf-8"))
+        document = json.loads(path.read_text(encoding="utf-8"))
     except FileNotFoundError as exc:
         raise DataError(f"Missing required file: {path}") from exc
     except json.JSONDecodeError as exc:
         raise DataError(f"Invalid JSON in {path}: {exc}") from exc
+    if not isinstance(document, dict):
+        raise DataError(f"{path} root must be a JSON object")
+    return document
 
 
 def require(record: dict, fields: tuple[str, ...], context: str) -> None:
+    if not isinstance(record, dict):
+        raise DataError(f"{context} must be a JSON object")
     missing = [field for field in fields if record.get(field) in (None, "")]
     if missing:
         raise DataError(f"{context} is missing: {', '.join(missing)}")
@@ -62,6 +67,16 @@ def validate_and_compile(university_dir: Path) -> dict:
         ),
         "university.json",
     )
+    scalar_types = {"slug": str, "name": str, "short_name": str, "map_title": str,
+                    "primary_color": str, "secondary_color": str, "accent_color": str,
+                    "catalog_date": str, "schema_version": int, "academic_calendar_system": str}
+    for field, expected in scalar_types.items():
+        if isinstance(university[field], bool) or not isinstance(university[field], expected):
+            raise DataError(f"university.json {field} must be {expected.__name__}")
+    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", university["slug"]):
+        raise DataError("university.json slug must contain lowercase letters, digits, and hyphens")
+    if university_dir.parent.name == "universities" and university_dir.name != university["slug"]:
+        raise DataError(f"University directory {university_dir.name!r} does not match slug {university['slug']!r}")
     if university["academic_calendar_system"] not in CALENDAR_SYSTEMS:
         raise DataError(f"Unknown academic_calendar_system: {university['academic_calendar_system']}")
     for field in ("primary_color", "secondary_color", "accent_color"):
@@ -70,6 +85,8 @@ def validate_and_compile(university_dir: Path) -> dict:
     parse_date(university["catalog_date"], "university.json catalog_date")
 
     calendars = calendar_doc.get("academic_calendars", [])
+    if not isinstance(calendars, list):
+        raise DataError("calendars.json academic_calendars must be an array")
     if not calendars:
         raise DataError("calendars.json must contain at least one academic calendar")
     calendar_ids: set[str] = set()
@@ -77,6 +94,8 @@ def validate_and_compile(university_dir: Path) -> dict:
     primary_count = 0
     for calendar in calendars:
         require(calendar, ("id", "name", "system_type", "is_primary", "terms"), "academic calendar")
+        if not isinstance(calendar["is_primary"], bool) or not isinstance(calendar["terms"], list):
+            raise DataError("academic calendar is_primary must be boolean and terms must be an array")
         if calendar["id"] in calendar_ids:
             raise DataError(f"Duplicate academic calendar id: {calendar['id']}")
         calendar_ids.add(calendar["id"])
@@ -126,6 +145,8 @@ def validate_and_compile(university_dir: Path) -> dict:
         department["code"] = code
         department_codes.add(code)
         departments.append(department)
+        if not isinstance(document.get("courses", []), list) or not isinstance(document.get("edges", []), list):
+            raise DataError(f"{path} courses and edges must be arrays")
         for course in document.get("courses", []):
             require(course, ("code", "number", "level", "title", "credits"), f"course in {path.name}")
             course["code"] = course["code"].replace(" ", "").upper()

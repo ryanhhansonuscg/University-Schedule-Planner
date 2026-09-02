@@ -15,3 +15,29 @@ Thanks for improving College Schedule Planner. Data changes should be reviewable
 - Describe missing or ambiguous data in the university README.
 
 Keep unrelated universities and departments out of the same pull request when practical. This makes source review and future updates easier.
+
+## Run the complete test suite
+
+CI runs on every push and pull request. Use Python 3.12 and Node.js 20 or newer, then run these exact commands from the repository root before submitting changes:
+
+```bash
+npm ci
+python -m unittest discover -s tests -v
+npm test
+python -m compileall -q tools tests
+npm run check
+python tools/validate_university.py template/university-template
+node --test tests/browser-smoke.test.js
+```
+
+`npm test` includes planner-core unit coverage and page-level smoke checks. `node --test tests/browser-smoke.test.js` is the focused accessibility/browser-contract check used by CI. There are currently no external npm packages: Node's built-in `node:test` is the test runner, and the committed `package-lock.json` reproducibly records that dependency-free policy.
+
+Build tests must never write into the template fixture. Copy it first:
+
+```bash
+tmp=$(mktemp -d)
+cp -R template/university-template "$tmp/fixture"
+python tools/build_university.py "$tmp/fixture"
+```
+
+For the exact reproducibility and SQLite integrity script, use the commands in the README's **Test and validation commands** section.
