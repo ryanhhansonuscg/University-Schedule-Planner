@@ -1,0 +1,13 @@
+{
+  "slug": "example-university",
+  "name": "Example University",
+  "short_name": "EXU",
+  "map_title": "Example University course explorer",
+  "primary_color": "#17365D",
+  "secondary_color": "#F2B134",
+  "accent_color": "#101820",
+  "catalog_url": "https://catalog.example.edu/",
+  "catalog_date": "2026-09-01",
+  "schema_version": 2,
+  "academic_calendar_system": "quarter"
+}

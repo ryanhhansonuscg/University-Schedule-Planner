@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Explore course prerequisites and degree pathways for participating universities.">
+  <title>College Course Explorer</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header>
+    <div class="university-bar">
+      <div>
+        <p class="eyebrow" id="university-name">College Schedule Planner</p>
+        <h1 id="map-title">Course explorer</h1>
+      </div>
+      <label class="university-picker">University
+        <select id="university-select" aria-label="Select university"></select>
+      </label>
+    </div>
+    <p class="lede">Explore prerequisites, corequisites, subjects, and course metadata across every configured department.</p>
+    <nav class="site-nav" aria-label="Application sections">
+      <a class="active" href="index.html" aria-current="page">Course explorer</a>
+      <a id="planner-link" href="planner.html">Schedule planner</a>
+    </nav>
+  </header>
+
+  <main id="app" aria-busy="true">
+    <div id="load-status" class="load-status" role="status">Loading university catalog…</div>
+    <section id="explorer" hidden>
+      <section class="controls" aria-label="Course filters">
+        <label>Department
+          <select id="department"></select>
+        </label>
+        <label>Level
+          <select id="level">
+            <option value="all">All levels</option>
+            <option value="undergraduate">Undergraduate</option>
+            <option value="graduate">Graduate</option>
+            <option value="professional">Professional</option>
+          </select>
+        </label>
+        <label>Tag
+          <select id="tag"><option value="all">All tags</option></select>
+        </label>
+        <label>Find a course
+          <input id="query" type="search" placeholder="Code, name, or topic" autocomplete="off">
+        </label>
+      </section>
+
+      <div class="layout">
+        <aside class="catalog" aria-labelledby="catalog-heading">
+          <div class="section-heading">
+            <h2 id="catalog-heading">Courses</h2>
+            <span id="result-count"></span>
+          </div>
+          <div id="course-list" class="course-list"></div>
+        </aside>
+
+        <section class="map-section" aria-labelledby="map-heading">
+          <div class="section-heading">
+            <h2 id="map-heading">Prerequisite neighborhood</h2>
+            <span class="legend"><i></i> prerequisite <i class="coreq"></i> corequisite</span>
+          </div>
+          <div id="graph" class="graph" aria-live="polite">
+            <svg aria-hidden="true"><g></g></svg>
+            <div class="graph-nodes"></div>
+          </div>
+          <article id="details" class="details"></article>
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <footer id="site-footer">Always confirm requirements and availability with the university before registration.</footer>
+  <script src="assets/loader.js" defer></script>
+  <script src="assets/app.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Plan up to four years of university courses and check prerequisites and offering history.">
+  <title>College Schedule Planner</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header>
+    <div class="university-bar">
+      <div>
+        <p class="eyebrow" id="university-name">College Schedule Planner</p>
+        <h1 id="planner-title">Schedule planner</h1>
+      </div>
+      <label class="university-picker">University
+        <select id="university-select" aria-label="Select university"></select>
+      </label>
+    </div>
+    <p class="lede">Build a proposed schedule from dated terms and check prerequisites, corequisites, and historical availability.</p>
+    <nav class="site-nav" aria-label="Application sections">
+      <a id="explorer-link" href="index.html">Course explorer</a>
+      <a class="active" href="planner.html" aria-current="page">Schedule planner</a>
+    </nav>
+  </header>
+
+  <main id="app" aria-busy="true">
+    <div id="load-status" class="load-status" role="status">Loading university catalog…</div>
+    <section id="planner" class="planner planner-page" aria-labelledby="planner-heading" hidden>
+      <div class="planner-intro">
+        <div>
+          <p class="eyebrow">Four-year planning</p>
+          <h2 id="planner-heading">Proposed schedule</h2>
+        </div>
+        <label>Academic calendar
+          <select id="planner-calendar"></select>
+        </label>
+      </div>
+      <div class="planner-controls">
+        <label>Completed courses
+          <input id="completed-courses" type="text" placeholder="MATH101, CHEM101">
+        </label>
+        <label>Course name or number
+          <input id="planner-course-search" list="course-options" type="text" placeholder="Type a course code or name" autocomplete="off">
+          <datalist id="course-options"></datalist>
+        </label>
+        <label>Term
+          <select id="planner-term"></select>
+        </label>
+        <button id="add-to-plan" type="button">Add to schedule</button>
+      </div>
+      <div class="schedule-toolbar" aria-label="Schedule import and export">
+        <label class="file-action">Import schedule (.csv)
+          <input id="import-schedule" type="file" accept=".csv,text/csv">
+        </label>
+        <button id="export-schedule" class="secondary-action" type="button" disabled>Export spreadsheet (.csv)</button>
+        <button id="clear-schedule" class="quiet-action" type="button" disabled>Clear schedule</button>
+      </div>
+      <p id="planner-message" class="planner-message" role="status" aria-live="polite"></p>
+      <p id="calendar-coverage" class="calendar-coverage"></p>
+      <div id="plan-grid" class="plan-grid"></div>
+      <section class="issues" aria-labelledby="issues-heading">
+        <div class="section-heading"><h2 id="issues-heading">Schedule check</h2><span id="issue-count"></span></div>
+        <div id="issue-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <footer>Planning guidance is based on stored catalog and offering data. Confirm requirements and availability with the university.</footer>
+  <script src="assets/loader.js" defer></script>
+  <script src="assets/planner.js" defer></script>
+</body>
+</html>

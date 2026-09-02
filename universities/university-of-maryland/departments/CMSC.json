@@ -1,0 +1,3737 @@
+{
+  "schema_version": 2,
+  "department": {
+    "code": "CMSC",
+    "name": "Computer Science",
+    "school": "College of Computer, Mathematical, and Natural Sciences",
+    "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/"
+  },
+  "courses": [
+    {
+      "code": "CMSC100",
+      "department": "CMSC",
+      "number": 100,
+      "level": "undergraduate",
+      "title": "Bits and Bytes of Computer and Information Sciences",
+      "credits": "1",
+      "description": "Students are introduced to the fields (and disciplines) of computer science and information science within a small classroom setting. They will learn to make a successful transition from high school to the university, while exploring study skills, student success plans and research opportunities.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "For first time freshmen and first time transfer students; or permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "100-level",
+        "cmsc",
+        "research",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC106",
+      "department": "CMSC",
+      "number": 106,
+      "level": "undergraduate",
+      "title": "Introduction to C Programming",
+      "credits": "4",
+      "description": "Design and analysis of programs in C. An introduction to computing using structured programming concepts. Intended for students with no or minimal programming experience.",
+      "prerequisites": "MATH115 .",
+      "corequisites": "",
+      "restrictions": "Must not be in Computer Science program; and must not have completed any courses from CMSC131 -499 course range.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "100-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC115",
+      "department": "CMSC",
+      "number": 115,
+      "level": "undergraduate",
+      "title": "Gender, Race and Computing",
+      "credits": "3",
+      "description": "Race and gender have shaped computing from its earliest histories to contemporary debates over bias in search algorithms, surveillance, and AI. As computational processes shape ever more dimensions of everyday life from the personal to the global scale, understanding how they operate and how power operates within them grows ever more important. Combating racism and sexism is not as simple as ensuring the pool of programmers and engineers is more diverse; structures of power are embedded in digital technologies as they are in all aspects of our society, and we must learn to perceive their operation if we hope to transform them. We will examine how racism and sexism operate in the field of computer science and in everyday uses of digital technologies, while studying how feminist and racial justice movements have created alternative approaches. This class is for anyone who wishes to better understand the relationships between digital technology, structural power, and social justice.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must not have taken CMSC216 or higher.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "100-level",
+        "cmsc",
+        "computer-engineering",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC122",
+      "department": "CMSC",
+      "number": 122,
+      "level": "undergraduate",
+      "title": "Introduction to Computer Programming via the Web",
+      "credits": "3",
+      "description": "Introduction to computer programming in the context of developing full featured dynamic web sites. Uses a problem solving approach to teach basics of program design and implementation using JavaScript; relates these skills to creation of dynamic web sites; then explores both the potential and limits of web-based information sources for use in research. Intended to help relate a student's major to these emerging technologies.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must not have completed any courses from CMSC131 -499 course range; and must not be concurrently enrolled in CMSC131 .",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "100-level",
+        "cmsc",
+        "research",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC125",
+      "department": "CMSC",
+      "number": 125,
+      "level": "undergraduate",
+      "title": "Introduction to Computing",
+      "credits": "3",
+      "description": "Introduces you to the computing field as a whole. You will gain skills used across the spectrum of computing majors and learn about the great variety of routes into the various areas of study and employment in technological fields.",
+      "prerequisites": "Must have completed or be concurrently enrolled in MATH115 or higher.",
+      "corequisites": "",
+      "restrictions": "Must not be in the Computer Science program; and must not have completed any courses from CMSC131 -499; and must not have completed BMGT302 , IMDM127 or INST126 .",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "100-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC131",
+      "department": "CMSC",
+      "number": 131,
+      "level": "undergraduate",
+      "title": "Object-Oriented Programming I",
+      "credits": "4",
+      "description": "Introduction to programming and computer science. Emphasizes understanding and implementation of applications using object-oriented techniques. Develops skills such as program design and testing as well as implementation of programs using a graphical IDE. Programming done in Java.",
+      "prerequisites": "",
+      "corequisites": "MATH140 .",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "100-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC132",
+      "department": "CMSC",
+      "number": 132,
+      "level": "undergraduate",
+      "title": "Object-Oriented Programming II",
+      "credits": "4",
+      "description": "Introduction to use of computers to solve problems using software engineering principles. Design, build, test, and debug medium -size software systems and learn to use relevant tools. Use object-oriented methods to create effective and efficient problem solutions. Use and implement application programming interfaces (APIs). Programming done in Java.",
+      "prerequisites": "Minimum grade of C- in CMSC131 ; or must have earned a score of 5 on the A Java AP exam; or must have earned a satisfactory score on the departmental placement exam; and minimum grade of C- in MATH140 .",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "100-level",
+        "cmsc",
+        "software",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC133",
+      "department": "CMSC",
+      "number": 133,
+      "level": "undergraduate",
+      "title": "Object Oriented Programming I Beyond Fundamentals",
+      "credits": "2",
+      "description": "An introduction to computer science and object-oriented programming for students with prior Java programming knowledge (conditionals, loops, methods). Program design, implementation, and testing using object-oriented techniques. All programming will be done in Java using a graphical IDE.",
+      "prerequisites": "Must have completed or be concurrently enrolled in MATH140 .",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department; and student must have earned a 4 on the AP Computer Science A exam or a satisfactory score on the CMSC131 department placement exam.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "100-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC198",
+      "department": "CMSC",
+      "number": 198,
+      "level": "undergraduate",
+      "title": "Special Topics in Computer Science for Non-Majors",
+      "credits": "1-4",
+      "description": "A course designed to allow non-computer science majors and non-computer engineering majors to pursue a specialized topic or project.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must not be in Computer Science program.",
+      "repeatable": "6 credits if content differs.",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "100-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC216",
+      "department": "CMSC",
+      "number": 216,
+      "level": "undergraduate",
+      "title": "Introduction to Computer Systems",
+      "credits": "4",
+      "description": "Introduction to the interaction between user programs and the operating system/hardware. Major topics include C programming, introductory systems programming, and assembly language. Other concepts covered include UNIX, machine data representation, thread management, optimization, and virtual memory. Programming is done in the Linux Environment.",
+      "prerequisites": "Minimum grade of C- in CMSC132 ; and minimum grade of C- in MATH141 .",
+      "corequisites": "",
+      "restrictions": "Must be in a major within the CMNS-Computer Science department; or must be in Engineering: Computer program; or must be in the Computer Science Minor program; and Permission of CMSC - Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "200-level",
+        "cmsc",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC250",
+      "department": "CMSC",
+      "number": 250,
+      "level": "undergraduate",
+      "title": "Discrete Structures",
+      "credits": "4",
+      "description": "Fundamental mathematical concepts related to computer science, including finite and infinite sets, relations, functions, and propositional logic. Introduction to other techniques, modeling and solving problems in computer science. Introduction to permutations, combinations, graphs, and trees with selected applications.",
+      "prerequisites": "Minimum grade of C- in CMSC131 ; and minimum grade of C- in MATH141 .",
+      "corequisites": "",
+      "restrictions": "Must be in a major within the CMNS-Computer Science department; or must be in Engineering: Computer program; or must be in the Computer Science Minor program; and Permissions of CMSC - Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "200-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC298",
+      "department": "CMSC",
+      "number": 298,
+      "level": "undergraduate",
+      "title": "Special Topics in Computer Science",
+      "credits": "1-4",
+      "description": "A course designed to allow a lower level student to pursue a specialized topic or project.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "6 credits if content differs.",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "200-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC298Q",
+      "department": "CMSC",
+      "number": 298,
+      "level": "undergraduate",
+      "title": "Quantum Steampunk Science-Fiction Workshop",
+      "credits": "3",
+      "description": "Steampunk is a science-fiction genre in which futuristic technologies populate Victorian-era settings. Recently, steampunk has come to life in the scientific field of quantum thermodynamics. Thermodynamics, the study of energy, grew out of the Industrial Revolution. Two centuries later, quantum physics is transforming computing and cryptography. Quantum science is now revolutionizing 19th-century thermodynamics in quantum thermodynamics, which features quantum engines, automata, and more. Quantum thermodynamics inspired the growing subgenre of quantum steampunk. In this course, you will read science fiction, write quantum steampunk short stories, receive feedback, and critique classmates' writing. In parallel, you will learn about quantum physics, technologies, and thermodynamics.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "200-level",
+        "cmsc",
+        "power-energy",
+        "quantum",
+        "security",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC320",
+      "department": "CMSC",
+      "number": 320,
+      "level": "undergraduate",
+      "title": "Introduction to Data Science",
+      "credits": "3",
+      "description": "An introduction to the data science pipeline, i.e., the end-to-end process of going from unstructured, messy data to knowledge and actionable insights. Provides a broad overview of several topics including statistical data analysis, basic data mining and machine learning algorithms, large-scale data management, cloud computing, and information visualization.",
+      "prerequisites": "Minimum grade of C- in CMSC216 and CMSC250 .",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "300-level",
+        "ai-ml",
+        "cmsc",
+        "data",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC330",
+      "department": "CMSC",
+      "number": 330,
+      "level": "undergraduate",
+      "title": "Organization of Programming Languages",
+      "credits": "3",
+      "description": "A study of programming languages, including their syntax, semantics, and implementation. Several different models of languages are discussed, including dynamic, scripting (e.g., Ruby, Python) functional (e.g., OCaml, Haskell, Scheme), and memory safe systems programming (e.g., Rust). Explores language features such as formal syntax, scoping and binding of variables, higher-order programming, typing, and type polymorphism. Introduces finite automata, context free grammar, parsing, lambda calculus, and basics of security attacks and software security.",
+      "prerequisites": "Minimum grade of C- in CMSC250 and CMSC216 .",
+      "corequisites": "",
+      "restrictions": "Must be in a major within the CMNS-Computer Science department; or must be in the Computer Science Minor program; or must be in Engineering: Computer program; and Permission of CMSC - Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "300-level",
+        "cmsc",
+        "security",
+        "software",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC335",
+      "department": "CMSC",
+      "number": 335,
+      "level": "undergraduate",
+      "title": "Web Application Development with JavaScript",
+      "credits": "3",
+      "description": "Provides an introduction to modern ways of developing Web Applications/Services using JavaScript for both front-end and back-end. The course covers topics on fundamental JavaScript language constructs, server-side JavaScript, back-end data persistence, and client-side JavaScript to build Web Applications that interact with Web services and back-end databases.",
+      "prerequisites": "Minimum grade of C- in CMSC216 and CMSC250 .",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science Department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "300-level",
+        "cmsc",
+        "data",
+        "software",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC351",
+      "department": "CMSC",
+      "number": 351,
+      "level": "undergraduate",
+      "title": "Algorithms",
+      "credits": "3",
+      "description": "A systematic study of the complexity of some elementary algorithms related to sorting, graphs and trees, and combinatorics. Algorithms are analyzed using mathematical techniques to solve recurrences and summations.",
+      "prerequisites": "Minimum grade of C- in CMSC250 and CMSC216 .",
+      "corequisites": "",
+      "restrictions": "Must be in a major within the CMNS-Computer Science department; or must be in Engineering: Computer program; or must be in the Computer Science Minor program; and Permission from the CMSC - Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "300-level",
+        "cmsc",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC388",
+      "department": "CMSC",
+      "number": 388,
+      "level": "undergraduate",
+      "title": "Special Topics in Computer Science",
+      "credits": "1-3",
+      "description": "Seminar courses that allow students to pursue new and emerging areas of Computer Science.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "6 credits if content differs.",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "300-level",
+        "cmsc",
+        "research",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC389",
+      "department": "CMSC",
+      "number": 389,
+      "level": "undergraduate",
+      "title": "Special Topics in Computer Science",
+      "credits": "1-3",
+      "description": "Seminar courses that allow students to pursue new and emerging areas of Computer Science; course may be used as electives for the undergraduate degree and minor.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "6 credits if content differs.",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "300-level",
+        "cmsc",
+        "research",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC395",
+      "department": "CMSC",
+      "number": 395,
+      "level": "undergraduate",
+      "title": "Teaching Techniques for Computer Science",
+      "credits": "1",
+      "description": "This course will assure that teaching assistants become better skilled at applying effective teaching practices that improve the classroom environment while learning methods to implement mechanisms to improve diversity and inclusion. Legal and ethical aspects of the role will also be considered. Students in the class will be currently working as a teaching assistant and, therefore, be able to apply what they are learning immediately in their own context.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Students must be hired as a teaching assistant in the Computer Science Department for the semester they are registered for the course; and permission of the Computer Science Department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "300-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC396",
+      "department": "CMSC",
+      "number": 396,
+      "level": "undergraduate",
+      "title": "Computer Science Honors Seminar",
+      "credits": "1",
+      "description": "Overview of computer science research activities, techniques, and tools. Diverse research areas will be covered, including systems, networks, artificial intelligence, human-computer interaction, software engineering, graphics, vision, and theory.",
+      "prerequisites": "Must have admission into Computer Science Departmental Honors Program.",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "300-level",
+        "ai-ml",
+        "cmsc",
+        "research",
+        "software",
+        "systems",
+        "undergraduate",
+        "vision-graphics"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC398",
+      "department": "CMSC",
+      "number": 398,
+      "level": "undergraduate",
+      "title": "Special Topics in Computer Science",
+      "credits": "1-3",
+      "description": "Seminar courses that allow students to pursue new and emerging areas of Computer Science.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science Department.",
+      "repeatable": "6 credits if content differs.",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "300-level",
+        "cmsc",
+        "research",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC401",
+      "department": "CMSC",
+      "number": 401,
+      "level": "undergraduate",
+      "title": "Algorithms for Geospatial Computing",
+      "credits": "3",
+      "description": "An introduction to fundamental geospatial objects and geometric algorithms for spatio-temporal data processing and analysis. Point data representation and analysis: spatial data models and data structures, algorithms for spatial queries, point clustering algorithms. Surface and scalar field modeling, such as terrains: raster and triangle-based models (TINs), algorithms for building and querying TINs. Algorithms for natural and urban terrain analysis: morphology computation and visibility analysis. Applications to processing and analysis of LiDAR (Light Detection And Ranging) data in the context of terrain reconstruction, urban modeling, forest management and bathymetry reconstruction for coastal data management. Road network computation and analysis: algorithms for route computation in road networks, and for road network reconstruction from GPS and satellite data.",
+      "prerequisites": "GEOG276 ; or a minimum grade of C- in CMSC330 and CMSC351 ; or permission of instructor.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "systems",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC411",
+      "department": "CMSC",
+      "number": 411,
+      "level": "undergraduate",
+      "title": "Computer Systems Architecture",
+      "credits": "3",
+      "description": "Input/output processors and techniques. Intra-system communication, buses, caches. Addressing and memory hierarchies. Microprogramming, parallelism, and pipelining.",
+      "prerequisites": "Minimum grade of C- in CMSC330 ; or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "communications",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC412",
+      "department": "CMSC",
+      "number": 412,
+      "level": "undergraduate",
+      "title": "Operating Systems",
+      "credits": "4",
+      "description": "A hands-on introduction to operating systems, including topics in: multiprogramming, communication and synchronization, memory management, IO subsystems, and resource scheduling polices. The laboratory component consists of constructing a small kernel, including functions for device IO, multi-tasking, and memory management.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 ; and 1 course with a minimum grade of C- from ( CMSC414 , CMSC417 , CMSC420 , CMSC430 , CMSC433 , CMSC435 , ENEE440 , ENEE457 ).",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department; or must be in one of the following programs (Computer Science (Master's); Computer Science (Doctoral)).",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "communications",
+        "laboratory",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC414",
+      "department": "CMSC",
+      "number": 414,
+      "level": "undergraduate",
+      "title": "Computer and Network Security",
+      "credits": "3",
+      "description": "An introduction to the topic of security in the context of computer systems and networks. Identify, analyze, and solve network-related security problems in computer systems. Fundamentals of number theory, authentication, and encryption technologies, as well as the practical problems that have to be solved in order to make those technologies workable in a networked environment, particularly in the wide-area Internet environment.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 ; or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "security",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC416",
+      "department": "CMSC",
+      "number": 416,
+      "level": "undergraduate",
+      "title": "Introduction to Parallel Computing",
+      "credits": "3",
+      "description": "Introduction to parallel computing. Topics include programming for shared memory and distributed memory parallel architectures, and fundamental issues in design, development, and performance analysis of parallel programs.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 ; or permission of instructor.",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC417",
+      "department": "CMSC",
+      "number": 417,
+      "level": "undergraduate",
+      "title": "Computer Networks",
+      "credits": "3",
+      "description": "Computer networks and architectures. The OSI model including discussion and examples of various network layers. A general introduction to existing network protocols. Communication protocol specification, analysis, and testing.",
+      "prerequisites": "Minimum grade of C- in CMSC351 and CMSC330 ; and permission of CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "communications",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC420",
+      "department": "CMSC",
+      "number": 420,
+      "level": "undergraduate",
+      "title": "Advanced Data Structures",
+      "credits": "3",
+      "description": "Description, properties, and storage allocation functions of data structures including balanced binary trees, B-Trees, hash tables, skiplists, tries, KD-Trees and Quadtrees. Algorithms for manipulating structures. Applications from areas such as String Processing, Computer Graphics, Information Retrieval, Computer Networks, Computer Vision, and Operating Systems.",
+      "prerequisites": "Minimum grade of C- in CMSC351 and CMSC330 ; and permission of CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "data",
+        "systems",
+        "theory",
+        "undergraduate",
+        "vision-graphics"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC421",
+      "department": "CMSC",
+      "number": 421,
+      "level": "undergraduate",
+      "title": "Introduction to Artificial Intelligence",
+      "credits": "3",
+      "description": "Introduces a range of ideas and methods in AI, varying semester to semester but chosen largely from: automated heuristic search, planning, games, knowledge representation, logical and statistical inference, learning, natural language processing, vision, robotics, cognitive modeling, and intelligent agents. Programming projects will help students obtain a hands-on feel for various topics.",
+      "prerequisites": "Minimum grade of C- in CMSC351 and CMSC330 ; and permission of CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "ai-ml",
+        "cmsc",
+        "controls-robotics",
+        "laboratory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC422",
+      "department": "CMSC",
+      "number": 422,
+      "level": "undergraduate",
+      "title": "Introduction to Machine Learning",
+      "credits": "3",
+      "description": "Machine Learning studies representations and algorithms that allow machines to improve their performance on a task from experience. This is a broad overview of existing methods for machine learning and an introduction to adaptive systems in general. Emphasis is given to practical aspects of machine learning and data mining.",
+      "prerequisites": "Minimum grade of C- in CMSC320 , CMSC330 , and CMSC351 ; and 1 course with a minimum grade of C- from ( MATH240 , MATH341 , MATH461 , ENEE290 ); and permission of CMNS-Computer Science department.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "ai-ml",
+        "cmsc",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC423",
+      "department": "CMSC",
+      "number": 423,
+      "level": "undergraduate",
+      "title": "Computational Genomics",
+      "credits": "3",
+      "description": "Computers have revolutionized modern biological research by enabling the management and analysis of the large amounts of data generated through high-throughput experiments. This course provides insight into some of the biological problems that can be addressed using computational methods and introduces the main data structures and algorithms used to solve problems related to biological sequences such as DNA, RNA, and proteins. Many of the techniques taught in this course are applicable beyond the bioinformatics domain, as they are relevant to and commonly used in other areas of computer science. No knowledge of biology is required for this course.",
+      "prerequisites": "Minimum grade of C- in CMSC351 and CMSC330 ; and permission of CMNS-Computer Science department.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "bioinformatics",
+        "cmsc",
+        "research",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC424",
+      "department": "CMSC",
+      "number": 424,
+      "level": "undergraduate",
+      "title": "Database Design",
+      "credits": "3",
+      "description": "Students are introduced to database systems and motivates the database approach as a mechanism for modeling the real world. An in-depth coverage of the relational model, logical database design, query languages, and other database concepts including query optimization, concurrency control; transaction management, and log based crash recovery. Distributed and Web database architectures are also discussed.",
+      "prerequisites": "Minimum grade of C- in CMSC351 and CMSC330 ; and permission of CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "data",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC425",
+      "department": "CMSC",
+      "number": 425,
+      "level": "undergraduate",
+      "title": "Game Programming",
+      "credits": "3",
+      "description": "An introduction to the principles and practice of computer game programming and design. This includes an introduction to game hardware and systems, the principles of game design, object and terrain modeling, game physics, artificial intelligence for games, networking for games, rendering and animation, and aural rendering. Course topics are reinforced through the design and implementation of a working computer game.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 .",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "ai-ml",
+        "cmsc",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC426",
+      "department": "CMSC",
+      "number": 426,
+      "level": "undergraduate",
+      "title": "Computer Vision",
+      "credits": "3",
+      "description": "An introduction to basic concepts and techniques in computervision. This includes low-level operations such as image filtering and edge detection, 3D reconstruction of scenes using stereo and structure from motion, and object detection, recognition and classification.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 and 1 course with a minimum grade of C- from ( MATH240 , MATH341 , MATH461 , ENEE290 ); or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program; or permission of the instructor.",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "signal-processing",
+        "undergraduate",
+        "vision-graphics"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC427",
+      "department": "CMSC",
+      "number": 427,
+      "level": "undergraduate",
+      "title": "Computer Graphics",
+      "credits": "3",
+      "description": "An introduction to 3D computer graphics, focusing on the underlying building blocks and algorithms for applications such as 3D computer games, and augmented and virtual reality (AR/VR). Covers the basics of 3D image generation and 3D modeling, with an emphasis on interactive applications. Discusses the representation of 3D geometry, 3D transformations, projections, rasterization, basics of color spaces, texturing and lighting models, as well as programming of modern Graphics Processing Units (GPUs). Includes programming projects where students build their own 3D rendering engine step-by-step.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 ; 1 course with a minimum grade of C- from ( MATH240 , MATH341 , MATH461 , ENEE290 ).",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "theory",
+        "undergraduate",
+        "vision-graphics"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC430",
+      "department": "CMSC",
+      "number": 430,
+      "level": "undergraduate",
+      "title": "Introduction to Compilers",
+      "credits": "3",
+      "description": "Topics include lexical analysis, parsing, intermediate representations, program analysis, optimization, and code generation.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 ; and permission of CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "software",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC431",
+      "department": "CMSC",
+      "number": 431,
+      "level": "undergraduate",
+      "title": "Privacy Engineering",
+      "credits": "3",
+      "description": "Explores the intersection of technology and privacy, including technical mechanisms for data privacy, legal and regulatory privacy regimes, and mediation of interpersonal privacy through technology.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 ; and permission of CMNS-Computer Science Department.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "security",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC433",
+      "department": "CMSC",
+      "number": 433,
+      "level": "undergraduate",
+      "title": "Programming Language Technologies and Paradigms",
+      "credits": "3",
+      "description": "Programming language technologies (e.g., object-oriented programming), their implementations and use in software design and implementation.",
+      "prerequisites": "Minimum grade of C- in CMSC330 ; or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "software",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC434",
+      "department": "CMSC",
+      "number": 434,
+      "level": "undergraduate",
+      "title": "Introduction to Human-Computer Interaction",
+      "credits": "3",
+      "description": "Assess usability by quantitative and qualitative methods. Conduct task analyses, usability tests, expert reviews, and continuing assessments of working products by interviews, surveys, and logging. Apply design processes and guidelines to develop professional quality user interfaces. Build low-fidelity paper mockups, and a high-fidelity prototype using contemporary tools such as graphic editors and a graphical programming environment (eg: Visual Basic, Java).",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 ; and permission of CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "software",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC435",
+      "department": "CMSC",
+      "number": 435,
+      "level": "undergraduate",
+      "title": "Software Engineering",
+      "credits": "3",
+      "description": "State-of-the-art techniques in software design and development. Laboratory experience in applying the techniques covered. Structured design, structured programming, top-down design and development, segmentation and modularization techniques, iterative enhancement, design and code inspection techniques, correctness, and chief-programmer teams. The development of a large software project.",
+      "prerequisites": "1 course with a minimum grade of C- from ( CMSC412 , CMSC417 , CMSC420 , CMSC430 , CMSC433 , ENEE447 ); and permission of CMNS-Computer Science department.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "laboratory",
+        "software",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC436",
+      "department": "CMSC",
+      "number": 436,
+      "level": "undergraduate",
+      "title": "Programming Handheld Systems",
+      "credits": "3",
+      "description": "Fundamental principles and concepts that underlie the programming of handheld systems, such as mobile phones, personal digital assistants, and tablet computers. Particular emphasis will be placed on concepts such as limited display size, power, memory and CPU speed; and new input modalities, where handheld systems differ substantially from non-handheld systems, and thus require special programming tools and approaches. Students will apply these concepts and principles in the context of an existing handset programming platform.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 ; or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC437",
+      "department": "CMSC",
+      "number": 437,
+      "level": "undergraduate",
+      "title": "Introduction to Quantum Software Laboratory",
+      "credits": "3",
+      "description": "Introductory Programming/Software laboratory for quantum computing. Understand the existing programming tools for quantum computers and the characteristics of quantum hardware. Develop quantum application prototypes and tools to characterize and mitigate the limitations of quantum hardware.",
+      "prerequisites": "Minimum grade of C- in CMSC457 or PHYS467 ; and familiarity with basic programming, languages (e.g., Python).",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "laboratory",
+        "quantum",
+        "software",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC451",
+      "department": "CMSC",
+      "number": 451,
+      "level": "undergraduate",
+      "title": "Design and Analysis of Computer Algorithms",
+      "credits": "3",
+      "description": "Fundamental techniques for designing efficient computer algorithms, proving their correctness, and analyzing their complexity. General topics include graph algorithms, basic algorithm design paradigms (such as greedy algorithms, divide-and-conquer, and dynamic programming), network flows, NP-completeness, and other selected topics in algorithms.",
+      "prerequisites": "Minimum grade of C- in CMSC351 ; and permission of CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "systems",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC452",
+      "department": "CMSC",
+      "number": 452,
+      "level": "undergraduate",
+      "title": "Elementary Theory of Computation",
+      "credits": "3",
+      "description": "Techniques are developed to determine the difficulty of a problem relative to a model of computation. Topics include Finite Automata, P, NP, decidability, undecidability, and communication complexity.",
+      "prerequisites": "Minimum grade of C- in CMSC351 ; and permission of CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "communications",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC454",
+      "department": "CMSC",
+      "number": 454,
+      "level": "undergraduate",
+      "title": "Algorithms for Data Science",
+      "credits": "3",
+      "description": "Fundamental methods for processing a high volume of data. Methods include stream processing, locally sensitive hashing, web search methods, page rank computation, network and link analysis, dynamic graph algorithms as well as methods to handle high dimensional data/dimensionality reduction.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 .",
+      "corequisites": "",
+      "restrictions": "Permission of CMSC-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "data",
+        "systems",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC456",
+      "department": "CMSC",
+      "number": 456,
+      "level": "undergraduate",
+      "title": "Cryptography",
+      "credits": "3",
+      "description": "The theory, application, and implementation of mathematical techniques used to secure modern communications. Topics include symmetric and public-key encryption, message integrity, hash functions, block-cipher design and analysis, number theory, and digital signatures.",
+      "prerequisites": "( CMSC106 , CMSC131 , or ENEE150 ; or equivalent programming experience); and (2 courses from ( CMSC330 , CMSC351 , ENEE324 , or ENEE382 ); or any one of these courses and a 400-level MATH course, or two 400-level MATH courses); and Permission of CMNS-Mathematics department or permission of instructor.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "communications",
+        "security",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC457",
+      "department": "CMSC",
+      "number": 457,
+      "level": "undergraduate",
+      "title": "Introduction to Quantum Computing",
+      "credits": "3",
+      "description": "An introduction to the concept of a quantum computer, including algorithms that outperform classical computation and methods for performing quantum computation reliably in the presence of noise. As this is a multidisciplinary subject, the course will cover basic concepts in theoretical computer science and physics in addition to introducing core quantum computing topics. No previous background in quantum mechanics is required.",
+      "prerequisites": "1 course with a minimum grade of C- from ( ENEE290 , MATH240 , MATH341 , MATH461 , MATH243 ); and 1 course with a minimum grade of C- from ( CMSC351 , PHYS313 ).",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "quantum",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC460",
+      "department": "CMSC",
+      "number": 460,
+      "level": "undergraduate",
+      "title": "Computational Methods",
+      "credits": "3",
+      "description": "Basic computational methods for interpolation, least squares, approximation, numerical quadrature, numerical solution of polynomial and transcendental equations, systems of linear equations and initial value problems for ordinary differential equations. Emphasis on methods and their computational properties rather than their analytic aspects. Intended primarily for students in the physical and engineering sciences.",
+      "prerequisites": "1 course with a minimum grade of C- from ( MATH240 , MATH341 , MATH461 , ENEE290 , MATH243 ); and 1 course with a minimum grade of C- from ( MATH241 , MATH340 ); and 1 course with a minimum grade of C- from ( CMSC106 , CMSC131 ); and 1 course with a minimum grade of C- from ( MATH246 , MATH341 , ENEE290 , MATH243 ).",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC466",
+      "department": "CMSC",
+      "number": 466,
+      "level": "undergraduate",
+      "title": "Introduction to Numerical Analysis I",
+      "credits": "3",
+      "description": "Floating point computations, direct methods for linear systems, interpolation, solution of nonlinear equations.",
+      "prerequisites": "1 course with a minimum grade of C- from ( CMSC106 , CMSC131 ); and minimum grade of C- in MATH410 .",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC470",
+      "department": "CMSC",
+      "number": 470,
+      "level": "undergraduate",
+      "title": "Introduction to Natural Language Processing",
+      "credits": "3",
+      "description": "Introduction to fundamental techniques for automatically processing and generating natural language with computers. Machine learning techniques, models, and algorithms that enable computers to deal with the ambiguity and implicit structure of natural language. Application of these techniques in a series of assignments designed to address a core application such as question answering or machine translation.",
+      "prerequisites": "Minimum grade of C- in CMSC320 , CMSC330 , and CMSC351 ; and 1 course with a minimum grade of C- from ( MATH240 , MATH341 , MATH461 , ENEE290 ).",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "ai-ml",
+        "cmsc",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC471",
+      "department": "CMSC",
+      "number": 471,
+      "level": "undergraduate",
+      "title": "Introduction to Data Visualization",
+      "credits": "3",
+      "description": "Datasets are becoming increasingly large and complex, requiring intuitive ways to explore and interpret them quickly and efficiently. In this case, a picture is worth a thousand words: visualizations enable us to transform data into images that are easier to understand and reason about, compared to raw numbers and raw text. Visualizations are critical tools in externalizing and organizing our knowledge and insights, whether to explore collected datasets to improve our understanding of the physical world, to assess and debug analysis/experimental workflows, or to present new and interesting results to diverse audiences. In this course we will study techniques and algorithms for creating effective visualizations based on principles from graphic design, perceptual psychology, and cognitive science. Students will learn how to design and build interactive visualizations for the web, using the D3.js (Data-Driven Documents) framework.",
+      "prerequisites": "Minimum grade of C- in CMSC330 and CMSC351 ; and permission of CMNS-Computer Science Department.",
+      "corequisites": "",
+      "restrictions": "Permission of the CMNS-Computer Science Department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "data",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC472",
+      "department": "CMSC",
+      "number": 472,
+      "level": "undergraduate",
+      "title": "Introduction to Deep Learning",
+      "credits": "3",
+      "description": "An introduction to deep learning, a machine learning technique, as well as its applications to a variety of domains. Provides a broad overview of deep learning concepts including neural networks, convolutional neural networks, recurrent neural networks, generative models, and deep reinforcement learning, and an intuitive introduction to basics of machine learning such as simple models, learning paradigms, optimization, overfitting, importance of data, and training caveats.",
+      "prerequisites": "Minimum grade of C- or higher in CMSC330 and CMSC351 ; and 1 course with a minimum grade of C- or higher from ( MATH240 , MATH341 , MATH461 , ENEE290 ).",
+      "corequisites": "",
+      "restrictions": "Permission of the CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's) program.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "ai-ml",
+        "cmsc",
+        "systems",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC473",
+      "department": "CMSC",
+      "number": 473,
+      "level": "undergraduate",
+      "title": "Capstone in Machine Learning",
+      "credits": "3",
+      "description": "Semester-long project course in which each student will identify and carry out a project related to machine learning, with the goal of publishing a research paper or software tool.",
+      "prerequisites": "Minimum grade of C- or higher in CMSC421 or CMSC422 .",
+      "corequisites": "",
+      "restrictions": "Permission of instructor and Permission of CMSC - Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "ai-ml",
+        "cmsc",
+        "research",
+        "software",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC474",
+      "department": "CMSC",
+      "number": 474,
+      "level": "undergraduate",
+      "title": "Introduction to Computational Game Theory",
+      "credits": "3",
+      "description": "Game theory deals with interactions among agents (either human or computerized) whose objectives and preferences may differ from the objectives and preferences of the other agents. It will also provide a comprehensive introduction to game theory, concentrating on its computational aspects.",
+      "prerequisites": "Minimum grade of C- in CMSC351 and CMSC330 ; and permission of CMNS-Computer Science department. Or must be in the (Computer Science (Doctoral), Computer Science (Master's)) program.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC475",
+      "department": "CMSC",
+      "number": 475,
+      "level": "undergraduate",
+      "title": "Combinatorics and Graph Theory",
+      "credits": "3",
+      "description": "General enumeration methods, difference equations, generating functions. Elements of graph theory, matrix representations of graphs, applications of graph theory to transport networks, matching theory and graphical algorithms.",
+      "prerequisites": "1 course with a minimum grade of C- from ( MATH240 , MATH341 , MATH461 , ENEE290 , MATH243 ); and 1 course with a minimum grade of C- from ( MATH241 , MATH340 ); and 1 course with a minimum grade of C- from ( MATH310 , CMSC250 ).",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "systems",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC477",
+      "department": "CMSC",
+      "number": 477,
+      "level": "undergraduate",
+      "title": "Robotics Perception and Planning",
+      "credits": "3",
+      "description": "A hands-on introduction to perception and planning for robotics, including rigid body transformations and rotations, dynamics and control of mobile robots/drones, graph based and sampling based planning algorithms, Bayseian and Kalman filtering, camera models and calibration, projective geometry, visual features, optical flow, pose estimation, RANSAC and Hough transform, structure from motion, visual odometry, machine learning basics, visual recognition and learning.",
+      "prerequisites": "1 course from ( MATH240 , MATH341 , MATH461 , ENEE290 ); and ( ENEE467 or CMSC420 ).",
+      "corequisites": "",
+      "restrictions": "Must be in the Robotics and Autonomous Systems minor; and permission of Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "ai-ml",
+        "cmsc",
+        "controls-robotics",
+        "electromagnetics",
+        "laboratory",
+        "signal-processing",
+        "theory",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC488",
+      "department": "CMSC",
+      "number": 488,
+      "level": "undergraduate",
+      "title": "Special Topics in Computer Science",
+      "credits": "1-3",
+      "description": "Seminar courses that allow students to pursue new and emerging areas of Computer Science.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "6 credits if content differs.",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "research",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC498",
+      "department": "CMSC",
+      "number": 498,
+      "level": "undergraduate",
+      "title": "Selected Topics in Computer Science",
+      "credits": "1-3",
+      "description": "An individualized course designed to allow a student or students to pursue a selected topic not taught as a part of the regular course offerings under the supervision of a Computer Science faculty member. In addition, courses dealing with topics of special interest and/or new emerging areas of computer science will be offered with this number. Selected topics courses will be structured very much like a regular course with homework, project and exams. Credit according to work completed",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC499",
+      "department": "CMSC",
+      "number": 499,
+      "level": "undergraduate",
+      "title": "Independent Undergraduate Research",
+      "credits": "1-3",
+      "description": "Students are provided with an opportunity to participate in a computer science research project under the guidance of a faculty advisor. Format varies. Students and supervising faculty member will agree to a research plan which must be approved by the department. As part of each research plan, students should produce a final paper delineating their contribution to the field.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must be in one of the following programs (Computer Science; Engineering: Computer) ; and permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/undergraduate/approved-courses/cmsc/",
+      "source_catalog": "undergraduate",
+      "tags": [
+        "400-level",
+        "cmsc",
+        "research",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC601",
+      "department": "CMSC",
+      "number": 601,
+      "level": "graduate",
+      "title": "Computational and Mathematical Analysis of Biological Networks across Scales",
+      "credits": "3",
+      "description": "Describe, implement and analyze algorithms that solve fundamental problems in biological network analysis: descriptive summaries of network structure and properties, probabilistic and dynamical network models, statistical models for networked data and network visualization.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "bioinformatics",
+        "cmsc",
+        "data",
+        "graduate",
+        "masters-doctoral",
+        "systems",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC614",
+      "department": "CMSC",
+      "number": 614,
+      "level": "graduate",
+      "title": "Computer and Network Security",
+      "credits": "3",
+      "description": "Advanced topics in computer and network security, including: anonymity, privacy, memory safety, malware, denial of service attacks, trusted hardware, security design principles, and empirically measuring security \"in the wild\". This will be a largely paper-driven course (there is no textbook), preparing students for research in (or around) the broad area of security. Students will gain first-hand experience launching attacks in controlled environments. The bulk of the grade will be based on a final, semester-long group project.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must be in the Computer Science Master's or Doctoral programs.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "research",
+        "security",
+        "systems"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC616",
+      "department": "CMSC",
+      "number": 616,
+      "level": "graduate",
+      "title": "Foundations of Parallel Computing",
+      "credits": "3",
+      "description": "Covers the foundations of parallel computing. Topics include programming for shared memory and distributed memory parallel architectures, and fundamental issues in design, development and analysis of parallel programs.",
+      "prerequisites": "CMSC411 and CMSC412 ; or permission of instructor.",
+      "corequisites": "",
+      "restrictions": "Must be in the Computer Science or Applied Mathematics and Scientific Computation master's or doctoral programs.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "systems"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC630",
+      "department": "CMSC",
+      "number": 630,
+      "level": "graduate",
+      "title": "Foundations of Software Verification",
+      "credits": "3",
+      "description": "Topics in program verification. Operational semantics of programs. Preconditions and postconditions. Axiomatic proof systems and predicate transformers. Temporal logic and model checking. Process algebra, semantic equivalences and algebraic reasoning.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "software"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC631",
+      "department": "CMSC",
+      "number": 631,
+      "level": "graduate",
+      "title": "Program Analysis and Understanding",
+      "credits": "3",
+      "description": "Techniques for static analysis of source code and modern programming paradigms. Analysis techniques: data flow analysis, program dependence graphs, program slicing, abstract interpretation. The meaning of programs: denotational semantics, partial evaluation. Advanced treatment of abstraction mechanisms: polymorphic types, operation overloading, inheritance, object-oriented programming and ML-like programming languages.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "software"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC634",
+      "department": "CMSC",
+      "number": 634,
+      "level": "graduate",
+      "title": "Empirical Research Methods for Computer Science",
+      "credits": "3",
+      "description": "A graduate-level introductory course on empirical reseach methods for computer scientists. Experimental techniques for evaluating software systems and processes, human performance using interfaces, programming environments, and software engineering methods. Introduction to constructs and methods of measurements, qualitative and quantitative design, quasi-experimental and non-experimental design, baseline design, and statistical analysis.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must be in Computer Science (Master's) program; or must be in Computer Science (Doctoral) program; or permission of instructor.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "research",
+        "software"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC642",
+      "department": "CMSC",
+      "number": 642,
+      "level": "graduate",
+      "title": "Big Data Systems",
+      "credits": "3",
+      "description": "An overview of data management systems for performing data science on large volumes of data, including relational databases, and NoSQL systems. The topics covered include: different types of data management systems, their pros and cons, how and when to use those systems, and best practices for data modeling.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must be in the Data Science Post-Baccalaureate Certificate or Master of Science in Data Science program.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "data",
+        "graduate",
+        "masters-doctoral"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC643",
+      "department": "CMSC",
+      "number": 643,
+      "level": "graduate",
+      "title": "Principles of Machine Learning",
+      "credits": "3",
+      "description": "A broad introduction to machine learning and statistical pattern recognition. Topics include: Supervised learning: Bayes decision theory, discriminant functions, maximum likelihood estimation, nearest neighbor rule, linear discriminant analysis, support vector machines, neural networks, deep learning networks. Unsupervised learning: clustering, dimensionality reduction, PCA, auto-encoders. The course will also discuss recent applications of machine learning, such as computer vision, data mining, autonomous navigation, and speech recognition.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must be in one of the following in person or online programs: (Data Science Professional Studies Post-Baccalaureate Certificate, Master of Science in Data Science, or Master of Science in Machine Learning).",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "ai-ml",
+        "cmsc",
+        "controls-robotics",
+        "graduate",
+        "masters-doctoral",
+        "systems",
+        "vision-graphics"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC651",
+      "department": "CMSC",
+      "number": 651,
+      "level": "graduate",
+      "title": "Analysis of Algorithms",
+      "credits": "3",
+      "description": "Efficiency of algorithms, orders of magnitude, recurrence relations, lower-bound techniques, time and space resources, NP-complete problems, polynomial hierarchies, and approximation algorithms. Sorting, searching, set manipulation, graph theory, matrix multiplication, fast Fourier transform, pattern matching, and integer and polynomial arithmetic.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "signal-processing",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC656",
+      "department": "CMSC",
+      "number": 656,
+      "level": "graduate",
+      "title": "Introduction to Cryptography",
+      "credits": "3",
+      "description": "Introduction to modern cryptography. Topics include symmetric-key encryption, hash functions, message-authentication codes, block-cipher design, theoretical foundations, number theory, public-key encryption, and digital signatures.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "security"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC657",
+      "department": "CMSC",
+      "number": 657,
+      "level": "graduate",
+      "title": "Introduction to Quantum Information Processing",
+      "credits": "3",
+      "description": "An introduction to the field of quantum information processing. Students will be prepared to pursue further study in quantum computing, quantum information theory, and related areas.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "quantum"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC660",
+      "department": "CMSC",
+      "number": 660,
+      "level": "graduate",
+      "title": "Scientific Computing I",
+      "credits": "3",
+      "description": "Fundamental techniques in scientific computation with an introduction to theory and software for each topic. Computer numbers and sources of errors, numerical linear algebra, optimization, and Monte Carlo methods.",
+      "prerequisites": "Must have knowledge of Matlab or Python.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "software",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC661",
+      "department": "CMSC",
+      "number": 661,
+      "level": "graduate",
+      "title": "Scientific Computing II",
+      "credits": "3",
+      "description": "Numerical methods for solving ordinary and partial differential equations (elliptic, parabolic, hyperbolic, and dispersive): motivation, analysis, and implementation. Finite difference methods, finite element methods, Fourier and Chebyshev spectral methods, and meshless methods.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "signal-processing"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC662",
+      "department": "CMSC",
+      "number": 662,
+      "level": "graduate",
+      "title": "Computer Organization and Programming for Scientific Computing",
+      "credits": "3",
+      "description": "This course presents fundamental issues of computer hardware, software parallel computing, and scientific data management for programming for scientific computation.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "computer-engineering",
+        "graduate",
+        "masters-doctoral",
+        "software",
+        "systems",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC663",
+      "department": "CMSC",
+      "number": 663,
+      "level": "graduate",
+      "title": "Advanced Scientific Computing I",
+      "credits": "3",
+      "description": "In the sequence Advanced Scientific Computing I & Advanced Scientific Computing II, ( CMSC663 / CMSC663 and AMSC664 / CMSC664 , respectively) students work on a year-long individual project to develop software for a scientific task in a high performance computing environment. Lectures will be given on available computational environments, code development, implementation of parallel algorithms.",
+      "prerequisites": "AMSC660 or CMSC660 ; and ( AMSC661 or CMSC661 ).",
+      "corequisites": "",
+      "restrictions": "Permission of instructor.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "software",
+        "systems",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC664",
+      "department": "CMSC",
+      "number": 664,
+      "level": "graduate",
+      "title": "Advanced Scientific Computing II",
+      "credits": "3",
+      "description": "In the sequence Advanced Scientific Computing I & Advanced Scientific Computing II, ( AMSC663 / CMSC663 and CMSC664 / CMSC664 , respectively) students work on a year-long individual project to develop software for a scientific task in a high performance computing environment. Lectures will be given on available computational environments, code development, implementation of parallel algorithms.",
+      "prerequisites": "AMSC663 or CMSC663 .",
+      "corequisites": "",
+      "restrictions": "Permission of instructor.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "software",
+        "systems",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC665",
+      "department": "CMSC",
+      "number": 665,
+      "level": "graduate",
+      "title": "Scientific Computing III: Data-Driven and Machine Learning Methods",
+      "credits": "3",
+      "description": "This course introduces graduate students to contemporary numerical methods and techniques for data generation and analysis. The course program includes numerical approximation theory, neural-network-based methods for solving PDEs and inverse problems, neural operators for parametric PDEs, methods for dimensional reduction, including diffusion maps and autoencoders, generative models, and graph data analysis (if time allows).",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "ai-ml",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "systems"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC666",
+      "department": "CMSC",
+      "number": 666,
+      "level": "graduate",
+      "title": "Numerical Analysis I",
+      "credits": "3",
+      "description": "Approximation theory, numerical solution of initial-value problems, iterative methods for linear systems, optimization.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC673",
+      "department": "CMSC",
+      "number": 673,
+      "level": "graduate",
+      "title": "Capstone in Machine Learning",
+      "credits": "3",
+      "description": "Semester-long project course in which each student will identify and carry out a project related to machine learning, with the goal of publishing a research paper or software tool.",
+      "prerequisites": "Minimum grade of C-in CMSC421 or CMSC422 .",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "600-level",
+        "ai-ml",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "research",
+        "software"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC701",
+      "department": "CMSC",
+      "number": 701,
+      "level": "graduate",
+      "title": "Computational Genomics",
+      "credits": "3",
+      "description": "An introduction to the algorithms and heuristics used in the analysis of biological sequences. Includes an introduction to string matching and alignment algorithms, phylogenetic analysis, string reconstruction (genome assembly), and sequence pattern recognition (gene and motif finding). A particular emphasis will be placed on the design of efficient algorithms and on techniques for analyzing the time and space complexity of these algorithms. Computational concepts will be presented in the context of current biological applications. No prior knowledge of biology necessary.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "bioinformatics",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC702",
+      "department": "CMSC",
+      "number": 702,
+      "level": "graduate",
+      "title": "Algorithmic Evolutionary Biology",
+      "credits": "3",
+      "description": "Covers fundamental computational problems from comparative genomics and evolutionary biology. Topics include multiple sequence alignment and the reconstruction of evolutionary histories (e.g., phylogenetic trees and networks). These tasks are typically framed as NP-hard optimization problems, motivating the development of heuristics based on constraints, graph algorithms, and more recently machine learning. We analyze algorithms from the empirical and theoretical perspectives (e.g., computational complexity, optimality guarantees, and statistical consistency under popular models of evolution). Lastly, we discuss how algorithms are leveraged in emerging applications, like evolutionary analyses of tumors and pathogens, along with their limitations and directions for future research.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Restricted to Master's/Doctoral students in Computer Science, Electrical and Computer, Engineering, Mathematics, Bioengineering, or permission of instructor.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "ai-ml",
+        "bioinformatics",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "research",
+        "systems",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC711",
+      "department": "CMSC",
+      "number": 711,
+      "level": "graduate",
+      "title": "Computer Networks",
+      "credits": "3",
+      "description": "Priciples, design, and performance evaluation of computer networks. Network architectures including the ISO model and local area networks (LANs). Communication protocols and network topology.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "communications",
+        "graduate",
+        "masters-doctoral",
+        "systems"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC714",
+      "department": "CMSC",
+      "number": 714,
+      "level": "graduate",
+      "title": "High Performance Computing Systems",
+      "credits": "3",
+      "description": "Slected topics in high-performance systems, including contemporary architectures, interconnection topologies, shared memory and message-passing systems, multi-threaded kernels, latency avoidance and hiding techniques, methods for data and workload partitioning performance profiling, debugging.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "systems"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC715",
+      "department": "CMSC",
+      "number": 715,
+      "level": "graduate",
+      "title": "Wireless and Mobile Systems for the IoT",
+      "credits": "3",
+      "description": "Research on the Internet of Things (IoT), from the perspective of wireless networking and mobile sensing. Various techniques, algorithms, and systems that leverage the sensors in smartphones, smartwatches, drones, and IoT devices, to deliver real-world applications",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "communications",
+        "graduate",
+        "masters-doctoral",
+        "research",
+        "systems",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC722",
+      "department": "CMSC",
+      "number": 722,
+      "level": "graduate",
+      "title": "Artificial Intelligence Planning",
+      "credits": "3",
+      "description": "Automated planning of actions to accomplish some desired goals. Basic algorithms, important systems, and new directions in the field of artificial intelligence planning systems.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "ai-ml",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC723",
+      "department": "CMSC",
+      "number": 723,
+      "level": "graduate",
+      "title": "Natural Language Processing",
+      "credits": "3",
+      "description": "Introduce fundamental concepts, techniques, and algorithms for the computational handling of natural language. Statistical and machine learning techniques, models, and algorithms that enable computers to deal with the ambiguity and implicit structure of human language. Approaches that focus on uncovering linguistic structure, such as syntactic or semantic parsing, as well as those that focus on manipulating text in useful ways, such as question answering or machine translation.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "ai-ml",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC724",
+      "department": "CMSC",
+      "number": 724,
+      "level": "graduate",
+      "title": "Database Management Systems",
+      "credits": "3",
+      "description": "Theoretical and implementation issues in advanced database systems. Topics include distributed databases, parallel databases, database client-server architectures, multimedia access methods, advanced query optimization techniques, data semantics and models, object-oriented databases, and deductive and expert database systems.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must be in one of the following programs (Computer Science (Master's); Computer Science (Doctoral)) ; or permission of instructor; or permission of CMNS-Computer Science department.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "data",
+        "graduate",
+        "masters-doctoral",
+        "systems"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC725",
+      "department": "CMSC",
+      "number": 725,
+      "level": "graduate",
+      "title": "Geographical Information Systems and Spatial Databases",
+      "credits": "3",
+      "description": "Topics in geographic information systems and spatial databases. Integrates related results from databases, cartography, geography, computer graphics, file access methods, computational geometry, image processing, data structures, and programming languages. Topics include: cartographic modeling, principles of cartography, methods from computational geometry, principles of spatial databases, access methods, and spatial data structures. The architecture of some existing spatial databases and geographic information systems will be examined in greater detail.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "data",
+        "graduate",
+        "masters-doctoral",
+        "software",
+        "systems",
+        "theory",
+        "vision-graphics"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC726",
+      "department": "CMSC",
+      "number": 726,
+      "level": "graduate",
+      "title": "Machine Learning",
+      "credits": "3",
+      "description": "An introduction to modern statistical data analysis using machine learning techniques. The course quickly surveys elementary statistical models (decision trees, nearest neighbors and linear regression) and moves on to more complex algorithms such as support vector machines, boosting, neural networks, structured prediction, apprenticeship learning, online learning, bandits, recommender systems and reinforcement learning. Throughout an emphasis is placed on mathematical rigor.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "ai-ml",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "systems",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC727",
+      "department": "CMSC",
+      "number": 727,
+      "level": "graduate",
+      "title": "Neural Modeling",
+      "credits": "3",
+      "description": "Fundamental methods of neural modeling. Surveys historical development and recent research results from both the computational and dynamical systems perspective. Logical neurons, perceptrons, linear adaptive networks, attractor neural networks, competitive activation methods, error back-propagation, self-organizing maps, and related topics. Applications in artificial intelligence, cognitive science, and neuroscience.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "ai-ml",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "research",
+        "systems",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC730",
+      "department": "CMSC",
+      "number": 730,
+      "level": "graduate",
+      "title": "Interactive Technologies in Human-Computer Interaction",
+      "credits": "3",
+      "description": "Ubiquitous and mobile computing, wearables, virtual/augmented reality, natural user interfaces, tangible UIs, interactive fabrication.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must be in the Computer Science Master's or Doctoral program; or permission of instructor.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "microelectronics",
+        "software"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC732",
+      "department": "CMSC",
+      "number": 732,
+      "level": "graduate",
+      "title": "Human Factors in Security and Privacy",
+      "credits": "3",
+      "description": "Introducing a variety of important topics at the intersection of human factors and privacy and security, and developing skills in designing human-subjects studies to evaluate problems and solutions related to these topics.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "security"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC733",
+      "department": "CMSC",
+      "number": 733,
+      "level": "graduate",
+      "title": "Computer Processing of Pictorial Information",
+      "credits": "3",
+      "description": "Input, output, and storage of pictorial information. Pictures as information sources, efficient encoding, sampling, quantization, approximation. Position-invariant operations on pictures, digital and optical implementations, the pax language, applications to matched and spatial frequency filtering. Picture quality, image enhancement and image restoration. Picture properties and pictorial pattern recognition. Processing of complex pictures; figure extraction, properties of figures. Data structures for pictures description and manipulation; picture languages. Graphics systems for alphanumeric and other symbols, line drawings of two- and three-dimensional objects, cartoons and movies.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "electromagnetics",
+        "graduate",
+        "masters-doctoral",
+        "signal-processing",
+        "vision-graphics"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC734",
+      "department": "CMSC",
+      "number": 734,
+      "level": "graduate",
+      "title": "Information Visualization",
+      "credits": "3",
+      "description": "Information visualization defined in relation to graphics, scientific visualization, databases, data mining, and human-computer interaction. Visualizations for dimensional, temporal, hierarchical and network data. Examines design alternatives, algorithms and data structures, coordinated views, and human factors evaluations of efficacy.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "ai-ml",
+        "cmsc",
+        "data",
+        "graduate",
+        "masters-doctoral",
+        "software",
+        "systems",
+        "theory",
+        "vision-graphics"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC740",
+      "department": "CMSC",
+      "number": 740,
+      "level": "graduate",
+      "title": "Advanced Computer Graphics",
+      "credits": "3",
+      "description": "An introduction to advanced concepts in computer graphics. Includes an introduction to realistic rendering based on physical properties of light transport, radiometric concepts, and the rendering equation; Monte Carlo integration techniques to solve the rendering equation such as path tracing and multiple importance sampling; and neural network techniques for efficient sampling and denoising. Further discusses recent advances in 3D modeling and reconstruction, such as neural network-based 3D reconstruction; inverse rendering using neural radiance fields and differentiable rendering; and generative modeling for images, videos, and 3D data.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "ai-ml",
+        "cmsc",
+        "communications",
+        "graduate",
+        "masters-doctoral",
+        "signal-processing",
+        "systems",
+        "vision-graphics"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC742",
+      "department": "CMSC",
+      "number": 742,
+      "level": "graduate",
+      "title": "Algorithms in Machine Learning: Guarantees and Analyses",
+      "credits": "3",
+      "description": "Machine learning studies automatic methods for learning to make accurate predictions, to understand patterns in observed features and to make useful decisions based on past observations. This course introduces theoretical machine learning, including mathematical models of machine learning, and the design and rigorous analysis of learning algorithms. Topics include: (1) Learning theory (traditional and modern), including PAC learning basics, Boosting theory and PAC learning in neural nets. (2) Latent variable graphical models, including spectral methods for learning latent variable models. (3) Reinforcement learning theory, including algorithms, sample complexity and analyses.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "ai-ml",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC751",
+      "department": "CMSC",
+      "number": 751,
+      "level": "graduate",
+      "title": "Parallel Algorithms",
+      "credits": "3",
+      "description": "A presentation of the theory of parallel computers and parallel processing. Models of parallel processing and the relationships between these models. Techniques for the design and analysis of efficient parallel algorithms including parallel prefix, searching, sorting, graph problems, and algebraic problems. Theoretical limits of parallelism.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "systems",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC752",
+      "department": "CMSC",
+      "number": 752,
+      "level": "graduate",
+      "title": "Ramsey Theory and its Applications",
+      "credits": "3",
+      "description": "Theorems about when a coloring of a graph (or other objects) has to yield a nice monochromatic object. Applications will be to computer science theory and to mathematics.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC754",
+      "department": "CMSC",
+      "number": 754,
+      "level": "graduate",
+      "title": "Computational Geometry",
+      "credits": "3",
+      "description": "Introduction to algorithms and data structures for computational problems in discrete geometry (for points, lines, and polygons) primarily in two and three dimensions. Topics include triangulations and planar subdivisions, geometric search and intersection, convex hulls, Voronoi diagrams, Delaunay triangulations, line arrangements, visibility, and motion planning.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC756",
+      "department": "CMSC",
+      "number": 756,
+      "level": "graduate",
+      "title": "Robotics",
+      "credits": "3",
+      "description": "Overview on fundamental components of robotic systems, including the sensing and actuation, control and modeling of motion and perception, dynamics and kinematics, motion planning and manipulation of robots.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must be in the Computer Science Master's or Doctoral programs.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "controls-robotics",
+        "graduate",
+        "masters-doctoral"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC763",
+      "department": "CMSC",
+      "number": 763,
+      "level": "graduate",
+      "title": "Advanced Linear Numerical Analysis",
+      "credits": "3",
+      "description": "Advanced topics in numerical linear algebra, such as dense eigenvalue problems, sparse elimination, iterative methods, and other topics.",
+      "prerequisites": "AMSC666 or CMSC666 ; or permission of instructor.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC764",
+      "department": "CMSC",
+      "number": 764,
+      "level": "graduate",
+      "title": "Advanced Numerical Optimization",
+      "credits": "3",
+      "description": "Modern numerical methods for solving unconstrained and constrained nonlinear optimization problems in finite dimensions. Design of computational algorithms and the analysis of their properties.",
+      "prerequisites": "MATH410 or equivalent; or permission of instructor.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC773",
+      "department": "CMSC",
+      "number": 773,
+      "level": "graduate",
+      "title": "Computational Linguistics II",
+      "credits": "3",
+      "description": "Natural language processing with a focus on corpus-based statistical techniques. Topics inlcude: stochastic language modeling, smoothing, noisy channel models, probabilistic grammars and parsing; lexical acquisition, similarity-based methods, word sense disambiguation, statistical methods in NLP applications; system evaluation.",
+      "prerequisites": "CMSC723 , INST735 , or LING723 ; or permission of instructor. Cross-listed with LING773 , INST736 .",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "ai-ml",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC798",
+      "department": "CMSC",
+      "number": 798,
+      "level": "graduate",
+      "title": "Master's Non-Thesis Research",
+      "credits": "1-6",
+      "description": "Master's Non-Thesis Research",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of CMNS-Computer Science department.",
+      "repeatable": "6 credits.",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "research"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC799",
+      "department": "CMSC",
+      "number": 799,
+      "level": "graduate",
+      "title": "Master's Thesis Research",
+      "credits": "1-6",
+      "description": "",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "700-level",
+        "cmsc",
+        "graduate",
+        "masters-doctoral",
+        "research"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC800",
+      "department": "CMSC",
+      "number": 800,
+      "level": "graduate",
+      "title": "How to Conduct Great Research",
+      "credits": "1",
+      "description": "Develop research skills so as to promote high quality and high impact.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Must be in the Computer Science doctoral program.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate",
+        "research"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC801",
+      "department": "CMSC",
+      "number": 801,
+      "level": "graduate",
+      "title": "Department Internal Research Seminar",
+      "credits": "1",
+      "description": "Research overviews from faculty to help introduce departmental research to graduate students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate",
+        "research"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC818",
+      "department": "CMSC",
+      "number": 818,
+      "level": "graduate",
+      "title": "Advanced Topics in Computer Systems",
+      "credits": "1-3",
+      "description": "Advanced topics selected by the faculty from the literature of computer systems to suit the interest and background of students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of instructor.",
+      "repeatable": "99 credits.",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate",
+        "systems"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC828",
+      "department": "CMSC",
+      "number": 828,
+      "level": "graduate",
+      "title": "Advanced Topics in Information Processing",
+      "credits": "1-3",
+      "description": "Advanced topics selected by the faculty from the literature of information processing to suit the interest and background of students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of instructor.",
+      "repeatable": "99 credits.",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC829",
+      "department": "CMSC",
+      "number": 829,
+      "level": "graduate",
+      "title": "Advanced Topics in Bioinformatics and Computational Biology",
+      "credits": "3",
+      "description": "Advanced topics selected by the faculty from the literature of bioinformatics to suit the interest and background of students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "bioinformatics",
+        "cmsc",
+        "doctoral",
+        "graduate",
+        "theory"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC838",
+      "department": "CMSC",
+      "number": 838,
+      "level": "graduate",
+      "title": "Advanced Topics in Programming Languages",
+      "credits": "1-3",
+      "description": "Advanced topics selected by faculty from the literature of programming languages to suit the interest and background of students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of instructor.",
+      "repeatable": "99 credits.",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate",
+        "software"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC839",
+      "department": "CMSC",
+      "number": 839,
+      "level": "graduate",
+      "title": "Advanced Topics in Human-Computer Interaction",
+      "credits": "1-3",
+      "description": "Advanced topics selected by the faculty from the literature of human-computer interaction to suit the interest and background of students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "15 credits.",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate",
+        "software"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC848",
+      "department": "CMSC",
+      "number": 848,
+      "level": "graduate",
+      "title": "Selected Topics in Information Processing",
+      "credits": "1-3",
+      "description": "Selected topics by the faculty from the literature of information processing to suit the interest and background of students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "99 credits if content differs.",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC858",
+      "department": "CMSC",
+      "number": 858,
+      "level": "graduate",
+      "title": "Advanced Topics in Theory of Computing",
+      "credits": "1-3",
+      "description": "Advanced topics selected by the faculty from the literature of theory of computing to suit the interest and background of students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of instructor.",
+      "repeatable": "99 credits.",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC878",
+      "department": "CMSC",
+      "number": 878,
+      "level": "graduate",
+      "title": "Advanced Topics in Numerical Methods",
+      "credits": "1-3",
+      "description": "Advanced topics selected by the faculty from the literature of numerical methods to suit the interest and background of students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of instructor.",
+      "repeatable": "99 credits.",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC898",
+      "department": "CMSC",
+      "number": 898,
+      "level": "graduate",
+      "title": "Pre-Candidacy Research",
+      "credits": "1-8",
+      "description": "Advanced topics selected by the faculty from the literature of applications of computer science to suit the interest and background of students.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "Permission of instructor.",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate",
+        "research"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "CMSC899",
+      "department": "CMSC",
+      "number": 899,
+      "level": "graduate",
+      "title": "Doctoral Dissertation Research",
+      "credits": "1-8",
+      "description": "",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "",
+      "source_url": "https://academiccatalog.umd.edu/graduate/courses/cmsc/",
+      "source_catalog": "graduate",
+      "tags": [
+        "800-level",
+        "cmsc",
+        "doctoral",
+        "graduate",
+        "research"
+      ],
+      "offering_history": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "MATH115",
+      "target": "CMSC106",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH115",
+      "target": "CMSC125",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH140",
+      "target": "CMSC131",
+      "kind": "corequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC131",
+      "target": "CMSC132",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH140",
+      "target": "CMSC132",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH140",
+      "target": "CMSC133",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC132",
+      "target": "CMSC216",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH141",
+      "target": "CMSC216",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC131",
+      "target": "CMSC250",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH141",
+      "target": "CMSC250",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC216",
+      "target": "CMSC320",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC250",
+      "target": "CMSC320",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC250",
+      "target": "CMSC330",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC216",
+      "target": "CMSC330",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC216",
+      "target": "CMSC335",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC250",
+      "target": "CMSC335",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC250",
+      "target": "CMSC351",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC216",
+      "target": "CMSC351",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "GEOG276",
+      "target": "CMSC401",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC401",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC401",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC411",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC414",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC417",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC420",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC430",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC433",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC435",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "ENEE440",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "ENEE457",
+      "target": "CMSC412",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC414",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC414",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC416",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC416",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC417",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC417",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC420",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC420",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC421",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC421",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC320",
+      "target": "CMSC422",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC422",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC422",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH240",
+      "target": "CMSC422",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH341",
+      "target": "CMSC422",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH461",
+      "target": "CMSC422",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "ENEE290",
+      "target": "CMSC422",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC423",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC423",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC424",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC424",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC425",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC425",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC426",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC426",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH240",
+      "target": "CMSC426",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH341",
+      "target": "CMSC426",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH461",
+      "target": "CMSC426",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "ENEE290",
+      "target": "CMSC426",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC427",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC427",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH240",
+      "target": "CMSC427",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH341",
+      "target": "CMSC427",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH461",
+      "target": "CMSC427",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "ENEE290",
+      "target": "CMSC427",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC430",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC430",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC431",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC431",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC433",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC434",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC434",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC412",
+      "target": "CMSC435",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC417",
+      "target": "CMSC435",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC420",
+      "target": "CMSC435",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC430",
+      "target": "CMSC435",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC433",
+      "target": "CMSC435",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "ENEE447",
+      "target": "CMSC435",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC436",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC436",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC457",
+      "target": "CMSC437",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "PHYS467",
+      "target": "CMSC437",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC451",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC452",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC454",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC454",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC106",
+      "target": "CMSC456",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC131",
+      "target": "CMSC456",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "ENEE150",
+      "target": "CMSC456",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC456",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC456",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "ENEE324",
+      "target": "CMSC456",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "ENEE382",
+      "target": "CMSC456",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "ENEE290",
+      "target": "CMSC457",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH240",
+      "target": "CMSC457",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH341",
+      "target": "CMSC457",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH461",
+      "target": "CMSC457",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH243",
+      "target": "CMSC457",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC457",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "PHYS313",
+      "target": "CMSC457",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH240",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH341",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH461",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "ENEE290",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH243",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH241",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH340",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC106",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC131",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH246",
+      "target": "CMSC460",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC106",
+      "target": "CMSC466",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC131",
+      "target": "CMSC466",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH410",
+      "target": "CMSC466",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC320",
+      "target": "CMSC470",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC470",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC470",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH240",
+      "target": "CMSC470",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH341",
+      "target": "CMSC470",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH461",
+      "target": "CMSC470",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "ENEE290",
+      "target": "CMSC470",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC471",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC471",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC472",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC472",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH240",
+      "target": "CMSC472",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH341",
+      "target": "CMSC472",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH461",
+      "target": "CMSC472",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "ENEE290",
+      "target": "CMSC472",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC421",
+      "target": "CMSC473",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC422",
+      "target": "CMSC473",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC351",
+      "target": "CMSC474",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC330",
+      "target": "CMSC474",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH240",
+      "target": "CMSC475",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH341",
+      "target": "CMSC475",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH461",
+      "target": "CMSC475",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "ENEE290",
+      "target": "CMSC475",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH243",
+      "target": "CMSC475",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH241",
+      "target": "CMSC475",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH340",
+      "target": "CMSC475",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH310",
+      "target": "CMSC475",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC250",
+      "target": "CMSC475",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH240",
+      "target": "CMSC477",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH341",
+      "target": "CMSC477",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "MATH461",
+      "target": "CMSC477",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "ENEE290",
+      "target": "CMSC477",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "ENEE467",
+      "target": "CMSC477",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC420",
+      "target": "CMSC477",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC411",
+      "target": "CMSC616",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC412",
+      "target": "CMSC616",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "AMSC660",
+      "target": "CMSC663",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC660",
+      "target": "CMSC663",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "AMSC661",
+      "target": "CMSC663",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC661",
+      "target": "CMSC663",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "AMSC663",
+      "target": "CMSC664",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC663",
+      "target": "CMSC664",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC421",
+      "target": "CMSC673",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "CMSC422",
+      "target": "CMSC673",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "AMSC666",
+      "target": "CMSC763",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC666",
+      "target": "CMSC763",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "MATH410",
+      "target": "CMSC764",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "CMSC723",
+      "target": "CMSC773",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "INST735",
+      "target": "CMSC773",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "LING723",
+      "target": "CMSC773",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "LING773",
+      "target": "CMSC773",
+      "kind": "prerequisite",
+      "source_in_database": false
+    },
+    {
+      "source": "INST736",
+      "target": "CMSC773",
+      "kind": "prerequisite",
+      "source_in_database": false
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "slug": "university-of-maryland",
+  "name": "University of Maryland",
+  "short_name": "UMD",
+  "map_title": "University of Maryland course explorer",
+  "primary_color": "#E21833",
+  "secondary_color": "#FFD520",
+  "accent_color": "#000000",
+  "catalog_url": "https://academiccatalog.umd.edu/",
+  "catalog_date": "2026-09-01",
+  "schema_version": 2,
+  "academic_calendar_system": "hybrid"
+}
