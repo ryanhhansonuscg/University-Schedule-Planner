@@ -2,11 +2,11 @@
   "schema_version": 2,
   "academic_calendars": [
     {
-      "id": "example-quarter",
+      "id": "fictional-quarter",
       "name": "Quarter Calendar",
       "system_type": "quarter",
       "is_primary": true,
-      "source_url": "https://registrar.example.edu/calendar",
+      "source_url": "https://registrar.example.invalid/calendar",
       "terms": [
         {
           "code": "2026SP",
