@@ -64,13 +64,13 @@ The planner uses terms whose `planning_enabled` value is true, whose end date is
 
 ## Planner files
 
-CSV import requires a `Term` column and either `Course #` or `Course Name`. Term values can be the stored term code or visible term name. Export writes:
+CSV import requires a `Term Code` or `Term` column and either `Course #` or `Course Name`. Term values can be the stored term code or visible term name. When `Calendar ID` is present, rows are accepted only for the active calendar. Export writes:
 
 ```csv
-Term,Course #,Course Name,Course Hours
+Calendar ID,Term Code,Term,Course #,Course Name,Course Hours
 ```
 
-Plans are kept in browser local storage and separated by university slug. CSV import merges with the current plan.
+Plans are kept in versioned browser local storage and separated by university slug and academic calendar. CSV import merges with the active calendar's plan.
 
 ## What schedule checks mean
 
