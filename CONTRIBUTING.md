@@ -13,6 +13,8 @@ Thanks for improving College Schedule Planner. Data changes should be reviewable
 - Run `python tools/build_university.py universities/<slug>` and commit the regenerated `catalog.json` and `courses.db`.
 - Test the course explorer, planner, CSV import, and CSV export.
 - Describe missing or ambiguous data in the university README.
+- Run `python tools/check_prohibited_terms.py` to ensure removed institution-specific names, domains, and colors have not returned.
+- Run `python -m unittest discover -s tests` to build the fictional template fixture in a temporary directory and exercise repository checks.
 
 Keep unrelated universities and departments out of the same pull request when practical. This makes source review and future updates easier.
 
@@ -27,6 +29,7 @@ npm test
 python -m compileall -q tools tests
 npm run check
 python tools/validate_university.py template/university-template
+python tools/check_prohibited_terms.py
 node --test tests/browser-smoke.test.js
 ```
 
@@ -41,3 +44,5 @@ python tools/build_university.py "$tmp/fixture"
 ```
 
 For the exact reproducibility and SQLite integrity script, use the commands in the README's **Test and validation commands** section.
+
+The files in `template/university-template` are fictional placeholders, not a publishable institution. Tests copy them into a temporary directory so generated fixture artifacts are not committed or exposed through the production registry.

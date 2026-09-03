@@ -106,6 +106,7 @@ npm test
 python -m compileall -q tools tests
 npm run check
 python tools/validate_university.py template/university-template
+python tools/check_prohibited_terms.py
 node --test tests/browser-smoke.test.js
 ```
 
