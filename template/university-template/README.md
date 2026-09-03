@@ -1,6 +1,8 @@
 # University setup template
 
-Copy this entire folder to `universities/<university-slug>`, rename it, and replace every example value. Keep source data split from generated output: contributors edit the files described here, then the build tool creates `catalog.json` and `courses.db`.
+**Everything in this directory is fictional test and template data. It does not describe a real institution.** Reserved `.invalid` URLs are deliberately non-functional.
+
+Copy this entire folder to `universities/<university-slug>`, rename it, and replace every fictional placeholder. The repository tests copy this fixture to a temporary directory and build it there; generated `catalog.json` and `courses.db` files are never shipped from the template. Keep source data split from generated output: contributors edit the files described here, then the build tool creates those artifacts in the new university directory.
 
 ## 1. Configure `university.json`
 
@@ -48,7 +50,7 @@ Course offerings reference a term from `calendars.json`:
 {
   "term_code": "2026FA",
   "offering_status": "held",
-  "source_url": "https://official.example.edu/schedule/2026-fall/course"
+  "source_url": "https://registrar.example.invalid/schedule/2026-fall/course"
 }
 ```
 
