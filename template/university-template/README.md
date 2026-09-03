@@ -47,7 +47,7 @@ Every course includes:
 - `source_url`, `source_catalog`, and descriptive `tags`;
 - an `offering_history` array, possibly empty.
 
-Allowed course levels are `undergraduate`, `graduate`, `professional`, `continuing-education`, and `other`. Keep `credits` as text so ranges such as `1-4` are preserved.
+Allowed course levels are `undergraduate`, `graduate`, `professional`, `continuing-education`, and `other`. `credits` is either a non-negative JSON number or a numeric string; use an ascending numeric range such as `1-4` for variable-credit courses. Other prose (such as `variable`, units, or comma-separated alternatives) is not valid in this field.
 
 Course offerings reference a term from `calendars.json`:
 
