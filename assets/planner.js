@@ -142,6 +142,15 @@
 
   function resolveCourse(value) { return PlannerCore.resolveCourse(courses, value); }
 
+  function offeringBadge(evaluation) {
+    if (evaluation.status === 'confirmed') return { label: 'Confirmed', detail: `Exact-term record: ${evaluation.exactStatus}.` };
+    if (evaluation.status === 'cancelled') return { label: 'Cancelled', detail: 'An exact-term cancellation is recorded.' };
+    if (evaluation.status === 'lacking-data') return { label: 'No offering data', detail: 'Availability is unconfirmed because no offering records are stored.' };
+    if (evaluation.status === 'historically-unusual') return { label: 'Unconfirmed · unusual term', detail: 'No exact-term record; past held records are for other term types and do not predict availability.' };
+    if (evaluation.historicalContext === 'typical') return { label: 'Unconfirmed · seen historically', detail: 'No exact-term record; prior offerings in this term type do not guarantee availability.' };
+    return { label: 'Unconfirmed', detail: 'No exact-term offering record is stored.' };
+  }
+
   function renderPlan() {
     const terms = planningTerms();
     planGrid.replaceChildren(...terms.map(term => {
@@ -171,6 +180,15 @@
           const name = document.createElement('small');
           name.textContent = course?.title || 'Unknown course';
           label.append(strong, name);
+          if (course) {
+            const evaluation = PlannerCore.evaluateOffering(course, term);
+            const badgeCopy = offeringBadge(evaluation);
+            const badge = document.createElement('small');
+            badge.className = `availability-badge ${evaluation.status}`;
+            badge.textContent = badgeCopy.label;
+            badge.setAttribute('title', badgeCopy.detail);
+            label.append(badge);
+          }
           const remove = document.createElement('button');
           remove.type = 'button';
           remove.setAttribute('aria-label', `Remove ${code} from ${term.name}`);
@@ -239,14 +257,12 @@
           addIssue('error', `Missing corequisite for ${code}`, `${term.name}: ${PlannerCore.describeRequirementGroups(missingCoreq, 'add')} in this or an earlier term.`);
           issues += 1;
         }
-        const history = course.offering_history || [];
-        const historical = history.filter(offering => offering.term_status === 'historical' && offering.offering_status === 'held');
-        const exactFuture = history.some(offering => offering.term_code === term.code && ['scheduled', 'held'].includes(offering.offering_status));
-        if (!history.length) {
-          addIssue('info', `Offering history unavailable: ${code}`, `No past or scheduled offering records are stored for ${code}. Confirm ${term.name} with the live schedule.`);
+        const offering = PlannerCore.evaluateOffering(course, term);
+        if (offering.status === 'cancelled') {
+          addIssue('error', `Cancelled offering: ${code}`, `${code} has an exact-term cancellation record for ${term.name}. Choose another course or verify a newer official schedule.`);
           issues += 1;
-        } else if (!exactFuture && historical.length && !historical.some(offering => offering.term_type === term.term_type)) {
-          addIssue('warning', `Unusual term for ${code}`, `${code} has not previously been recorded in a ${term.term_type} term.`);
+        } else if (offering.status === 'historically-unusual') {
+          addIssue('warning', `Availability unconfirmed: ${code}`, `No exact offering record exists for ${term.name}. Stored past offerings were in other term types; that history does not predict a future offering.`);
           issues += 1;
         }
       });
@@ -256,7 +272,7 @@
     if (!issues) {
       const clear = document.createElement('p');
       clear.className = 'all-clear';
-      clear.textContent = 'No issues found with the stored prerequisites and offering history.';
+      clear.textContent = 'No prerequisite, duplicate, cancellation, or unusual-history issues found. Check each course badge for offering availability.';
       issueList.appendChild(clear);
     }
   }

@@ -51,7 +51,19 @@ test('external and malformed requirements remain conservatively mandatory',()=>{
   ];
   assert.deepEqual(core.evaluateRequirements(edges,'T','prerequisite',new Set()).map(group=>group.sources),[['EXTERNAL100'],['A'],['B']]);
 });
-test('offering diagnostics distinguish missing and scheduled',()=>{assert.equal(core.offeringDiagnostic(courses[0],terms[0]),'unavailable');assert.equal(core.offeringDiagnostic(courses[1],terms[0]),null)});
+test('offering evaluation covers exact scheduled, held, cancelled, and absent records',()=>{
+  const term={code:'F1',term_type:'fall'};
+  const record=offering_status=>({term_code:'F1',term_type:'fall',term_status:'future',offering_status});
+  assert.deepEqual(core.evaluateOffering({offering_history:[record('scheduled')]},term),{status:'confirmed',exactStatus:'scheduled',historicalContext:'none'});
+  assert.deepEqual(core.evaluateOffering({offering_history:[record('held')]},term),{status:'confirmed',exactStatus:'held',historicalContext:'none'});
+  assert.deepEqual(core.evaluateOffering({offering_history:[record('scheduled'),record('cancelled')]},term),{status:'cancelled',exactStatus:'cancelled',historicalContext:'none'});
+  assert.deepEqual(core.evaluateOffering({offering_history:[]},term),{status:'lacking-data',exactStatus:null,historicalContext:'none'});
+});
+test('offering evaluation keeps historical patterns subordinate to exact-term absence',()=>{
+  const held=term_type=>({term_code:`OLD-${term_type}`,term_type,term_status:'historical',offering_status:'held'});
+  assert.deepEqual(core.evaluateOffering({offering_history:[held('fall')]},{code:'NEW',term_type:'fall'}),{status:'not-listed',exactStatus:null,historicalContext:'typical'});
+  assert.deepEqual(core.evaluateOffering({offering_history:[held('spring')]},{code:'NEW',term_type:'fall'}),{status:'historically-unusual',exactStatus:null,historicalContext:'unusual'});
+});
 test('storage serialization tolerates corrupt data',()=>{assert.deepEqual(core.deserializePlan(core.serializePlan({F1:['CS101']})),{F1:['CS101']});assert.deepEqual(core.deserializePlan('{'),{})});
 test('course resolution supports spaced codes, title, and rejects ambiguity',()=>{assert.equal(core.resolveCourse(courses,'cs 101').code,'CS101');assert.equal(core.resolveCourse(courses,'Algorithms').code,'CS201')});
 test('CSV parsing, escaping, and import validation',()=>{const csv=core.scheduleCsv(terms,{F1:['CS101']},courses);assert.equal(core.parseCsv(csv)[1][2],'Intro, "CS"');assert.match(core.importRows('bad\nrow',terms,courses).error,/Term/);assert.deepEqual(core.importRows('Term,Course #\nFall 2026,CS101',terms,courses).records,[{termCode:'F1',courseCode:'CS101'}]);assert.throws(()=>core.parseCsv('"bad'),/Unclosed/) });

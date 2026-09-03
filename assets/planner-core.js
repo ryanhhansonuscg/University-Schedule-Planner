@@ -113,11 +113,33 @@
   function prerequisiteMissing(edges, target, seen) {
     return evaluateRequirements(edges, target, 'prerequisite', seen).flatMap(group => group.sources.filter(source => !seen.has(source)));
   }
-  function offeringDiagnostic(course, term) {
-    const history = course.offering_history || []; if (!history.length) return 'unavailable';
-    if (history.some(item => item.term_code === term.code && ['held', 'scheduled'].includes(item.offering_status))) return null;
-    const held = history.filter(item => item.term_status === 'historical' && item.offering_status === 'held');
-    return held.length && !held.some(item => item.term_type === term.term_type) ? 'unusual' : null;
+  function evaluateOffering(course, term) {
+    const history = Array.isArray(course?.offering_history) ? course.offering_history : [];
+    if (!history.length) return { status: 'lacking-data', exactStatus: null, historicalContext: 'none' };
+
+    const exact = history.filter(item => item.term_code === term?.code);
+    // A cancellation is the most consequential exact-term fact, even when a
+    // stale or conflicting scheduled record is also present.
+    if (exact.some(item => item.offering_status === 'cancelled')) {
+      return { status: 'cancelled', exactStatus: 'cancelled', historicalContext: 'none' };
+    }
+    const confirmed = exact.find(item => ['scheduled', 'held'].includes(item.offering_status));
+    if (confirmed) return { status: 'confirmed', exactStatus: confirmed.offering_status, historicalContext: 'none' };
+
+    const historical = history.filter(item => item.term_status === 'historical' && item.offering_status === 'held');
+    if (!historical.length) return { status: 'not-listed', exactStatus: null, historicalContext: 'none' };
+    if (historical.some(item => item.term_type === term?.term_type)) {
+      return { status: 'not-listed', exactStatus: null, historicalContext: 'typical' };
+    }
+    return { status: 'historically-unusual', exactStatus: null, historicalContext: 'unusual' };
   }
-  return { planningTerms, compareTerms, resolveCourse, serializePlan, deserializePlan, scheduleCsv, parseCsv, importRows, requirementGroups, evaluateRequirements, describeRequirementGroups, prerequisiteMissing, offeringDiagnostic };
+
+  // Retained for integrations that consumed the former, less expressive API.
+  function offeringDiagnostic(course, term) {
+    const status = evaluateOffering(course, term).status;
+    if (status === 'lacking-data') return 'unavailable';
+    if (status === 'historically-unusual') return 'unusual';
+    return status === 'confirmed' ? null : status;
+  }
+  return { planningTerms, compareTerms, resolveCourse, serializePlan, deserializePlan, scheduleCsv, parseCsv, importRows, requirementGroups, evaluateRequirements, describeRequirementGroups, prerequisiteMissing, evaluateOffering, offeringDiagnostic };
 }));
