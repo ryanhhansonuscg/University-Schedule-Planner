@@ -97,6 +97,10 @@ select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px 
 .planned-course { display: flex; justify-content: space-between; align-items: center; gap: 7px; padding: 7px 8px; border-radius: 8px; background: var(--accent-soft); }
 .planned-course span { display: grid; min-width: 0; }
 .planned-course small { overflow: hidden; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+.planned-course .availability-badge { display: inline-block; width: fit-content; max-width: 100%; margin-top: 3px; padding: 2px 6px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--muted); font-size: .67rem; font-weight: 700; }
+.planned-course .availability-badge.confirmed { border-color: var(--brand-secondary); color: var(--brand-primary); }
+.planned-course .availability-badge.cancelled { border-color: var(--danger); background: #fff0f0; color: var(--danger); }
+.planned-course .availability-badge.historically-unusual { border-color: var(--warning); color: var(--text); }
 .planned-course button { border: 0; background: transparent; color: var(--muted); }
 .term-empty { color: var(--muted); font-size: .78rem; }
 .issues { margin-top: 18px; padding: 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }

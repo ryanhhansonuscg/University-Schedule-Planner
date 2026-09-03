@@ -33,8 +33,13 @@ function catalog() {
   return {
     university: { slug: 'test-u', name: 'Test U', academic_calendar_system: 'Mixed' },
     courses: [
-      { code: 'CS101', title: 'Intro', credits: 3 },
-      { code: 'CS102', title: 'Next', credits: 4 },
+      { code: 'CS101', title: 'Intro', credits: 3, offering_history: [
+        { term_code: 'S27', term_type: 'spring', term_status: 'future', offering_status: 'scheduled' },
+        { term_code: 'S27', term_type: 'spring', term_status: 'future', offering_status: 'cancelled' },
+      ] },
+      { code: 'CS102', title: 'Next', credits: 4, offering_history: [
+        { term_code: 'OLD', term_type: 'fall', term_status: 'historical', offering_status: 'held' },
+      ] },
     ],
     edges: [],
     academic_calendars: [
@@ -148,4 +153,16 @@ test('undated terms render publication and planning-placeholder labels', async (
   assert.match(undatedSection.children[1].textContent, /Dates not yet published/);
   assert.match(undatedSection.children[1].textContent, /planning placeholder, not a confirmed schedule/);
   assert.match(app.elements['calendar-coverage'].textContent, /four-academic-period horizon/);
+});
+
+test('course badges show unconfirmed availability while exact cancellation is prominent', async () => {
+  const app = await setup();
+  await addCourse(app, 'CS101', 'S27');
+  await addCourse(app, 'CS102', 'S27');
+  const spring = app.elements['plan-grid'].children.find(section => section.children[0].textContent === 'Spring');
+  const badges = spring.children[2].children.map(item => item.children[0].children[2]);
+  assert.equal(badges[0].textContent, 'Cancelled');
+  assert.equal(badges[1].textContent, 'Unconfirmed · unusual term');
+  assert.match(badges[1].title, /do not predict availability/);
+  assert.match(app.elements['issue-list'].children[0].children[1].children[0].textContent, /Cancelled offering: CS101/);
 });

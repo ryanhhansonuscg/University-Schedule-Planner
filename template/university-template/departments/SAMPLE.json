@@ -35,6 +35,11 @@
           "term_code": "2026FA",
           "offering_status": "scheduled",
           "source_url": "https://classes.example.invalid/2026-fall/sample101"
+        },
+        {
+          "term_code": "2027WI",
+          "offering_status": "cancelled",
+          "source_url": "https://classes.example.invalid/2027-winter/sample101"
         }
       ]
     },
