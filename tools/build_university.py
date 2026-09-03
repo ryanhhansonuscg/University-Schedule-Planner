@@ -10,6 +10,7 @@ import re
 import sqlite3
 import sys
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "schema.sql"
@@ -22,10 +23,102 @@ LOGIC_OPERATORS = {"AND", "OR"}
 TERM_STATUSES = {"historical", "current", "future"}
 DATE_STATUSES = {"official", "unpublished"}
 OFFERING_STATUSES = {"held", "scheduled", "cancelled"}
+DATA_SCHEMA_VERSION = 3
+REGISTRY_SCHEMA_VERSION = 1
+SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+DEPARTMENT_RE = re.compile(r"^[A-Z][A-Z0-9]{1,11}$")
+COURSE_NUMBER_RE = re.compile(r"^[0-9]{1,4}[A-Z]?$")
 
 
 class DataError(ValueError):
     pass
+
+
+class ErrorCollector:
+    """Accumulate independent input errors and raise them together."""
+
+    def __init__(self) -> None:
+        self.errors: list[str] = []
+
+    def add(self, filename: Path | str, json_path: str, message: str) -> None:
+        self.errors.append(f"{filename}:{json_path}: {message}")
+
+    def check(self) -> None:
+        if self.errors:
+            raise DataError("Validation failed:\n- " + "\n- ".join(self.errors))
+
+
+def _type(value: object, expected: type) -> bool:
+    return isinstance(value, expected) and not (expected is int and isinstance(value, bool))
+
+
+def validate_object(value: object, errors: ErrorCollector, filename: Path | str, path: str) -> dict:
+    if not isinstance(value, dict):
+        errors.add(filename, path, "must be an object")
+        return {}
+    return value
+
+
+def validate_array(value: object, errors: ErrorCollector, filename: Path | str, path: str) -> list:
+    # Deliberately accept JSON arrays only, not tuples, sets, generators, or strings.
+    if not isinstance(value, list):
+        errors.add(filename, path, "must be an array")
+        return []
+    return value
+
+
+def validate_string(value: object, errors: ErrorCollector, filename: Path | str, path: str, *, nonempty: bool = True) -> str:
+    if not isinstance(value, str) or (nonempty and not value.strip()):
+        errors.add(filename, path, "must be a non-empty string" if nonempty else "must be a string")
+        return ""
+    return value
+
+
+def validate_integer(value: object, errors: ErrorCollector, filename: Path | str, path: str) -> int:
+    if not _type(value, int):
+        errors.add(filename, path, "must be an integer")
+        return 0
+    return value
+
+
+def validate_boolean(value: object, errors: ErrorCollector, filename: Path | str, path: str) -> bool:
+    if not isinstance(value, bool):
+        errors.add(filename, path, "must be a boolean")
+        return False
+    return value
+
+
+def validate_enum(value: object, choices: set[str], errors: ErrorCollector, filename: Path | str, path: str) -> str:
+    value = validate_string(value, errors, filename, path)
+    if value and value not in choices:
+        errors.add(filename, path, f"must be one of {sorted(choices)}, got {value!r}")
+    return value
+
+
+def validate_url(value: object, errors: ErrorCollector, filename: Path | str, path: str, *, required: bool = True) -> str:
+    value = validate_string(value, errors, filename, path, nonempty=required)
+    if value:
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            errors.add(filename, path, "must be an HTTP(S) URL")
+    return value
+
+
+def validate_nullable_date(value: object, errors: ErrorCollector, filename: Path | str, path: str) -> dt.date | None:
+    if value is None:
+        return None
+    try:
+        return parse_date(value, f"{filename}:{path}")
+    except DataError as exc:
+        errors.add(filename, path, str(exc).split(": ", 1)[-1])
+        return None
+
+
+def validate_string_array(value: object, errors: ErrorCollector, filename: Path | str, path: str) -> list[str]:
+    values = validate_array(value, errors, filename, path)
+    for index, item in enumerate(values):
+        validate_string(item, errors, filename, f"{path}[{index}]")
+    return [item for item in values if isinstance(item, str)]
 
 
 def read_json(path: Path) -> dict:
@@ -38,6 +131,40 @@ def read_json(path: Path) -> dict:
     if not isinstance(document, dict):
         raise DataError(f"{path} root must be a JSON object")
     return document
+
+
+def validate_registry(registry_path: Path, catalog_metadata: dict | None = None) -> dict:
+    """Validate the registry, optionally checking one compiled catalog's metadata."""
+    registry = read_json(registry_path)
+    errors = ErrorCollector()
+    version = validate_integer(registry.get("schema_version"), errors, registry_path, "$.schema_version")
+    if version != REGISTRY_SCHEMA_VERSION:
+        errors.add(registry_path, "$.schema_version", f"unsupported schema version {version}; expected {REGISTRY_SCHEMA_VERSION}")
+    entries = validate_array(registry.get("universities"), errors, registry_path, "$.universities")
+    seen: set[str] = set()
+    for index, raw_entry in enumerate(entries):
+        path = f"$.universities[{index}]"
+        entry = validate_object(raw_entry, errors, registry_path, path)
+        slug = validate_string(entry.get("slug"), errors, registry_path, path + ".slug")
+        validate_string(entry.get("name"), errors, registry_path, path + ".name")
+        validate_string(entry.get("path"), errors, registry_path, path + ".path")
+        if slug in seen:
+            errors.add(registry_path, path + ".slug", f"duplicate slug {slug!r}")
+        seen.add(slug)
+    if catalog_metadata:
+        slug = catalog_metadata["slug"]
+        matches = [(i, entry) for i, entry in enumerate(entries) if isinstance(entry, dict) and entry.get("slug") == slug]
+        if len(matches) != 1:
+            errors.add(registry_path, "$.universities", f"must contain exactly one entry for slug {slug!r}")
+        else:
+            index, entry = matches[0]
+            expected_path = f"universities/{slug}/catalog.json"
+            if entry.get("name") != catalog_metadata["name"]:
+                errors.add(registry_path, f"$.universities[{index}].name", f"must match catalog name {catalog_metadata['name']!r}")
+            if entry.get("path") != expected_path:
+                errors.add(registry_path, f"$.universities[{index}].path", f"must match compiled catalog path {expected_path!r}")
+    errors.check()
+    return registry
 
 
 def require(record: dict, fields: tuple[str, ...], context: str) -> None:
@@ -60,12 +187,20 @@ def parse_date(value: str, context: str) -> dt.date:
 def validate_and_compile(university_dir: Path) -> dict:
     university = read_json(university_dir / "university.json")
     calendar_doc = read_json(university_dir / "calendars.json")
+    errors = ErrorCollector()
+    university_file = university_dir / "university.json"
+    calendar_file = university_dir / "calendars.json"
+    for document, filename in ((university, university_file), (calendar_doc, calendar_file)):
+        version = validate_integer(document.get("schema_version"), errors, filename, "$.schema_version")
+        if version != DATA_SCHEMA_VERSION:
+            errors.add(filename, "$.schema_version", f"unsupported schema version {version}; expected {DATA_SCHEMA_VERSION}")
+    errors.check()
     require(
         university,
         (
             "slug", "name", "short_name", "map_title", "primary_color",
             "secondary_color", "accent_color", "catalog_date", "schema_version",
-            "academic_calendar_system",
+            "academic_calendar_system", "catalog_url",
         ),
         "university.json",
     )
@@ -75,9 +210,9 @@ def validate_and_compile(university_dir: Path) -> dict:
     for field, expected in scalar_types.items():
         if isinstance(university[field], bool) or not isinstance(university[field], expected):
             raise DataError(f"university.json {field} must be {expected.__name__}")
-    if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", university["slug"]):
+    if not SLUG_RE.fullmatch(university["slug"]):
         raise DataError("university.json slug must contain lowercase letters, digits, and hyphens")
-    if university_dir.parent.name == "universities" and university_dir.name != university["slug"]:
+    if university_dir.name != university["slug"]:
         raise DataError(f"University directory {university_dir.name!r} does not match slug {university['slug']!r}")
     if university["academic_calendar_system"] not in CALENDAR_SYSTEMS:
         raise DataError(f"Unknown academic_calendar_system: {university['academic_calendar_system']}")
@@ -85,6 +220,8 @@ def validate_and_compile(university_dir: Path) -> dict:
         if not COLOR_RE.fullmatch(university[field]):
             raise DataError(f"university.json {field} must be a six-digit hex color")
     parse_date(university["catalog_date"], "university.json catalog_date")
+    validate_url(university["catalog_url"], errors, university_file, "$.catalog_url")
+    errors.check()
 
     calendars = calendar_doc.get("academic_calendars", [])
     if not isinstance(calendars, list):
@@ -98,6 +235,7 @@ def validate_and_compile(university_dir: Path) -> dict:
         require(calendar, ("id", "name", "system_type", "is_primary", "terms"), "academic calendar")
         if not isinstance(calendar["is_primary"], bool) or not isinstance(calendar["terms"], list):
             raise DataError("academic calendar is_primary must be boolean and terms must be an array")
+        validate_url(calendar.get("source_url"), errors, calendar_file, f"$.academic_calendars[{len(calendar_ids)}].source_url")
         if calendar["id"] in calendar_ids:
             raise DataError(f"Duplicate academic calendar id: {calendar['id']}")
         calendar_ids.add(calendar["id"])
@@ -117,9 +255,8 @@ def validate_and_compile(university_dir: Path) -> dict:
             first_year, second_year = map(int, term["academic_year"].split("-"))
             if second_year != first_year + 1:
                 raise DataError(f"term {term['code']} academic_year must contain consecutive years")
-            if isinstance(term["sequence"], bool) or not isinstance(term["sequence"], (int, float)) or not float(term["sequence"]).is_integer():
-                raise DataError(f"term {term['code']} sequence must be numeric and integral")
-            term["sequence"] = int(term["sequence"])
+            if isinstance(term["sequence"], bool) or not isinstance(term["sequence"], int):
+                raise DataError(f"term {term['code']} sequence must be an integer")
             if term["dates_status"] not in DATE_STATUSES:
                 raise DataError(f"term {term['code']} has unknown dates_status {term['dates_status']!r}")
             if "start_date" not in term or "end_date" not in term:
@@ -140,8 +277,28 @@ def validate_and_compile(university_dir: Path) -> dict:
                 raise DataError(f"term {term['code']} with unpublished dates_status must set both dates to null")
             if term["status"] not in TERM_STATUSES:
                 raise DataError(f"term {term['code']} has unknown status {term['status']!r}")
-            term.setdefault("planning_enabled", term["status"] in {"current", "future"})
+            if "planning_enabled" in term and not isinstance(term["planning_enabled"], bool):
+                raise DataError(f"term {term['code']} planning_enabled must be a boolean")
+            term["planning_enabled"] = term["status"] in {"current", "future"}
             term_by_code[term["code"]] = {**term, "calendar_id": calendar["id"]}
+        by_year: dict[str, list[int]] = {}
+        for item in calendar["terms"]:
+            by_year.setdefault(item["academic_year"], []).append(item["sequence"])
+        if any(len(values) != len(set(values)) for values in by_year.values()):
+            raise DataError(f"calendar {calendar['id']} term sequences must be unique within each academic year")
+        official = sorted(
+            (item for item in calendar["terms"] if item["dates_status"] == "official"),
+            key=lambda item: (item["academic_year"], item["sequence"]),
+        )
+        for previous, current in zip(official, official[1:]):
+            previous_start = parse_date(previous["start_date"], f"term {previous['code']} start_date")
+            current_start = parse_date(current["start_date"], f"term {current['code']} start_date")
+            previous_end = parse_date(previous["end_date"], f"term {previous['code']} end_date")
+            if current_start < previous_start:
+                raise DataError(f"calendar {calendar['id']} official terms are not chronological by sequence")
+            if current_start <= previous_end:
+                raise DataError(f"calendar {calendar['id']} terms {previous['code']} and {current['code']} overlap")
+    errors.check()
     if primary_count != 1:
         raise DataError("Exactly one academic calendar must set is_primary to true")
 
@@ -159,9 +316,14 @@ def validate_and_compile(university_dir: Path) -> dict:
 
     for path in department_files:
         document = read_json(path)
+        version = validate_integer(document.get("schema_version"), errors, path, "$.schema_version")
+        if version != DATA_SCHEMA_VERSION:
+            errors.add(path, "$.schema_version", f"unsupported schema version {version}; expected {DATA_SCHEMA_VERSION}")
         department = document.get("department", {})
         require(department, ("code", "name"), str(path))
-        code = department["code"].upper()
+        code = department["code"].strip().upper()
+        if not DEPARTMENT_RE.fullmatch(code):
+            errors.add(path, "$.department.code", "must be 2-12 uppercase letters or digits, beginning with a letter")
         if code in department_codes:
             raise DataError(f"Duplicate department code: {code}")
         if path.stem.upper() != code:
@@ -169,28 +331,39 @@ def validate_and_compile(university_dir: Path) -> dict:
         department["code"] = code
         department_codes.add(code)
         departments.append(department)
+        validate_url(department.get("source_url"), errors, path, "$.department.source_url")
         if not isinstance(document.get("courses", []), list) or not isinstance(document.get("edges", []), list):
             raise DataError(f"{path} courses and edges must be arrays")
-        for course in document.get("courses", []):
+        for course_index, course in enumerate(document.get("courses", [])):
             require(course, ("code", "number", "level", "title", "credits"), f"course in {path.name}")
             course["code"] = course["code"].replace(" ", "").upper()
-            course.setdefault("department", code)
-            if course["department"] != code:
+            number = str(course["number"]).strip().upper()
+            supplied_department = str(course.get("department", code)).strip().upper()
+            if supplied_department != code:
                 raise DataError(f"Course {course['code']} belongs in {course['department']}.json, not {path.name}")
+            course["department"] = code
+            course["number"] = number
+            if not COURSE_NUMBER_RE.fullmatch(number) or course["code"] != code + number:
+                errors.add(path, f"$.courses[{course_index}].code", f"must equal normalized department and number ({code + number})")
             if course["code"] in course_codes:
                 raise DataError(f"Duplicate course code: {course['code']}")
             if course["level"] not in COURSE_LEVELS:
                 raise DataError(f"Course {course['code']} has unsupported level {course['level']!r}")
             course_codes.add(course["code"])
-            course.setdefault("description", "")
-            course.setdefault("prerequisites", "")
-            course.setdefault("corequisites", "")
-            course.setdefault("restrictions", "")
-            course.setdefault("repeatable", "")
-            course.setdefault("source_url", department.get("source_url", university.get("catalog_url", "")))
+            credits = course["credits"]
+            credit_text = str(credits) if isinstance(credits, (int, float)) and not isinstance(credits, bool) else credits
+            if not isinstance(credit_text, str) or not re.fullmatch(r"(?:0|[1-9]\d*)(?:\.\d+)?(?:-(?:0|[1-9]\d*)(?:\.\d+)?)?", credit_text):
+                errors.add(path, f"$.courses[{course_index}].credits", "must be a non-negative number or numeric string/range such as '3' or '1-4'")
+            elif "-" in credit_text and float(credit_text.split("-")[0]) > float(credit_text.split("-")[1]):
+                errors.add(path, f"$.courses[{course_index}].credits", "range minimum must not exceed maximum")
+            course["credits"] = credit_text
+            for field in ("description", "prerequisites", "corequisites", "restrictions", "repeatable"):
+                course.setdefault(field, "")
+            course["source_url"] = course.get("source_url") or department.get("source_url", university.get("catalog_url", ""))
+            validate_url(course["source_url"], errors, path, f"$.courses[{course_index}].source_url")
             course.setdefault("source_catalog", course["level"])
-            course["tags"] = sorted(set(course.get("tags", [])))
-            course.setdefault("offering_history", [])
+            course["tags"] = sorted(set(validate_string_array(course.get("tags", []), errors, path, f"$.courses[{course_index}].tags")))
+            course["offering_history"] = validate_array(course.get("offering_history", []), errors, path, f"$.courses[{course_index}].offering_history")
             courses.append(course)
         for edge in document.get("edges", []):
             require(edge, ("source", "target", "kind"), f"edge in {path.name}")
@@ -204,15 +377,13 @@ def validate_and_compile(university_dir: Path) -> dict:
             edge_keys.add(key)
             edges.append(edge)
 
+    errors.check()
+
     for edge in edges:
         if edge["target"] not in course_codes:
             raise DataError(f"Edge target {edge['target']} is not present in any department file")
         target_department = next(course["department"] for course in courses if course["code"] == edge["target"])
         actual_source_in_database = edge["source"] in course_codes
-        if "source_in_database" in edge and not isinstance(edge["source_in_database"], bool):
-            raise DataError(f"Edge {edge['source']} -> {edge['target']} source_in_database must be boolean")
-        if edge.get("source_in_database", actual_source_in_database) != actual_source_in_database:
-            raise DataError(f"Edge {edge['source']} -> {edge['target']} source_in_database contradicts the catalog")
         edge["source_in_database"] = actual_source_in_database
         has_group = "logic_group" in edge
         has_operator = "logic_operator" in edge
@@ -259,7 +430,15 @@ def validate_and_compile(university_dir: Path) -> dict:
                 "offering_status": offering["offering_status"],
                 "source_url": offering.get("source_url", ""),
             })
+            validate_url(offering.get("source_url", ""), errors, "department course offering", f"$.courses[{course['code']}].offering_history[{term_code}].source_url", required=False)
         course["offering_history"] = enriched_history
+
+    errors.check()
+
+    # A checked-in university must agree with its registry and compiled metadata.
+    if university_dir.parent == ROOT / "universities":
+        registry_path = ROOT / "universities" / "index.json"
+        validate_registry(registry_path, university)
 
     courses.sort(key=lambda item: item["code"])
     edges.sort(key=lambda item: (item["target"], item["kind"], item["source"]))

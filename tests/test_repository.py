@@ -11,13 +11,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from build_university import build  # noqa: E402
+from build_university import build, validate_registry  # noqa: E402
 from check_prohibited_terms import violations  # noqa: E402
 
 
 class RepositoryTests(unittest.TestCase):
     def test_production_registry_is_consistent(self) -> None:
-        registry = json.loads((ROOT / "universities" / "index.json").read_text())
+        registry = validate_registry(ROOT / "universities" / "index.json")
         entries = registry["universities"]
         slugs = {entry["slug"] for entry in entries}
         self.assertEqual(len(slugs), len(entries))
