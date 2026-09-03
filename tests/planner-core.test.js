@@ -17,6 +17,40 @@ test('planning horizon uses four academic periods and sorts dated and undated te
   assert.deepEqual(core.planningTerms([{id:'c',terms:mixed}], 'c', new Date('2026-01-01')).map(t=>t.code),['A1','A2','B1','B2','C','D']);
 });
 test('OR prerequisite groups accept either course',()=>assert.deepEqual(core.prerequisiteMissing([{source:'A',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'},{source:'B',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'}],'C',new Set(['B'])),[]));
+test('requirement evaluation handles single edges, AND groups, and accurate messages',()=>{
+  const edges=[
+    {source:'A',target:'T',kind:'prerequisite'},
+    {source:'B',target:'T',kind:'prerequisite',logic_group:'both',logic_operator:'AND'},
+    {source:'C',target:'T',kind:'prerequisite',logic_group:'both',logic_operator:'AND'},
+  ];
+  const missing=core.evaluateRequirements(edges,'T','prerequisite',new Set(['B']));
+  assert.deepEqual(missing.map(group=>group.sources),[['A'],['C']]);
+  assert.equal(core.describeRequirementGroups(missing),'complete A; and complete C');
+});
+test('OR alternatives and multiple independent groups are all evaluated',()=>{
+  const edges=[
+    {source:'A',target:'T',kind:'prerequisite',logic_group:'choice',logic_operator:'OR'},
+    {source:'B',target:'T',kind:'prerequisite',logic_group:'choice',logic_operator:'OR'},
+    {source:'C',target:'T',kind:'prerequisite'},
+  ];
+  const missing=core.evaluateRequirements(edges,'T','prerequisite',new Set(['C']));
+  assert.equal(core.describeRequirementGroups(missing),'complete one of A or B');
+  assert.deepEqual(core.evaluateRequirements(edges,'T','prerequisite',new Set(['A','C'])),[]);
+});
+test('corequisites accept earlier completion or same-term enrollment',()=>{
+  const edges=[{source:'LAB',target:'SCI',kind:'corequisite'}];
+  assert.equal(core.evaluateRequirements(edges,'SCI','corequisite',new Set(),new Set()).length,1);
+  assert.deepEqual(core.evaluateRequirements(edges,'SCI','corequisite',new Set(['LAB']),new Set()),[]);
+  assert.deepEqual(core.evaluateRequirements(edges,'SCI','corequisite',new Set(),new Set(['LAB'])),[]);
+});
+test('external and malformed requirements remain conservatively mandatory',()=>{
+  const edges=[
+    {source:'EXTERNAL100',target:'T',kind:'prerequisite',source_in_database:false},
+    {source:'A',target:'T',kind:'prerequisite',logic_group:'bad',logic_operator:'XOR'},
+    {source:'B',target:'T',kind:'prerequisite',logic_group:'bad',logic_operator:'OR'},
+  ];
+  assert.deepEqual(core.evaluateRequirements(edges,'T','prerequisite',new Set()).map(group=>group.sources),[['EXTERNAL100'],['A'],['B']]);
+});
 test('offering diagnostics distinguish missing and scheduled',()=>{assert.equal(core.offeringDiagnostic(courses[0],terms[0]),'unavailable');assert.equal(core.offeringDiagnostic(courses[1],terms[0]),null)});
 test('storage serialization tolerates corrupt data',()=>{assert.deepEqual(core.deserializePlan(core.serializePlan({F1:['CS101']})),{F1:['CS101']});assert.deepEqual(core.deserializePlan('{'),{})});
 test('course resolution supports spaced codes, title, and rejects ambiguity',()=>{assert.equal(core.resolveCourse(courses,'cs 101').code,'CS101');assert.equal(core.resolveCourse(courses,'Algorithms').code,'CS201')});

@@ -186,6 +186,10 @@
     const definitionList = document.createElement('dl');
     addDetailRow(definitionList, 'Prerequisites', course.prerequisites || 'None listed');
     addDetailRow(definitionList, 'Corequisites', course.corequisites || 'None listed');
+    ['prerequisite', 'corequisite'].forEach(kind => {
+      const groups = PlannerCore.requirementGroups(edges, course.code, kind);
+      if (groups.length) addDetailRow(definitionList, `Structured ${kind} groups`, PlannerCore.describeRequirementGroups(groups));
+    });
     addDetailRow(definitionList, 'Restrictions', course.restrictions || 'None listed');
 
     const history = document.createElement('span');

@@ -83,10 +83,35 @@
     rows.slice(1).forEach((row, i) => { const term = termMap.get((row[termIndex] || '').toLowerCase()); const course = resolveCourse(courses, (codeIndex >= 0 ? row[codeIndex] : '') || (nameIndex >= 0 ? row[nameIndex] : '')); if (term && course) records.push({ termCode: term.code, courseCode: course.code }); else skipped.push(i + 2); });
     return { records, skipped };
   }
+  function requirementGroups(edges, target, kind) {
+    const groups = new Map();
+    (edges || []).filter(edge => edge.target === target && edge.kind === kind).forEach((edge, index) => {
+      const structured = typeof edge.logic_group === 'string' && edge.logic_group && ['AND', 'OR'].includes(edge.logic_operator);
+      const key = structured ? edge.logic_group : `__edge_${index}`;
+      if (!groups.has(key)) groups.set(key, { id: structured ? key : null, operator: structured ? edge.logic_operator : 'AND', sources: [] });
+      const group = groups.get(key);
+      // Invalid/conflicting runtime data is never relaxed into an alternative.
+      if (!structured || group.operator !== edge.logic_operator) group.operator = 'AND';
+      group.sources.push(edge.source);
+    });
+    return [...groups.values()];
+  }
+  function evaluateRequirements(edges, target, kind, completed, concurrent = new Set()) {
+    const available = new Set([...(completed || []), ...(kind === 'corequisite' ? concurrent || [] : [])]);
+    return requirementGroups(edges, target, kind).filter(group => group.operator === 'OR'
+      ? !group.sources.some(source => available.has(source))
+      : group.sources.some(source => !available.has(source))).map(group => ({
+        ...group,
+        sources: group.operator === 'AND' ? group.sources.filter(source => !available.has(source)) : group.sources,
+      }));
+  }
+  function describeRequirementGroups(groups, verb = 'complete') {
+    return groups.map(group => group.operator === 'OR'
+      ? `${verb} one of ${group.sources.join(' or ')}`
+      : `${verb} ${group.sources.join(' and ')}`).join('; and ');
+  }
   function prerequisiteMissing(edges, target, seen) {
-    const relevant = edges.filter(edge => edge.target === target && edge.kind === 'prerequisite');
-    const groups = new Map(); relevant.forEach((edge, i) => { const key = edge.logic_group || `edge-${i}`; if (!groups.has(key)) groups.set(key, []); groups.get(key).push(edge); });
-    return [...groups.values()].filter(group => { const isOr = group.some(edge => String(edge.logic_operator).toUpperCase() === 'OR'); return isOr ? !group.some(edge => seen.has(edge.source)) : group.some(edge => !seen.has(edge.source)); }).flatMap(group => group.filter(edge => !seen.has(edge.source)).map(edge => edge.source));
+    return evaluateRequirements(edges, target, 'prerequisite', seen).flatMap(group => group.sources.filter(source => !seen.has(source)));
   }
   function offeringDiagnostic(course, term) {
     const history = course.offering_history || []; if (!history.length) return 'unavailable';
@@ -94,5 +119,5 @@
     const held = history.filter(item => item.term_status === 'historical' && item.offering_status === 'held');
     return held.length && !held.some(item => item.term_type === term.term_type) ? 'unusual' : null;
   }
-  return { planningTerms, compareTerms, resolveCourse, serializePlan, deserializePlan, scheduleCsv, parseCsv, importRows, prerequisiteMissing, offeringDiagnostic };
+  return { planningTerms, compareTerms, resolveCourse, serializePlan, deserializePlan, scheduleCsv, parseCsv, importRows, requirementGroups, evaluateRequirements, describeRequirementGroups, prerequisiteMissing, offeringDiagnostic };
 }));

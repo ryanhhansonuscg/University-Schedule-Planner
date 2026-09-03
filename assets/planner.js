@@ -229,14 +229,14 @@
           issues += 1;
           return;
         }
-        const missing = PlannerCore.prerequisiteMissing(edges, code, seen).map(source => ({ source }));
+        const missing = PlannerCore.evaluateRequirements(edges, code, 'prerequisite', seen);
         if (missing.length) {
-          addIssue('error', `Possible missing prerequisite for ${code}`, `${term.name}: complete ${[...new Set(missing.map(edge => edge.source))].join(', ')} earlier, or verify an alternative in the catalog wording.`);
+          addIssue('error', `Possible missing prerequisite for ${code}`, `${term.name}: ${PlannerCore.describeRequirementGroups(missing)} earlier, or verify qualifications in the catalog wording.`);
           issues += 1;
         }
-        const missingCoreq = edges.filter(edge => edge.target === code && edge.kind === 'corequisite' && !seen.has(edge.source) && !sameTerm.has(edge.source));
+        const missingCoreq = PlannerCore.evaluateRequirements(edges, code, 'corequisite', seen, sameTerm);
         if (missingCoreq.length) {
-          addIssue('error', `Missing corequisite for ${code}`, `${term.name}: add ${[...new Set(missingCoreq.map(edge => edge.source))].join(', ')} in this or an earlier term.`);
+          addIssue('error', `Missing corequisite for ${code}`, `${term.name}: ${PlannerCore.describeRequirementGroups(missingCoreq, 'add')} in this or an earlier term.`);
           issues += 1;
         }
         const history = course.offering_history || [];
