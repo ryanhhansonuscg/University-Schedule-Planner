@@ -88,3 +88,46 @@ No server-side code or secrets are required. The static application can also be 
 ## Data responsibility
 
 Course catalogs and calendars change. Store official source URLs and a `catalog_date`, never invent missing requirements or dates, and clearly mark unavailable offering history. Users should confirm their plan with the university and an adviser before registration.
+
+## Test and validation commands
+
+The test harness deliberately has no third-party runtime or development dependencies. JavaScript tests use the `node:test` runner included with Node.js; `package-lock.json` pins the empty dependency graph and the supported toolchain is Python 3.12 and Node.js 20 or newer.
+
+From the repository root, install the locked (dependency-free) npm project and run every local check:
+
+```bash
+npm ci
+python -m unittest discover -s tests -v
+npm test
+python -m compileall -q tools tests
+npm run check
+python tools/validate_university.py template/university-template
+python tools/check_prohibited_terms.py
+node --test tests/browser-smoke.test.js
+```
+
+The Python suite copies `template/university-template/` into a temporary directory before invoking any writing build. To reproduce CI's generated-artifact and SQLite checks locally:
+
+```bash
+tmp=$(mktemp -d)
+cp -R template/university-template "$tmp/fixture"
+python tools/build_university.py "$tmp/fixture"
+cp "$tmp/fixture/catalog.json" "$tmp/first.json"
+cp "$tmp/fixture/courses.db" "$tmp/first.db"
+python tools/build_university.py "$tmp/fixture"
+python - "$tmp" <<'PY'
+import json, sqlite3, sys
+from pathlib import Path
+p = Path(sys.argv[1])
+a = json.loads((p / "first.json").read_text())
+b = json.loads((p / "fixture/catalog.json").read_text())
+a.pop("generated_at"); b.pop("generated_at")
+assert a == b
+assert (p / "first.db").read_bytes() == (p / "fixture/courses.db").read_bytes()
+with sqlite3.connect(p / "fixture/courses.db") as db:
+    assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+    assert not db.execute("PRAGMA foreign_key_check").fetchall()
+PY
+```
+
+The browser smoke checks exercise the pages' navigation/loading contracts plus calendar switching, Enter-key scheduling, local-storage serialization, CSV round-tripping, catalog failure handling, and accessible landmarks without adding a browser automation dependency.

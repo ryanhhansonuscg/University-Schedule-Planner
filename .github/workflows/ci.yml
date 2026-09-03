@@ -1,0 +1,44 @@
+name: CI
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12'}
+      - uses: actions/setup-node@v4
+        with: {node-version: '20', cache: npm}
+      - run: npm ci
+      - name: Python unit tests
+        run: python -m unittest discover -s tests -v
+      - name: JavaScript unit and browser smoke tests
+        run: npm test
+      - name: Static syntax checks
+        run: |
+          python -m compileall -q tools tests
+          npm run check
+      - name: Validate template fixture
+        run: python tools/validate_university.py template/university-template
+      - name: Reproducible build and SQLite integrity
+        run: |
+          tmp=$(mktemp -d)
+          cp -R template/university-template "$tmp/fixture"
+          python tools/build_university.py "$tmp/fixture"
+          cp "$tmp/fixture/catalog.json" "$tmp/first.json"
+          cp "$tmp/fixture/courses.db" "$tmp/first.db"
+          python tools/build_university.py "$tmp/fixture"
+          python - "$tmp" <<'PY'
+          import json, sqlite3, sys
+          from pathlib import Path
+          p=Path(sys.argv[1]); a=json.loads((p/'first.json').read_text()); b=json.loads((p/'fixture/catalog.json').read_text())
+          a.pop('generated_at'); b.pop('generated_at'); assert a == b
+          assert (p/'first.db').read_bytes() == (p/'fixture/courses.db').read_bytes()
+          with sqlite3.connect(p/'fixture/courses.db') as db:
+              assert db.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
+              assert not db.execute('PRAGMA foreign_key_check').fetchall()
+          PY
+      - name: Accessibility smoke checks
+        run: node --test tests/browser-smoke.test.js

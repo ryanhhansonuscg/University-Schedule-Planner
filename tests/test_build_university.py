@@ -1,0 +1,55 @@
+import copy
+import json
+import shutil
+import sqlite3
+import tempfile
+import unittest
+from pathlib import Path
+
+from tools.build_university import DataError, build, validate_and_compile
+
+ROOT = Path(__file__).resolve().parents[1]
+FIXTURE = ROOT / "template/university-template"
+
+class BuildUniversityTests(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.directory = Path(self.temp.name) / "fixture"
+        shutil.copytree(FIXTURE, self.directory)
+    def tearDown(self): self.temp.cleanup()
+    def load(self, relative): return json.loads((self.directory / relative).read_text())
+    def save(self, relative, value): (self.directory / relative).write_text(json.dumps(value))
+    def assert_invalid(self, relative, mutate, message):
+        doc = self.load(relative); mutate(doc); self.save(relative, doc)
+        with self.assertRaisesRegex(DataError, message): validate_and_compile(self.directory)
+
+    def test_successful_compilation_does_not_write_during_validation(self):
+        catalog = build(self.directory, validate_only=True)
+        self.assertEqual(["SAMPLE101", "SAMPLE201"], [c["code"] for c in catalog["courses"]])
+        self.assertFalse((self.directory / "catalog.json").exists())
+    def test_malformed_json_and_root_documents(self):
+        (self.directory / "university.json").write_text("[")
+        with self.assertRaisesRegex(DataError, "Invalid JSON"): validate_and_compile(self.directory)
+        (self.directory / "university.json").write_text("[]")
+        with self.assertRaisesRegex(DataError, "root must be a JSON object"): validate_and_compile(self.directory)
+    def test_invalid_scalar_types(self):
+        self.assert_invalid("university.json", lambda d: d.update(schema_version="2"), "schema_version must be int")
+    def test_duplicate_identifiers(self):
+        self.assert_invalid("departments/SAMPLE.json", lambda d: d["courses"].append(copy.deepcopy(d["courses"][0])), "Duplicate course code")
+    def test_calendar_errors(self):
+        self.assert_invalid("calendars.json", lambda d: d["academic_calendars"][0]["terms"][0].update(start_date="2026-99-01"), "not a real date")
+    def test_relationship_logic_and_unknown_targets(self):
+        self.assert_invalid("departments/SAMPLE.json", lambda d: d["edges"][0].update(kind="requires"), "unknown kind")
+    def test_offering_records(self):
+        self.assert_invalid("departments/SAMPLE.json", lambda d: d["courses"][0]["offering_history"][0].update(term_code="NOPE"), "unknown term")
+    def test_department_slug_filename_mismatch(self):
+        path=self.directory/"departments/SAMPLE.json"; doc=json.loads(path.read_text()); doc["department"]["code"]="WRONG"; path.write_text(json.dumps(doc))
+        with self.assertRaisesRegex(DataError, "must match department code"): validate_and_compile(self.directory)
+    def test_generated_sqlite_integrity_and_foreign_keys(self):
+        build(self.directory)
+        with sqlite3.connect(self.directory / "courses.db") as db:
+            self.assertEqual("ok", db.execute("PRAGMA integrity_check").fetchone()[0])
+            self.assertEqual(2, db.execute("SELECT count(*) FROM courses").fetchone()[0])
+            self.assertEqual(0, len(db.execute("PRAGMA foreign_key_check").fetchall()))
+
+if __name__ == "__main__": unittest.main()
