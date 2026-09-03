@@ -1,8 +1,8 @@
 # College Schedule Planner
 
-A static, multi-university course explorer and four-year schedule planner. Every university supplies its own identity, dated academic calendars, and one JSON file per department. The shared application reads those files without university- or department-specific code.
+A static, multi-university course explorer and four-year schedule planner. Every institution supplies its own identity, dated academic calendars, and one JSON file per department. The shared application reads those files without institution- or department-specific code.
 
-The included University of Maryland example contains 238 undergraduate and graduate CMSC and ENEE courses. The architecture is not limited to those subjects: add any department by adding another department file.
+No real institution data is shipped by default. The registry intentionally starts empty, while `template/university-template` contains a small, explicitly fictional development fixture that demonstrates the data format.
 
 ## Run locally
 
@@ -24,24 +24,16 @@ College Schedule Planner/
 ├── schema.sql                    Generated SQLite schema
 ├── tools/                        Standard-library Python tools
 ├── universities/
-│   ├── index.json                Public university registry
-│   └── university-of-maryland/
-│       ├── university.json       Name, colors, source snapshot, system type
-│       ├── calendars.json        Historical/current/future dated terms
-│       ├── departments/
-│       │   ├── CMSC.json         One source file per department
-│       │   └── ENEE.json
-│       ├── catalog.json          Generated browser catalog
-│       └── courses.db            Generated SQLite database
+│   └── index.json                Public institution registry (initially empty)
 └── template/university-template/
-    ├── README.md                 Setup walkthrough
-    ├── university.json           Quarter-system example
+    ├── README.md                 Setup and fictional-fixture walkthrough
+    ├── university.json           Fictional quarter-system fixture
     ├── calendars.json
     ├── departments/SAMPLE.json
     └── LLM-SCRAPING-GUIDE.md     Copy/paste collection prompt
 ```
 
-`university.json`, `calendars.json`, and `departments/*.json` are source files. `catalog.json` and `courses.db` are generated artifacts. Commit both generated artifacts so the static site works on GitHub Pages and downstream users can query SQLite.
+`university.json`, `calendars.json`, and `departments/*.json` are source files. `catalog.json` and `courses.db` are generated artifacts. Commit both artifacts for registered institutions so the static site works on GitHub Pages and downstream users can query SQLite. Do not generate them inside `template/`; tests build that fictional fixture only in a temporary directory.
 
 ## Add a university
 
@@ -58,7 +50,11 @@ College Schedule Planner/
 5. Add the university to `universities/index.json`.
 6. Run the local server and test both pages with `?university=<unique-slug>`.
 
-The university registry controls the picker. The `default_university` value is loaded when no query parameter is present.
+The registry controls the picker. Set `default_university` to a registered slug; keep it `null` while the registry is empty.
+
+## Repository checks
+
+Run `python -m unittest discover -s tests`. The suite copies the fictional template to a temporary directory, validates and builds it there, confirms the production registry is internally consistent, and runs the institution-specific content check. You can run the latter alone with `python tools/check_prohibited_terms.py`.
 
 ## Calendar support
 
@@ -92,3 +88,46 @@ No server-side code or secrets are required. The static application can also be 
 ## Data responsibility
 
 Course catalogs and calendars change. Store official source URLs and a `catalog_date`, never invent missing requirements or dates, and clearly mark unavailable offering history. Users should confirm their plan with the university and an adviser before registration.
+
+## Test and validation commands
+
+The test harness deliberately has no third-party runtime or development dependencies. JavaScript tests use the `node:test` runner included with Node.js; `package-lock.json` pins the empty dependency graph and the supported toolchain is Python 3.12 and Node.js 20 or newer.
+
+From the repository root, install the locked (dependency-free) npm project and run every local check:
+
+```bash
+npm ci
+python -m unittest discover -s tests -v
+npm test
+python -m compileall -q tools tests
+npm run check
+python tools/validate_university.py template/university-template
+python tools/check_prohibited_terms.py
+node --test tests/browser-smoke.test.js
+```
+
+The Python suite copies `template/university-template/` into a temporary directory before invoking any writing build. To reproduce CI's generated-artifact and SQLite checks locally:
+
+```bash
+tmp=$(mktemp -d)
+cp -R template/university-template "$tmp/fixture"
+python tools/build_university.py "$tmp/fixture"
+cp "$tmp/fixture/catalog.json" "$tmp/first.json"
+cp "$tmp/fixture/courses.db" "$tmp/first.db"
+python tools/build_university.py "$tmp/fixture"
+python - "$tmp" <<'PY'
+import json, sqlite3, sys
+from pathlib import Path
+p = Path(sys.argv[1])
+a = json.loads((p / "first.json").read_text())
+b = json.loads((p / "fixture/catalog.json").read_text())
+a.pop("generated_at"); b.pop("generated_at")
+assert a == b
+assert (p / "first.db").read_bytes() == (p / "fixture/courses.db").read_bytes()
+with sqlite3.connect(p / "fixture/courses.db") as db:
+    assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+    assert not db.execute("PRAGMA foreign_key_check").fetchall()
+PY
+```
+
+The browser smoke checks exercise the pages' navigation/loading contracts plus calendar switching, Enter-key scheduling, local-storage serialization, CSV round-tripping, catalog failure handling, and accessible landmarks without adding a browser automation dependency.

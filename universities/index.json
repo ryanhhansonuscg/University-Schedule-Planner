@@ -1,12 +1,5 @@
 {
   "schema_version": 1,
-  "default_university": "university-of-maryland",
-  "universities": [
-    {
-      "slug": "university-of-maryland",
-      "name": "University of Maryland",
-      "short_name": "UMD",
-      "path": "universities/university-of-maryland/catalog.json"
-    }
-  ]
+  "default_university": null,
+  "universities": []
 }

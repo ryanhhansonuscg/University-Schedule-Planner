@@ -1,0 +1,11 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const core = require('../assets/planner-core.js');
+const courses = [{code:'CS101',title:'Intro, "CS"',credits:'3',offering_history:[]},{code:'CS201',title:'Algorithms',credits:'4',offering_history:[{term_code:'F1',term_type:'fall',term_status:'future',offering_status:'scheduled'}]}];
+const terms = [{code:'F1',name:'Fall 2026',start_date:'2026-09-01',end_date:'2026-12-01',planning_enabled:true,term_type:'fall'},{code:'FAR',name:'Far',start_date:'2031-01-01',end_date:'2031-02-01',planning_enabled:true}];
+test('planning horizon filters and sorts terms',()=>assert.deepEqual(core.planningTerms([{id:'c',terms}], 'c', new Date('2026-01-01')).map(t=>t.code),['F1']));
+test('OR prerequisite groups accept either course',()=>assert.deepEqual(core.prerequisiteMissing([{source:'A',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'},{source:'B',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'}],'C',new Set(['B'])),[]));
+test('offering diagnostics distinguish missing and scheduled',()=>{assert.equal(core.offeringDiagnostic(courses[0],terms[0]),'unavailable');assert.equal(core.offeringDiagnostic(courses[1],terms[0]),null)});
+test('storage serialization tolerates corrupt data',()=>{assert.deepEqual(core.deserializePlan(core.serializePlan({F1:['CS101']})),{F1:['CS101']});assert.deepEqual(core.deserializePlan('{'),{})});
+test('course resolution supports spaced codes, title, and rejects ambiguity',()=>{assert.equal(core.resolveCourse(courses,'cs 101').code,'CS101');assert.equal(core.resolveCourse(courses,'Algorithms').code,'CS201')});
+test('CSV parsing, escaping, and import validation',()=>{const csv=core.scheduleCsv(terms,{F1:['CS101']},courses);assert.equal(core.parseCsv(csv)[1][2],'Intro, "CS"');assert.match(core.importRows('bad\nrow',terms,courses).error,/Term/);assert.deepEqual(core.importRows('Term,Course #\nFall 2026,CS101',terms,courses).records,[{termCode:'F1',courseCode:'CS101'}]);assert.throws(()=>core.parseCsv('"bad'),/Unclosed/) });
