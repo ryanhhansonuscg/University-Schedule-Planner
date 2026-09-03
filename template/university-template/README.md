@@ -76,7 +76,18 @@ Store each prerequisite, corequisite, or recommendation as a directed edge. Put 
 
 `source_in_database` is false when the prerequisite course belongs to a department that has not been imported. The target must always exist. Preserve the full catalog wording on the course even when edges are present.
 
-For a clearly documented alternative group, optional `logic_group` and `logic_operator` fields may identify related edges:
+### Prerequisite expression contract
+
+An edge with no `logic_group` is an independent, mandatory one-course requirement. It must also omit `logic_operator`; the planner treats several such edges as several independent requirements (all must be met).
+
+Use `logic_group` only to encode a relationship explicitly supported by the catalog. Every edge in a group must have the same target, `kind`, and operator, and a group must contain at least two edges. Group names are identifiers and must not be reused for another target or relationship kind. `logic_operator` is the documented enum `"AND"` or `"OR"` (uppercase):
+
+- `AND` applies **within that group** and requires every source course.
+- `OR` applies **within that group** and requires at least one source course.
+
+Multiple groups for the same target are independent and combine with an implicit AND: every group must be satisfied. Ungrouped edges are each equivalent to a separate one-member AND group. The same rules apply separately to prerequisite and corequisite edges. Prerequisites must be completed earlier; corequisites may instead be enrolled in the same term.
+
+For example, these edges begin a clearly documented alternative group:
 
 ```json
 {
@@ -89,7 +100,7 @@ For a clearly documented alternative group, optional `logic_group` and `logic_op
 }
 ```
 
-The current planner remains conservative and may flag all explicit prerequisite edges. Users are told to verify alternatives against the original catalog text.
+Do not turn prose that cannot be represented by this contract (minimum grades, placement scores, permissions, class standing, nested expressions, and similar qualifications) into invented logic. Preserve it in the course's official catalog text. The planner evaluates the structured edges conservatively and continues to display that text for the qualifications it cannot evaluate.
 
 ## 5. Validate and build
 

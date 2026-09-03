@@ -18,6 +18,7 @@ DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 CALENDAR_SYSTEMS = {"semester", "quarter", "trimester", "hybrid", "custom"}
 COURSE_LEVELS = {"undergraduate", "graduate", "professional", "continuing-education", "other"}
 EDGE_KINDS = {"prerequisite", "corequisite", "recommended"}
+LOGIC_OPERATORS = {"AND", "OR"}
 TERM_STATUSES = {"historical", "current", "future"}
 DATE_STATUSES = {"official", "unpublished"}
 OFFERING_STATUSES = {"held", "scheduled", "cancelled"}
@@ -207,13 +208,34 @@ def validate_and_compile(university_dir: Path) -> dict:
         if edge["target"] not in course_codes:
             raise DataError(f"Edge target {edge['target']} is not present in any department file")
         target_department = next(course["department"] for course in courses if course["code"] == edge["target"])
-        edge.setdefault("source_in_database", edge["source"] in course_codes)
-        if not edge.get("logic_operator"):
-            edge.pop("logic_operator", None)
-        if not edge.get("logic_group"):
-            edge.pop("logic_group", None)
+        actual_source_in_database = edge["source"] in course_codes
+        if "source_in_database" in edge and not isinstance(edge["source_in_database"], bool):
+            raise DataError(f"Edge {edge['source']} -> {edge['target']} source_in_database must be boolean")
+        if edge.get("source_in_database", actual_source_in_database) != actual_source_in_database:
+            raise DataError(f"Edge {edge['source']} -> {edge['target']} source_in_database contradicts the catalog")
+        edge["source_in_database"] = actual_source_in_database
+        has_group = "logic_group" in edge
+        has_operator = "logic_operator" in edge
+        if has_group != has_operator:
+            raise DataError(f"Edge {edge['source']} -> {edge['target']} must provide logic_group and logic_operator together")
+        if has_group:
+            if not isinstance(edge["logic_group"], str) or not edge["logic_group"].strip():
+                raise DataError(f"Edge {edge['source']} -> {edge['target']} logic_group must be a non-empty string")
+            if edge["logic_operator"] not in LOGIC_OPERATORS:
+                raise DataError(f"Edge {edge['source']} -> {edge['target']} has unknown logic_operator {edge['logic_operator']!r}")
         if target_department not in department_codes:
             raise DataError(f"Edge target {edge['target']} has invalid department")
+
+    logic_groups: dict[str, list[dict]] = {}
+    for edge in edges:
+        if "logic_group" in edge:
+            logic_groups.setdefault(edge["logic_group"], []).append(edge)
+    for name, members in logic_groups.items():
+        if len(members) < 2:
+            raise DataError(f"Logic group {name!r} must contain at least two edges")
+        signatures = {(edge["target"], edge["kind"], edge["logic_operator"]) for edge in members}
+        if len(signatures) != 1:
+            raise DataError(f"Logic group {name!r} has contradictory target, kind, or operator metadata")
 
     for course in courses:
         enriched_history = []

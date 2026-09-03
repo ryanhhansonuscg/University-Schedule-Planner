@@ -51,6 +51,20 @@ class BuildUniversityTests(unittest.TestCase):
         self.assert_invalid("calendars.json", lambda d: d["academic_calendars"][0].update(source_url=""), "source_url metadata")
     def test_relationship_logic_and_unknown_targets(self):
         self.assert_invalid("departments/SAMPLE.json", lambda d: d["edges"][0].update(kind="requires"), "unknown kind")
+    def test_relationship_logic_metadata_is_well_formed(self):
+        self.assert_invalid("departments/SAMPLE.json", lambda d: d["edges"][0].update(logic_operator="OR"), "provide logic_group and logic_operator together")
+    def test_relationship_operator_uses_documented_enum(self):
+        self.assert_invalid("departments/SAMPLE.json", lambda d: d["edges"][0].update(logic_group="g", logic_operator="XOR"), "unknown logic_operator")
+    def test_relationship_group_membership_is_consistent(self):
+        def contradictory(doc):
+            first = doc["edges"][0]
+            first.update(logic_group="g", logic_operator="OR")
+            doc["edges"].append({"source":"SAMPLE101", "target":"SAMPLE101", "kind":"corequisite", "logic_group":"g", "logic_operator":"OR"})
+        self.assert_invalid("departments/SAMPLE.json", contradictory, "contradictory target, kind, or operator")
+    def test_relationship_group_requires_multiple_members(self):
+        self.assert_invalid("departments/SAMPLE.json", lambda d: d["edges"][0].update(logic_group="g", logic_operator="AND"), "at least two edges")
+    def test_source_membership_cannot_contradict_catalog(self):
+        self.assert_invalid("departments/SAMPLE.json", lambda d: d["edges"][0].update(source_in_database=False), "contradicts the catalog")
     def test_offering_records(self):
         self.assert_invalid("departments/SAMPLE.json", lambda d: d["courses"][0]["offering_history"][0].update(term_code="NOPE"), "unknown term")
     def test_department_slug_filename_mismatch(self):
