@@ -14,7 +14,7 @@ Required fields:
 - `primary_color`, `secondary_color`, `accent_color`: six-digit hex values from official brand guidance.
 - `catalog_url`: official top-level course catalog.
 - `catalog_date`: date the source snapshot was checked, in `YYYY-MM-DD` form.
-- `schema_version`: currently `2`.
+- `schema_version`: currently `3`.
 - `academic_calendar_system`: `semester`, `quarter`, `trimester`, `hybrid`, or `custom`.
 
 ## 2. Configure `calendars.json`
@@ -25,11 +25,16 @@ Each calendar requires:
 
 - a unique `id`, display `name`, `system_type`, official `source_url`, and `terms` array;
 - historical terms needed by course offering records;
-- the current term and all officially published future terms, ideally covering four years.
+- the current term and enough future term records to cover four academic periods (four distinct `academic_year` values), including neutral placeholders when dates have not been published;
 
-Each term requires a globally unique `code`, display `name`, `academic_year`, `term_type`, sort `sequence`, exact `start_date` and `end_date`, and a `status` of `historical`, `current`, or `future`. Set `planning_enabled` to `true` for terms users may select.
+Each term requires a globally unique `code`, display `name`, `academic_year` in `YYYY-YYYY` form, `term_type`, numeric sort `sequence`, `dates_status`, `start_date`, `end_date`, and a `status` of `historical`, `current`, or `future`. Set `planning_enabled` to `true` for terms users may select.
 
-Do not create estimated future dates. If official dates stop early, include only published dates; the planner displays a coverage warning.
+`dates_status` must be one of:
+
+- `official`: both `start_date` and `end_date` are required in `YYYY-MM-DD` form. The calendar's `source_url` must identify the official source for those published dates.
+- `unpublished`: both `start_date` and `end_date` must explicitly be `null`. The planner labels the term as a planning placeholder, not a confirmed schedule.
+
+Dates are all-or-nothing: a term with only one date is invalid. Do not create estimated future dates. Instead, add neutrally named unpublished terms through the four-academic-period planning horizon. Within each academic year, `sequence` establishes the order of unpublished terms; official terms are ordered by their dates.
 
 ## 3. Create department files
 

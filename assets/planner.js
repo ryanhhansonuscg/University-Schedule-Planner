@@ -83,15 +83,22 @@
   function loadActivePlan() {
     activeCalendarId = activeCalendar()?.id || '';
     plan = cleanPlan(savedPlans.calendars[activeCalendarId]);
-    localStorage.setItem(storageKey, PlannerCore.serializePlan(plan));
   }
 
   function dateValue(value) {
+    if (value == null) return null;
     return new Date(`${value}T00:00:00`);
   }
 
   function dateLabel(value) {
-    return dateValue(value).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+    const date = dateValue(value);
+    return date ? date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' }) : 'Dates not yet published';
+  }
+
+  function termDateLabel(term) {
+    return term.start_date == null
+      ? 'Dates not yet published — planning placeholder, not a confirmed schedule'
+      : `${dateLabel(term.start_date)} – ${dateLabel(term.end_date)}`;
   }
 
   function activeCalendar() {
@@ -120,17 +127,15 @@
 
   function refreshPlannerCalendar() {
     const terms = planningTerms();
-    plannerTerm.replaceChildren(...terms.map(term => new Option(`${term.name} · ${dateLabel(term.start_date)}`, term.code)));
+    plannerTerm.replaceChildren(...terms.map(term => new Option(`${term.name} · ${term.start_date == null ? 'Dates not yet published' : dateLabel(term.start_date)}`, term.code)));
     const calendar = activeCalendar();
-    const last = terms.at(-1);
-    const horizon = new Date();
-    horizon.setFullYear(horizon.getFullYear() + 4);
     if (!calendar) {
       calendarCoverage.textContent = 'No academic calendar is configured.';
     } else {
-      const coverage = terms.length ? `${dateLabel(terms[0].start_date)}–${dateLabel(last.end_date)}` : 'no currently plannable terms';
-      const shortfall = last && dateValue(last.end_date) < horizon ? ' Published dates end before the full four-year horizon.' : '';
-      calendarCoverage.textContent = `${data.university.academic_calendar_system} institution · ${calendar.name} covers ${coverage}.${shortfall} Logical alternatives in prerequisite text should be confirmed with an adviser.`;
+      const academicYears = [...new Set(terms.map(term => term.academic_year).filter(Boolean))];
+      const coverage = academicYears.length ? `academic years ${academicYears[0]}–${academicYears.at(-1)}` : 'no currently plannable academic periods';
+      const shortfall = academicYears.length < 4 ? ' The calendar does not cover the full four-academic-period horizon.' : '';
+      calendarCoverage.textContent = `${data.university.academic_calendar_system} institution · ${calendar.name} covers ${coverage}.${shortfall} Terms without dates are planning placeholders, not confirmed schedules. Logical alternatives in prerequisite text should be confirmed with an adviser.`;
     }
     renderPlan();
   }
@@ -146,7 +151,7 @@
       heading.textContent = term.name;
       const dates = document.createElement('span');
       dates.className = 'term-dates';
-      dates.textContent = `${dateLabel(term.start_date)} – ${dateLabel(term.end_date)}`;
+      dates.textContent = termDateLabel(term);
       const items = document.createElement('div');
       items.className = 'planned-courses';
       const codes = plan[term.code] || [];
@@ -268,7 +273,7 @@
       rows.push([calendar.id, term.code, term.name, code, course?.title || '', course?.credits || '']);
     }));
     if (rows.length === 1) return;
-    const csv = PlannerCore.scheduleCsv(planningTerms(), plan, courses);
+    const csv = `\uFEFF${rows.map(row => row.map(csvCell).join(',')).join('\r\n')}\r\n`;
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
     link.href = url;

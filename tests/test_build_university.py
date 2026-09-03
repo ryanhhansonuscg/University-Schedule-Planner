@@ -38,6 +38,17 @@ class BuildUniversityTests(unittest.TestCase):
         self.assert_invalid("departments/SAMPLE.json", lambda d: d["courses"].append(copy.deepcopy(d["courses"][0])), "Duplicate course code")
     def test_calendar_errors(self):
         self.assert_invalid("calendars.json", lambda d: d["academic_calendars"][0]["terms"][0].update(start_date="2026-99-01"), "not a real date")
+    def test_fully_dated_and_fully_undated_terms_are_valid(self):
+        catalog = validate_and_compile(self.directory)
+        terms = catalog["academic_calendars"][0]["terms"]
+        self.assertTrue(any(term["dates_status"] == "official" and term["start_date"] for term in terms))
+        self.assertTrue(any(term["dates_status"] == "unpublished" and term["start_date"] is None and term["end_date"] is None for term in terms))
+    def test_partially_dated_term_is_invalid(self):
+        self.assert_invalid("calendars.json", lambda d: d["academic_calendars"][0]["terms"][-1].update(start_date="2030-06-01"), "provide both")
+    def test_undated_term_must_explicitly_include_both_date_fields(self):
+        self.assert_invalid("calendars.json", lambda d: d["academic_calendars"][0]["terms"][-1].pop("start_date"), "explicitly provide")
+    def test_published_dates_require_official_source_metadata(self):
+        self.assert_invalid("calendars.json", lambda d: d["academic_calendars"][0].update(source_url=""), "source_url metadata")
     def test_relationship_logic_and_unknown_targets(self):
         self.assert_invalid("departments/SAMPLE.json", lambda d: d["edges"][0].update(kind="requires"), "unknown kind")
     def test_offering_records(self):
@@ -50,6 +61,7 @@ class BuildUniversityTests(unittest.TestCase):
         with sqlite3.connect(self.directory / "courses.db") as db:
             self.assertEqual("ok", db.execute("PRAGMA integrity_check").fetchone()[0])
             self.assertEqual(2, db.execute("SELECT count(*) FROM courses").fetchone()[0])
+            self.assertGreater(db.execute("SELECT count(*) FROM academic_terms WHERE start_date IS NULL AND dates_status = 'unpublished'").fetchone()[0], 0)
             self.assertEqual(0, len(db.execute("PRAGMA foreign_key_check").fetchall()))
 
 if __name__ == "__main__": unittest.main()

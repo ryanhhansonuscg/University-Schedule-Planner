@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const test = require('node:test');
 const vm = require('node:vm');
+const PlannerCore = require('../assets/planner-core.js');
 
 const plannerSource = fs.readFileSync(new URL('../assets/planner.js', `file://${__filename}`), 'utf8');
 
@@ -38,11 +39,12 @@ function catalog() {
     edges: [],
     academic_calendars: [
       { id: 'semester', name: 'Semester', system_type: 'semester', is_primary: true, terms: [
-        { code: 'S27', name: 'Spring', term_type: 'spring', planning_enabled: true, start_date: '2027-01-01', end_date: '2027-05-01' },
-        { code: 'OLD', name: 'Archive', term_type: 'fall', planning_enabled: false, start_date: '2020-01-01', end_date: '2020-05-01' },
+        { code: 'S27', name: 'Spring', academic_year: '2026-2027', sequence: 1, term_type: 'spring', planning_enabled: true, start_date: '2027-01-01', end_date: '2027-05-01' },
+        { code: 'TBD', name: 'Future term', academic_year: '2027-2028', sequence: 1, term_type: 'fall', planning_enabled: true, start_date: null, end_date: null },
+        { code: 'OLD', name: 'Archive', academic_year: '2019-2020', sequence: 1, term_type: 'fall', planning_enabled: false, start_date: '2020-01-01', end_date: '2020-05-01' },
       ] },
       { id: 'quarter', name: 'Quarter', system_type: 'quarter', terms: [
-        { code: 'Q27', name: 'Spring', term_type: 'spring', planning_enabled: true, start_date: '2027-01-02', end_date: '2027-03-01' },
+        { code: 'Q27', name: 'Spring', academic_year: '2026-2027', sequence: 1, term_type: 'spring', planning_enabled: true, start_date: '2027-01-02', end_date: '2027-03-01' },
       ] },
     ],
   };
@@ -69,6 +71,7 @@ async function setup(saved = null) {
     localStorage: { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) },
     Option: class extends Element { constructor(text, value) { super(); this.text = text; this.textContent = text; this.value = value; } },
     Blob, Date, Set, Map,
+    PlannerCore,
     URL: { createObjectURL: blob => { exportedBlob = blob; return 'blob:test'; }, revokeObjectURL() {} },
   };
   vm.runInNewContext(plannerSource, context);
@@ -135,4 +138,14 @@ test('import honors calendar ID and term code rather than an overlapping term na
   assert.deepEqual(stored.calendars.semester.S27, ['CS102']);
   assert.equal(stored.calendars.quarter, undefined);
   assert.match(app.elements['planner-message'].textContent, /Skipped row 2/);
+});
+
+test('undated terms render publication and planning-placeholder labels', async () => {
+  const app = await setup();
+  const options = app.elements['planner-term'].options;
+  assert.match(options.find(option => option.value === 'TBD').textContent, /Dates not yet published/);
+  const undatedSection = app.elements['plan-grid'].children.find(section => section.children[0].textContent === 'Future term');
+  assert.match(undatedSection.children[1].textContent, /Dates not yet published/);
+  assert.match(undatedSection.children[1].textContent, /planning placeholder, not a confirmed schedule/);
+  assert.match(app.elements['calendar-coverage'].textContent, /four-academic-period horizon/);
 });

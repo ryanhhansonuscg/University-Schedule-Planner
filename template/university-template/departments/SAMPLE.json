@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "department": {
     "code": "SAMPLE",
     "name": "Sample Studies",
@@ -21,7 +21,10 @@
       "repeatable": "No",
       "source_url": "https://catalog.example.invalid/courses/sample/101",
       "source_catalog": "2026-2027 undergraduate catalog",
-      "tags": ["foundations", "undergraduate"],
+      "tags": [
+        "foundations",
+        "undergraduate"
+      ],
       "offering_history": [
         {
           "term_code": "2026SP",
@@ -49,7 +52,10 @@
       "repeatable": "No",
       "source_url": "https://catalog.example.invalid/courses/sample/201",
       "source_catalog": "2026-2027 undergraduate catalog",
-      "tags": ["analysis", "undergraduate"],
+      "tags": [
+        "analysis",
+        "undergraduate"
+      ],
       "offering_history": [
         {
           "term_code": "2026SP",

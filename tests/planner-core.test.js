@@ -2,8 +2,20 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const core = require('../assets/planner-core.js');
 const courses = [{code:'CS101',title:'Intro, "CS"',credits:'3',offering_history:[]},{code:'CS201',title:'Algorithms',credits:'4',offering_history:[{term_code:'F1',term_type:'fall',term_status:'future',offering_status:'scheduled'}]}];
-const terms = [{code:'F1',name:'Fall 2026',start_date:'2026-09-01',end_date:'2026-12-01',planning_enabled:true,term_type:'fall'},{code:'FAR',name:'Far',start_date:'2031-01-01',end_date:'2031-02-01',planning_enabled:true}];
-test('planning horizon filters and sorts terms',()=>assert.deepEqual(core.planningTerms([{id:'c',terms}], 'c', new Date('2026-01-01')).map(t=>t.code),['F1']));
+const terms = [{code:'F1',name:'Fall 2026',academic_year:'2026-2027',sequence:1,start_date:'2026-09-01',end_date:'2026-12-01',planning_enabled:true,term_type:'fall'},{code:'FAR',name:'Far',academic_year:'2031-2032',sequence:1,start_date:'2031-01-01',end_date:'2031-02-01',planning_enabled:true}];
+test('planning horizon uses four academic periods and sorts dated and undated terms',()=>{
+  const mixed = [
+    {code:'A2',academic_year:'2026-2027',sequence:2,start_date:null,end_date:null,planning_enabled:true},
+    {code:'A1',academic_year:'2026-2027',sequence:1,start_date:null,end_date:null,planning_enabled:true},
+    {code:'B2',academic_year:'2027-2028',sequence:2,start_date:'2028-01-01',end_date:'2028-05-01',planning_enabled:true},
+    {code:'B1',academic_year:'2027-2028',sequence:1,start_date:'2027-09-01',end_date:'2027-12-01',planning_enabled:true},
+    {code:'C',academic_year:'2028-2029',sequence:1,start_date:null,end_date:null,planning_enabled:true},
+    {code:'D',academic_year:'2029-2030',sequence:1,start_date:null,end_date:null,planning_enabled:true},
+    {code:'OUT',academic_year:'2030-2031',sequence:1,start_date:null,end_date:null,planning_enabled:true},
+    {code:'PAST',academic_year:'2025-2026',sequence:1,start_date:'2025-01-01',end_date:'2025-02-01',planning_enabled:true},
+  ];
+  assert.deepEqual(core.planningTerms([{id:'c',terms:mixed}], 'c', new Date('2026-01-01')).map(t=>t.code),['A1','A2','B1','B2','C','D']);
+});
 test('OR prerequisite groups accept either course',()=>assert.deepEqual(core.prerequisiteMissing([{source:'A',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'},{source:'B',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'}],'C',new Set(['B'])),[]));
 test('offering diagnostics distinguish missing and scheduled',()=>{assert.equal(core.offeringDiagnostic(courses[0],terms[0]),'unavailable');assert.equal(core.offeringDiagnostic(courses[1],terms[0]),null)});
 test('storage serialization tolerates corrupt data',()=>{assert.deepEqual(core.deserializePlan(core.serializePlan({F1:['CS101']})),{F1:['CS101']});assert.deepEqual(core.deserializePlan('{'),{})});

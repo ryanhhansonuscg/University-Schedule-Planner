@@ -75,10 +75,15 @@ CREATE TABLE academic_terms (
   academic_year TEXT NOT NULL,
   term_type TEXT NOT NULL,
   sequence INTEGER NOT NULL,
-  start_date TEXT NOT NULL,
-  end_date TEXT NOT NULL,
+  start_date TEXT,
+  end_date TEXT,
+  dates_status TEXT NOT NULL CHECK (dates_status IN ('official', 'unpublished')),
   status TEXT NOT NULL,
-  planning_enabled INTEGER NOT NULL
+  planning_enabled INTEGER NOT NULL,
+  CHECK (
+    (dates_status = 'official' AND start_date IS NOT NULL AND end_date IS NOT NULL)
+    OR (dates_status = 'unpublished' AND start_date IS NULL AND end_date IS NULL)
+  )
 );
 
 CREATE TABLE course_offerings (

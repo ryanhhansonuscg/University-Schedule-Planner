@@ -1,6 +1,6 @@
 # College Schedule Planner
 
-A static, multi-university course explorer and four-year schedule planner. Every institution supplies its own identity, dated academic calendars, and one JSON file per department. The shared application reads those files without institution- or department-specific code.
+A static, multi-university course explorer and four-year schedule planner. Every institution supplies its own identity, academic calendars (including unpublished-date placeholders), and one JSON file per department. The shared application reads those files without institution- or department-specific code.
 
 No real institution data is shipped by default. The registry intentionally starts empty, while `template/university-template` contains a small, explicitly fictional development fixture that demonstrates the data format.
 
@@ -60,7 +60,7 @@ Run `python -m unittest discover -s tests`. The suite copies the fictional templ
 
 The `academic_calendar_system` may be `semester`, `quarter`, `trimester`, `hybrid`, or `custom`. A hybrid institution can define multiple calendars; each calendar has its own dated terms and exactly one calendar must be primary. Course offering records reference term codes, so historical and scheduled offerings work consistently across systems.
 
-The planner uses terms whose `planning_enabled` value is true, whose end date is not in the past, and whose start date falls within four years of the current date. Publish enough future terms to cover the intended planning horizon.
+The planner uses terms whose `planning_enabled` value is true, excludes dated terms whose end date is in the past, and shows up to four distinct academic years. Publish official dates when available and add explicitly undated placeholder terms to cover that academic-period horizon.
 
 ## Planner files
 

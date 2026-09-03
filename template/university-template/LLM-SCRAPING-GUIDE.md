@@ -58,7 +58,7 @@ CALENDAR RULES
 1. Identify the institution-level system as semester, quarter, trimester, hybrid, or custom.
 2. For a hybrid system, create separate calendars for populations with different official dates.
 3. Give every term a unique stable code, official display name, academic year, term type, sequence, exact start/end dates, status, and planning_enabled flag.
-4. Include historical terms referenced by offering records and every officially published future term, up to four years when available.
+4. Include historical terms referenced by offering records and enough future terms for four academic years. Use `dates_status: "official"` with both published dates, or `dates_status: "unpublished"` with both dates set to `null`; never estimate dates.
 5. Verify that term date ranges do not overlap unexpectedly within one calendar. Document legitimate overlaps or sessions.
 
 COURSE RULES
