@@ -5,15 +5,37 @@
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  function dateValue(value) { return new Date(`${value}T00:00:00`); }
+  function dateValue(value) { return value == null ? null : new Date(`${value}T00:00:00`); }
+
+  function academicYearStart(term) {
+    const year = Number.parseInt(String(term.academic_year || '').split('-')[0], 10);
+    return Number.isFinite(year) ? year : Number.MAX_SAFE_INTEGER;
+  }
+
+  function compareTerms(a, b) {
+    const yearDifference = academicYearStart(a) - academicYearStart(b);
+    if (yearDifference) return yearDifference;
+    const aDate = dateValue(a.start_date); const bDate = dateValue(b.start_date);
+    if (aDate && bDate) return aDate - bDate;
+    return Number(a.sequence) - Number(b.sequence);
+  }
 
   function planningTerms(calendars, calendarId, now = new Date()) {
     const calendar = (calendars || []).find(item => item.id === calendarId);
     if (!calendar) return [];
     const today = new Date(now); today.setHours(0, 0, 0, 0);
-    const horizon = new Date(today); horizon.setFullYear(horizon.getFullYear() + 4);
-    return (calendar.terms || []).filter(term => term.planning_enabled && dateValue(term.end_date) >= today && dateValue(term.start_date) <= horizon)
-      .sort((a, b) => dateValue(a.start_date) - dateValue(b.start_date));
+    const eligible = (calendar.terms || []).filter(term => {
+      if (!term.planning_enabled) return false;
+      const end = dateValue(term.end_date);
+      return end === null || end >= today;
+    }).sort(compareTerms);
+    // Four academic periods means four distinct academic years represented by the
+    // calendar, not an arbitrary date exactly four years from today.
+    const horizonYears = new Set();
+    eligible.forEach(term => {
+      if (term.academic_year && (horizonYears.has(term.academic_year) || horizonYears.size < 4)) horizonYears.add(term.academic_year);
+    });
+    return eligible.filter(term => horizonYears.has(term.academic_year));
   }
 
   function resolveCourse(courses, value) {
@@ -72,5 +94,5 @@
     const held = history.filter(item => item.term_status === 'historical' && item.offering_status === 'held');
     return held.length && !held.some(item => item.term_type === term.term_type) ? 'unusual' : null;
   }
-  return { planningTerms, resolveCourse, serializePlan, deserializePlan, scheduleCsv, parseCsv, importRows, prerequisiteMissing, offeringDiagnostic };
+  return { planningTerms, compareTerms, resolveCourse, serializePlan, deserializePlan, scheduleCsv, parseCsv, importRows, prerequisiteMissing, offeringDiagnostic };
 }));

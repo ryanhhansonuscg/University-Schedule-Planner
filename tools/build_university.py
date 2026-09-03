@@ -19,6 +19,7 @@ CALENDAR_SYSTEMS = {"semester", "quarter", "trimester", "hybrid", "custom"}
 COURSE_LEVELS = {"undergraduate", "graduate", "professional", "continuing-education", "other"}
 EDGE_KINDS = {"prerequisite", "corequisite", "recommended"}
 TERM_STATUSES = {"historical", "current", "future"}
+DATE_STATUSES = {"official", "unpublished"}
 OFFERING_STATUSES = {"held", "scheduled", "cancelled"}
 
 
@@ -105,15 +106,37 @@ def validate_and_compile(university_dir: Path) -> dict:
         for term in calendar["terms"]:
             require(
                 term,
-                ("code", "name", "academic_year", "term_type", "sequence", "start_date", "end_date", "status"),
+                ("code", "name", "academic_year", "term_type", "sequence", "dates_status", "status"),
                 f"term in {calendar['id']}",
             )
             if term["code"] in term_by_code:
                 raise DataError(f"Duplicate term code across calendars: {term['code']}")
-            start = parse_date(term["start_date"], f"term {term['code']} start_date")
-            end = parse_date(term["end_date"], f"term {term['code']} end_date")
-            if start > end:
-                raise DataError(f"term {term['code']} starts after it ends")
+            if not isinstance(term["academic_year"], str) or not re.fullmatch(r"\d{4}-\d{4}", term["academic_year"]):
+                raise DataError(f"term {term['code']} academic_year must be YYYY-YYYY")
+            first_year, second_year = map(int, term["academic_year"].split("-"))
+            if second_year != first_year + 1:
+                raise DataError(f"term {term['code']} academic_year must contain consecutive years")
+            if isinstance(term["sequence"], bool) or not isinstance(term["sequence"], (int, float)) or not float(term["sequence"]).is_integer():
+                raise DataError(f"term {term['code']} sequence must be numeric and integral")
+            term["sequence"] = int(term["sequence"])
+            if term["dates_status"] not in DATE_STATUSES:
+                raise DataError(f"term {term['code']} has unknown dates_status {term['dates_status']!r}")
+            if "start_date" not in term or "end_date" not in term:
+                raise DataError(f"term {term['code']} must explicitly provide start_date and end_date")
+            start_value, end_value = term.get("start_date"), term.get("end_date")
+            if (start_value is None) != (end_value is None):
+                raise DataError(f"term {term['code']} must provide both start_date and end_date, or set both to null")
+            if term["dates_status"] == "official":
+                if start_value is None:
+                    raise DataError(f"term {term['code']} with official dates_status requires both dates")
+                if not calendar.get("source_url"):
+                    raise DataError(f"term {term['code']} published dates require calendar source_url metadata")
+                start = parse_date(start_value, f"term {term['code']} start_date")
+                end = parse_date(end_value, f"term {term['code']} end_date")
+                if start > end:
+                    raise DataError(f"term {term['code']} starts after it ends")
+            elif start_value is not None:
+                raise DataError(f"term {term['code']} with unpublished dates_status must set both dates to null")
             if term["status"] not in TERM_STATUSES:
                 raise DataError(f"term {term['code']} has unknown status {term['status']!r}")
             term.setdefault("planning_enabled", term["status"] in {"current", "future"})
@@ -256,8 +279,8 @@ def write_database(path: Path, catalog: dict) -> None:
             )
             for term in calendar["terms"]:
                 connection.execute(
-                    "INSERT INTO academic_terms (calendar_id, code, name, academic_year, term_type, sequence, start_date, end_date, status, planning_enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    (calendar["id"], term["code"], term["name"], term["academic_year"], term["term_type"], term["sequence"], term["start_date"], term["end_date"], term["status"], int(term["planning_enabled"])),
+                    "INSERT INTO academic_terms (calendar_id, code, name, academic_year, term_type, sequence, start_date, end_date, dates_status, status, planning_enabled) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    (calendar["id"], term["code"], term["name"], term["academic_year"], term["term_type"], term["sequence"], term["start_date"], term["end_date"], term["dates_status"], term["status"], int(term["planning_enabled"])),
                 )
         for course in catalog["courses"]:
             connection.execute(

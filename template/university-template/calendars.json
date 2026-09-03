@@ -1,5 +1,5 @@
 {
-  "schema_version": 2,
+  "schema_version": 3,
   "academic_calendars": [
     {
       "id": "fictional-quarter",
@@ -17,7 +17,8 @@
           "start_date": "2026-03-30",
           "end_date": "2026-06-12",
           "status": "historical",
-          "planning_enabled": false
+          "planning_enabled": false,
+          "dates_status": "official"
         },
         {
           "code": "2026SU",
@@ -28,7 +29,8 @@
           "start_date": "2026-06-22",
           "end_date": "2026-09-11",
           "status": "current",
-          "planning_enabled": true
+          "planning_enabled": true,
+          "dates_status": "official"
         },
         {
           "code": "2026FA",
@@ -39,7 +41,8 @@
           "start_date": "2026-09-21",
           "end_date": "2026-12-11",
           "status": "future",
-          "planning_enabled": true
+          "planning_enabled": true,
+          "dates_status": "official"
         },
         {
           "code": "2027WI",
@@ -50,7 +53,8 @@
           "start_date": "2027-01-04",
           "end_date": "2027-03-19",
           "status": "future",
-          "planning_enabled": true
+          "planning_enabled": true,
+          "dates_status": "official"
         },
         {
           "code": "2027SP",
@@ -60,6 +64,151 @@
           "sequence": 3,
           "start_date": "2027-03-29",
           "end_date": "2027-06-11",
+          "status": "future",
+          "planning_enabled": true,
+          "dates_status": "official"
+        },
+        {
+          "code": "2027FA",
+          "name": "Fall 2027",
+          "academic_year": "2027-2028",
+          "term_type": "fall",
+          "sequence": 1,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2028WI",
+          "name": "Winter 2028",
+          "academic_year": "2027-2028",
+          "term_type": "winter",
+          "sequence": 2,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2028SP",
+          "name": "Spring 2028",
+          "academic_year": "2027-2028",
+          "term_type": "spring",
+          "sequence": 3,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2028SU",
+          "name": "Summer 2028",
+          "academic_year": "2027-2028",
+          "term_type": "summer",
+          "sequence": 4,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2028FA",
+          "name": "Fall 2028",
+          "academic_year": "2028-2029",
+          "term_type": "fall",
+          "sequence": 1,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2029WI",
+          "name": "Winter 2029",
+          "academic_year": "2028-2029",
+          "term_type": "winter",
+          "sequence": 2,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2029SP",
+          "name": "Spring 2029",
+          "academic_year": "2028-2029",
+          "term_type": "spring",
+          "sequence": 3,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2029SU",
+          "name": "Summer 2029",
+          "academic_year": "2028-2029",
+          "term_type": "summer",
+          "sequence": 4,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2029FA",
+          "name": "Fall 2029",
+          "academic_year": "2029-2030",
+          "term_type": "fall",
+          "sequence": 1,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2030WI",
+          "name": "Winter 2030",
+          "academic_year": "2029-2030",
+          "term_type": "winter",
+          "sequence": 2,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2030SP",
+          "name": "Spring 2030",
+          "academic_year": "2029-2030",
+          "term_type": "spring",
+          "sequence": 3,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
+          "status": "future",
+          "planning_enabled": true
+        },
+        {
+          "code": "2030SU",
+          "name": "Summer 2030",
+          "academic_year": "2029-2030",
+          "term_type": "summer",
+          "sequence": 4,
+          "start_date": null,
+          "end_date": null,
+          "dates_status": "unpublished",
           "status": "future",
           "planning_enabled": true
         }
