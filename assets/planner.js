@@ -23,21 +23,65 @@
   const clearButton = document.getElementById('clear-schedule');
   const importInput = document.getElementById('import-schedule');
   const storageKey = `college-schedule-plan:${data.university?.slug || 'university'}`;
-  let plan = loadPlan();
+  const storageVersion = 2;
+  let migrationNotice = '';
+  let savedPlans = loadPlans();
+  let activeCalendarId = '';
+  let plan = {};
 
   document.title = `${data.university?.short_name || data.university?.name || 'College'} Schedule Planner`;
 
-  function loadPlan() {
+  function cleanPlan(value) {
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+    return Object.fromEntries(Object.entries(value)
+      .filter(([, codes]) => Array.isArray(codes))
+      .map(([termCode, codes]) => [termCode, [...new Set(codes.filter(code => typeof code === 'string'))]]));
+  }
+
+  function loadPlans() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      return saved && typeof saved === 'object' ? saved : {};
+      if (saved?.version === storageVersion && saved.calendars && typeof saved.calendars === 'object') {
+        return {
+          version: storageVersion,
+          calendars: Object.fromEntries(Object.entries(saved.calendars).map(([id, value]) => [id, cleanPlan(value)])),
+          migration: saved.migration && typeof saved.migration === 'object' ? saved.migration : {},
+        };
+      }
+
+      const calendars = {};
+      const unmatched = {};
+      Object.entries(cleanPlan(saved)).forEach(([termCode, codes]) => {
+        const matches = (data.academic_calendars || []).filter(calendar =>
+          (calendar.terms || []).some(term => term.code === termCode));
+        if (!matches.length) unmatched[termCode] = codes;
+        matches.forEach(calendar => {
+          calendars[calendar.id] ||= {};
+          calendars[calendar.id][termCode] = codes;
+        });
+      });
+      const migrated = { version: storageVersion, calendars, migration: {} };
+      if (Object.keys(unmatched).length) {
+        migrated.migration.unmatched = unmatched;
+        migrationNotice = `Schedule storage was upgraded. ${Object.keys(unmatched).length} unmatched term entr${Object.keys(unmatched).length === 1 ? 'y was' : 'ies were'} preserved in the migration recovery bucket.`;
+      } else if (Object.keys(saved || {}).length) {
+        migrationNotice = 'Schedule storage was upgraded for calendar-specific plans.';
+      }
+      localStorage.setItem(storageKey, JSON.stringify(migrated));
+      return migrated;
     } catch {
-      return {};
+      return { version: storageVersion, calendars: {}, migration: {} };
     }
   }
 
   function savePlan() {
-    localStorage.setItem(storageKey, JSON.stringify(plan));
+    if (activeCalendarId) savedPlans.calendars[activeCalendarId] = cleanPlan(plan);
+    localStorage.setItem(storageKey, JSON.stringify(savedPlans));
+  }
+
+  function loadActivePlan() {
+    activeCalendarId = activeCalendar()?.id || '';
+    plan = cleanPlan(savedPlans.calendars[activeCalendarId]);
   }
 
   function dateValue(value) {
@@ -69,6 +113,7 @@
     plannerCalendar.replaceChildren(...calendars.map(calendar => new Option(`${calendar.name} · ${calendar.system_type}`, calendar.id)));
     const primary = calendars.find(calendar => calendar.is_primary) || calendars[0];
     if (primary) plannerCalendar.value = primary.id;
+    loadActivePlan();
     courseOptions.replaceChildren(...courses.map(course => {
       const option = document.createElement('option');
       option.value = `${course.code} — ${course.title}`;
@@ -76,6 +121,7 @@
     }));
     completedCourses.value = localStorage.getItem(`${storageKey}:completed`) || '';
     refreshPlannerCalendar();
+    if (migrationNotice) plannerMessage.textContent = migrationNotice;
   }
 
   function refreshPlannerCalendar() {
@@ -233,10 +279,11 @@
   }
 
   function exportSchedule() {
-    const rows = [['Term', 'Course #', 'Course Name', 'Course Hours']];
-    planningTerms().forEach(term => (plan[term.code] || []).forEach(code => {
+    const rows = [['Calendar ID', 'Term Code', 'Term', 'Course #', 'Course Name', 'Course Hours']];
+    const calendar = activeCalendar();
+    (calendar?.terms || []).forEach(term => (plan[term.code] || []).forEach(code => {
       const course = courseByCode.get(code);
-      rows.push([term.name, code, course?.title || '', course?.credits || '']);
+      rows.push([calendar.id, term.code, term.name, code, course?.title || '', course?.credits || '']);
     }));
     if (rows.length === 1) return;
     const csv = `\uFEFF${rows.map(row => row.map(csvCell).join(',')).join('\r\n')}\r\n`;
@@ -291,13 +338,15 @@
     }
     const headers = rows[0].map(normalizedHeader);
     const termIndex = headers.indexOf('term');
+    const termCodeIndex = headers.indexOf('termcode');
+    const calendarIndex = headers.indexOf('calendarid');
     const codeIndex = headers.findIndex(value => ['course', 'coursecode', 'coursenumber'].includes(value));
     const nameIndex = headers.indexOf('coursename');
-    if (termIndex < 0 || (codeIndex < 0 && nameIndex < 0)) {
-      plannerMessage.textContent = 'Import requires a Term column and either Course # or Course Name.';
+    if ((termIndex < 0 && termCodeIndex < 0) || (codeIndex < 0 && nameIndex < 0)) {
+      plannerMessage.textContent = 'Import requires a Term Code or Term column and either Course # or Course Name.';
       return;
     }
-    const terms = planningTerms();
+    const terms = activeCalendar()?.terms || [];
     const termByLabel = new Map();
     terms.forEach(term => {
       termByLabel.set(term.code.toLowerCase(), term);
@@ -306,9 +355,11 @@
     let imported = 0;
     const skipped = [];
     rows.slice(1).forEach((row, rowIndex) => {
-      const term = termByLabel.get(row[termIndex]?.trim().toLowerCase());
+      const rowCalendarId = calendarIndex >= 0 ? row[calendarIndex]?.trim() : '';
+      const termValue = (termCodeIndex >= 0 ? row[termCodeIndex] : '') || (termIndex >= 0 ? row[termIndex] : '');
+      const term = termByLabel.get(termValue?.trim().toLowerCase());
       const course = resolveCourse((codeIndex >= 0 ? row[codeIndex] : '') || (nameIndex >= 0 ? row[nameIndex] : ''));
-      if (!term || !course) {
+      if ((rowCalendarId && rowCalendarId !== activeCalendar()?.id) || !term || !course) {
         skipped.push(rowIndex + 2);
         return;
       }
@@ -321,7 +372,14 @@
     plannerMessage.textContent = `${imported} course${imported === 1 ? '' : 's'} imported into ${activeCalendar()?.name || 'the schedule'}.${skipped.length ? ` Skipped row${skipped.length === 1 ? '' : 's'} ${skipped.join(', ')} because the term or course was not recognized.` : ''}`;
   }
 
-  plannerCalendar.addEventListener('change', refreshPlannerCalendar);
+  plannerCalendar.addEventListener('change', () => {
+    const previous = activeCalendarId;
+    savePlan();
+    loadActivePlan();
+    refreshPlannerCalendar();
+    const selected = activeCalendar();
+    plannerMessage.textContent = `Switched from ${(data.academic_calendars || []).find(calendar => calendar.id === previous)?.name || 'the previous calendar'} to ${selected?.name || 'the selected calendar'}.`;
+  });
   completedCourses.addEventListener('input', () => {
     localStorage.setItem(`${storageKey}:completed`, completedCourses.value);
     checkPlan(planningTerms());
@@ -351,7 +409,7 @@
   });
   exportButton.addEventListener('click', exportSchedule);
   clearButton.addEventListener('click', () => {
-    if (!window.confirm('Clear every course from this university schedule?')) return;
+    if (!window.confirm(`Clear every course from ${activeCalendar()?.name || 'this calendar'}?`)) return;
     plan = {};
     savePlan();
     renderPlan();
