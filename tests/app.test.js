@@ -39,7 +39,7 @@ function catalog() {
   };
 }
 
-async function initialize(withResizeObserver, catalogData = catalog()) {
+async function initialize(resizeObserverMode, catalogData = catalog()) {
   const ids = ['department', 'level', 'tag', 'query', 'course-list', 'result-count', 'graph',
     'explorer-status', 'summary-selected', 'summary-prerequisites', 'summary-corequisites',
     'summary-dependents', 'details', 'map-title', 'site-footer', 'load-status', 'explorer', 'app'];
@@ -54,7 +54,10 @@ async function initialize(withResizeObserver, catalogData = catalog()) {
   const windowListeners = {};
   let observed;
   class ResizeObserverDouble {
-    constructor(callback) { this.callback = callback; }
+    constructor(callback) {
+      if (resizeObserverMode === 'throwing') throw new Error('ResizeObserver construction failed');
+      this.callback = callback;
+    }
     observe(element) { observed = element; }
   }
   const window = {
@@ -63,7 +66,7 @@ async function initialize(withResizeObserver, catalogData = catalog()) {
     setTimeout,
     clearTimeout,
   };
-  if (withResizeObserver) window.ResizeObserver = ResizeObserverDouble;
+  if (resizeObserverMode === true || resizeObserverMode === 'throwing') window.ResizeObserver = ResizeObserverDouble;
   const document = {
     title: '',
     getElementById: id => elements[id],
@@ -184,14 +187,22 @@ test('browser smoke: mixed internal and external groups retain AND semantics', a
   assert.equal(typeof internal.listeners.click, 'function');
 });
 
-for (const withResizeObserver of [true, false]) {
-  test(`explorer initializes ${withResizeObserver ? 'with' : 'without'} ResizeObserver`, async () => {
-    const app = await initialize(withResizeObserver);
+for (const scenario of [
+  { name: 'with ResizeObserver', mode: true, usesObserver: true },
+  { name: 'without ResizeObserver', mode: false, usesObserver: false },
+  { name: 'when ResizeObserver construction throws', mode: 'throwing', usesObserver: false },
+]) {
+  test(`explorer initializes ${scenario.name}`, async () => {
+    const app = await initialize(scenario.mode);
+    assert.equal(app.elements['course-list'].children.length, 1, 'course list rendered');
+    assert.equal(app.elements['course-list'].children[0].children[0].textContent, 'CS101');
+    assert.ok(app.graphNodes.replaceCount > 0, 'initial graph rendered');
+    assert.ok(app.graphNodes.children.length > 0, 'graph contains a course node');
+    assert.equal(app.elements.details.children[0].textContent, 'CS101 · Introduction', 'details rendered');
     assert.equal(app.elements['load-status'].hidden, true);
     assert.equal(app.elements.explorer.hidden, false);
     assert.equal(app.elements.app['aria-busy'], 'false');
-    assert.ok(app.graphNodes.replaceCount > 0, 'initial graph rendered');
-    if (withResizeObserver) {
+    if (scenario.usesObserver) {
       assert.equal(app.observed, app.elements.graph);
       assert.equal(app.windowListeners.resize, undefined);
     } else {
