@@ -273,3 +273,63 @@ Before release, serve the site locally and check both pages with a populated uni
 - **Screen reader relationship navigation:** with a screen reader, select several courses, navigate the Relationship summary by heading and list, and confirm the selected course, prerequisites, corequisites, and dependents are understandable. Then navigate graph buttons and confirm each accessible name states its course and relationship. Ensure graph redraws are not announced wholesale and only concise selection/result-count status messages are spoken.
 
 `python tools/final_qa.py` is the single canonical final release gate. It detects unresolved merge markers, missing required files and local references from HTML, CSS, and JavaScript modules, malformed tracked JSON, test or syntax failures, institution-specific content, and non-reproducible template artifacts. It reports each completed test layer separately. Run it from a clean worktree after merging work to ensure no conflict residue or required element was lost.
+
+## Build an end-user release
+
+End-user releases support **64-bit Windows 10 and Windows 11** and **macOS
+Monterey 12 or newer**. They require the official Python 3.12 installation
+described in the quickstart and a current version of Safari, Chrome, Edge, or
+Firefox. The planner itself runs from extracted local files; neither platform
+needs an HTTP server.
+
+Set the release version in `package.json`, commit every intended change, and
+start from the repository root with no modified tracked files. Then run:
+
+```bash
+python tools/build_release.py
+```
+
+The command refuses a dirty tracked worktree, runs the canonical
+`python tools/final_qa.py` gate, and creates these deterministically named files
+under the ignored `release/` directory:
+
+```text
+university-schedule-planner-v<version>.zip
+university-schedule-planner-v<version>.zip.sha256
+```
+
+Packaging uses an explicit end-user allowlist. It includes the local-file web
+application, required assets, CSV template, quickstart ZIP importer, build and
+validation helpers, LLM scraping directions, and fictional university template.
+It excludes tests, package-manager and CI configuration, caches, temporary
+files, contributor-only tools, generated distributions, and every real
+university source-data directory. Before reporting success, the command checks
+the ZIP's exact manifest and file contents, rejects unsafe archive paths and
+links, and extracts it into a temporary directory for static inspection. Upload
+both generated files to the matching release; users can compare the ZIP's
+SHA-256 digest with the single line in the `.sha256` file.
+
+### Clean-machine manual release checklist
+
+Perform this checklist on clean installations of every supported operating
+system. Do not run `tools/serve.py` or start any other HTTP server during it.
+
+- [ ] Download the ZIP and checksum, verify the SHA-256 digest with
+  `Get-FileHash <zip> -Algorithm SHA256` on Windows or `shasum -a 256 <zip>` on
+  macOS, and extract the ZIP using File Explorer or Finder.
+- [ ] Confirm the extracted folder directly contains `README.md`, `index.html`,
+  `planner.html`, `assets/`, `template/`, `tools/`, and `universities/`.
+- [ ] Obtain a reviewed university ZIP with the documented single-folder layout
+  and import it using `py -3 tools\quickstart.py <zip>` (Windows) or
+  `python3 tools/quickstart.py <zip>` (macOS).
+- [ ] Double-click the generated `dist/<slug>/index.html` and confirm the
+  standalone course explorer launches from a `file://` URL without an HTTP
+  server or browser console loading errors.
+- [ ] Open `planner.html` using the planner navigation link, then return to the
+  explorer and confirm the selected university is retained.
+- [ ] Add courses in multiple terms, close every browser window, reopen the same
+  `planner.html`, and confirm the plan persisted in browser local storage.
+- [ ] Export the plan to CSV, clear or change it, import the exported CSV, and
+  confirm term placement, course identity, hours, and validation messages round
+  trip correctly. Also import `schedule-import-template.csv` after filling in
+  valid courses for the installed university.

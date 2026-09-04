@@ -45,6 +45,7 @@ REQUIRED_PATHS = (
     "template/university-template/university.json",
     "tools/check_generated.py",
     "tools/build_standalone.py",
+    "tools/build_release.py",
     "universities/README.md",
     "universities/index.json",
 )
