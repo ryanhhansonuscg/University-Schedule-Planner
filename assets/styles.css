@@ -98,6 +98,7 @@ select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px 
 .planner-guidance { color: var(--muted); font-size: .82rem; }
 .planner-guidance p { margin-bottom: 6px; }
 .planner-message:focus-visible { outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 2px; }
+.storage-warning { padding: 10px 12px; border: 2px solid #a33a20; border-radius: 6px; background: #fff1ec; color: #70230f; font-weight: 700; }
 .plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 10px; align-items: start; }
 .plan-term { min-width: 0; padding: 13px; border: 1px solid var(--border); border-top: 4px solid var(--brand-secondary); border-radius: 12px; background: var(--surface); }
 .plan-term h3 { margin: 0; font-size: .95rem; }

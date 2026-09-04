@@ -19,15 +19,18 @@
   const issueCount = document.getElementById('issue-count');
   const calendarCoverage = document.getElementById('calendar-coverage');
   const plannerMessage = document.getElementById('planner-message');
+  const storageWarning = document.getElementById('storage-warning');
   const exportButton = document.getElementById('export-schedule');
   const clearButton = document.getElementById('clear-schedule');
   const importInput = document.getElementById('import-schedule');
   const storageKey = `college-schedule-plan:${data.university?.slug || 'university'}`;
   const storageVersion = 2;
+  const storage = PlannerCore.createStorageAdapter(localStorage);
   let migrationNotice = '';
   let savedPlans = loadPlans();
   let activeCalendarId = '';
   let plan = {};
+  let completedSaveTimer;
 
   document.title = `${data.university?.short_name || data.university?.name || 'College'} Schedule Planner`;
 
@@ -38,17 +41,28 @@
       .map(([termCode, codes]) => [termCode, [...new Set(codes.filter(code => typeof code === 'string'))]]));
   }
 
-  function loadPlans() {
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey) || '{}');
-      if (saved?.version === storageVersion && saved.calendars && typeof saved.calendars === 'object') {
-        return {
-          version: storageVersion,
-          calendars: Object.fromEntries(Object.entries(saved.calendars).map(([id, value]) => [id, cleanPlan(value)])),
-          migration: saved.migration && typeof saved.migration === 'object' ? saved.migration : {},
-        };
-      }
+  function warnStorage(message = 'Changes cannot be saved in this browser. You can continue planning during this session; export your schedule before leaving.') {
+    if (storageWarning.textContent === message && !storageWarning.hidden) return;
+    storageWarning.textContent = message;
+    storageWarning.hidden = false;
+  }
 
+  function loadPlans() {
+    const result = storage.read(storageKey);
+    if (!result.ok) { warnStorage(); return { version: storageVersion, calendars: {}, migration: {} }; }
+    let saved;
+    try { saved = JSON.parse(result.value || '{}'); }
+    catch { warnStorage('Saved planner data is malformed and could not be loaded. New changes will use a fresh in-memory schedule.'); return { version: storageVersion, calendars: {}, migration: {} }; }
+    if (Object.hasOwn(saved, 'version')) {
+      if (!PlannerCore.validateStoredPlans(saved, storageVersion)) {
+        warnStorage('Saved planner data has an invalid format and could not be loaded. New changes will use a fresh in-memory schedule.');
+        return { version: storageVersion, calendars: {}, migration: {} };
+      }
+      return saved;
+    }
+
+    try {
+      if (!PlannerCore.validatePlanMap(saved)) throw new Error('Invalid legacy plan');
       const calendars = {};
       const unmatched = {};
       Object.entries(cleanPlan(saved)).forEach(([termCode, codes]) => {
@@ -67,17 +81,19 @@
       } else if (Object.keys(saved || {}).length) {
         migrationNotice = 'Schedule storage was upgraded for calendar-specific plans.';
       }
-      localStorage.setItem(storageKey, JSON.stringify(migrated));
+      if (!storage.write(storageKey, JSON.stringify(migrated)).ok) warnStorage();
       return migrated;
-      return PlannerCore.deserializePlan(localStorage.getItem(storageKey));
     } catch {
+      warnStorage('Saved planner data has an invalid format and could not be loaded. New changes will use a fresh in-memory schedule.');
       return { version: storageVersion, calendars: {}, migration: {} };
     }
   }
 
   function savePlan() {
     if (activeCalendarId) savedPlans.calendars[activeCalendarId] = cleanPlan(plan);
-    localStorage.setItem(storageKey, JSON.stringify(savedPlans));
+    const result = storage.write(storageKey, JSON.stringify(savedPlans));
+    if (!result.ok) warnStorage();
+    return result;
   }
 
   function loadActivePlan() {
@@ -120,7 +136,9 @@
       option.value = `${course.code} — ${course.title}`;
       return option;
     }));
-    completedCourses.value = localStorage.getItem(`${storageKey}:completed`) || '';
+    const completedResult = storage.read(`${storageKey}:completed`);
+    if (completedResult.ok) completedCourses.value = completedResult.value || '';
+    else warnStorage();
     refreshPlannerCalendar();
     if (migrationNotice) plannerMessage.textContent = migrationNotice;
   }
@@ -340,8 +358,11 @@
     plannerMessage.textContent = `Switched from ${(data.academic_calendars || []).find(calendar => calendar.id === previous)?.name || 'the previous calendar'} to ${selected?.name || 'the selected calendar'}.`;
   });
   completedCourses.addEventListener('input', () => {
-    localStorage.setItem(`${storageKey}:completed`, completedCourses.value);
     checkPlan(planningTerms());
+    clearTimeout(completedSaveTimer);
+    completedSaveTimer = setTimeout(() => {
+      if (!storage.write(`${storageKey}:completed`, completedCourses.value).ok) warnStorage();
+    }, 300);
   });
   document.getElementById('add-to-plan').addEventListener('click', () => {
     const course = resolveCourse(plannerCourseSearch.value);

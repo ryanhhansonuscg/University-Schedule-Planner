@@ -40,5 +40,6 @@ test('planner controls reference guidance and import errors are focusable', () =
   }
   assert.match(html, /id="import-schedule"[^>]+aria-describedby="[^"]*planner-message/);
   assert.match(html, /id="planner-message"[^>]+tabindex="-1"/);
+  assert.match(html, /id="storage-warning"[^>]+role="alert"[^>]+aria-live="assertive"/);
   assert.match(js, /plannerMessage\.focus\?\.\(\)/);
 });
