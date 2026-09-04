@@ -20,22 +20,62 @@
     return Number(a.sequence) - Number(b.sequence);
   }
 
+  function termPosition(term) {
+    const year = academicYearStart(term);
+    const sequence = Number(term.sequence);
+    return Number.isFinite(year) && year !== Number.MAX_SAFE_INTEGER && Number.isFinite(sequence)
+      ? { year, sequence }
+      : null;
+  }
+
+  function comparePositions(a, b) {
+    return a.year - b.year || a.sequence - b.sequence;
+  }
+
   function planningTerms(calendars, calendarId, now = new Date()) {
     const calendar = (calendars || []).find(item => item.id === calendarId);
-    if (!calendar) return [];
     const today = new Date(now); today.setHours(0, 0, 0, 0);
-    const eligible = (calendar.terms || []).filter(term => {
-      if (!term.planning_enabled) return false;
-      const end = dateValue(term.end_date);
-      return end === null || end >= today;
-    }).sort(compareTerms);
-    // Four academic periods means four distinct academic years represented by the
-    // calendar, not an arbitrary date exactly four years from today.
-    const horizonYears = new Set();
-    eligible.forEach(term => {
-      if (term.academic_year && (horizonYears.has(term.academic_year) || horizonYears.size < 4)) horizonYears.add(term.academic_year);
+    const cutoff = new Date(today); cutoff.setFullYear(cutoff.getFullYear() + 4);
+    const empty = {
+      terms: [],
+      horizon: { years: 4, start: today, endpoint: cutoff, endpointCovered: false, dependsOnUnpublishedDates: false },
+    };
+    if (!calendar) return empty;
+    const enabled = (calendar.terms || []).filter(term => term.planning_enabled).sort(compareTerms);
+    const dated = enabled.filter(term => dateValue(term.start_date) && dateValue(term.end_date));
+    // The horizon is the closed interval [today, the same calendar date four years
+    // later]. A dated term belongs when its own closed interval intersects it.
+    const selectedDated = dated.filter(term => dateValue(term.end_date) >= today && dateValue(term.start_date) <= cutoff);
+
+    // Undated terms are compared to today's academic position. This preserves the
+    // fraction of the current academic year: e.g. spring-to-spring includes four
+    // future springs rather than allowing the current, nearly-finished year to
+    // count as one of four labels.
+    const anchorTerm = dated.find(term => dateValue(term.start_date) <= today && dateValue(term.end_date) >= today)
+      || dated.find(term => dateValue(term.end_date) >= today);
+    const anchor = anchorTerm && termPosition(anchorTerm);
+    const endpointPosition = anchor && { year: anchor.year + 4, sequence: anchor.sequence };
+    const undated = enabled.filter(term => !dateValue(term.start_date) || !dateValue(term.end_date));
+    const selectedUndated = anchor ? undated.filter(term => {
+      const position = termPosition(term);
+      return position && comparePositions(position, anchor) >= 0 && comparePositions(position, endpointPosition) <= 0;
+    }) : [];
+
+    const datedEndpointCoverage = dated.some(term => dateValue(term.start_date) <= cutoff && dateValue(term.end_date) >= cutoff);
+    const unpublishedEndpointCoverage = !datedEndpointCoverage && endpointPosition && undated.some(term => {
+      const position = termPosition(term);
+      return position && position.year === endpointPosition.year && position.sequence === endpointPosition.sequence;
     });
-    return eligible.filter(term => horizonYears.has(term.academic_year));
+    return {
+      terms: [...selectedDated, ...selectedUndated].sort(compareTerms),
+      horizon: {
+        years: 4,
+        start: today,
+        endpoint: cutoff,
+        endpointCovered: Boolean(datedEndpointCoverage || unpublishedEndpointCoverage),
+        dependsOnUnpublishedDates: Boolean(unpublishedEndpointCoverage),
+      },
+    };
   }
 
   function resolveCourse(courses, value) {

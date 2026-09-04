@@ -24,18 +24,64 @@ test('versioned storage validator checks nested maps and migration data', () => 
 });
 const courses = [{code:'CS101',title:'Intro, "CS"',credits:'3',offering_history:[]},{code:'CS201',title:'Algorithms',credits:'4',offering_history:[{term_code:'F1',term_type:'fall',term_status:'future',offering_status:'scheduled'}]}];
 const terms = [{code:'F1',name:'Fall 2026',academic_year:'2026-2027',sequence:1,start_date:'2026-09-01',end_date:'2026-12-01',planning_enabled:true,term_type:'fall'},{code:'FAR',name:'Far',academic_year:'2031-2032',sequence:1,start_date:'2031-01-01',end_date:'2031-02-01',planning_enabled:true}];
-test('planning horizon uses four academic periods and sorts dated and undated terms',()=>{
+test('planning horizon extends four years from a middle term and sorts dated and undated terms',()=>{
   const mixed = [
-    {code:'A2',academic_year:'2026-2027',sequence:2,start_date:null,end_date:null,planning_enabled:true},
-    {code:'A1',academic_year:'2026-2027',sequence:1,start_date:null,end_date:null,planning_enabled:true},
+    {code:'A2',academic_year:'2026-2027',sequence:2,start_date:'2026-01-01',end_date:'2026-05-31',planning_enabled:true},
+    {code:'A1',academic_year:'2026-2027',sequence:1,start_date:'2025-09-01',end_date:'2025-12-31',planning_enabled:true},
     {code:'B2',academic_year:'2027-2028',sequence:2,start_date:'2028-01-01',end_date:'2028-05-01',planning_enabled:true},
     {code:'B1',academic_year:'2027-2028',sequence:1,start_date:'2027-09-01',end_date:'2027-12-01',planning_enabled:true},
     {code:'C',academic_year:'2028-2029',sequence:1,start_date:null,end_date:null,planning_enabled:true},
     {code:'D',academic_year:'2029-2030',sequence:1,start_date:null,end_date:null,planning_enabled:true},
-    {code:'OUT',academic_year:'2030-2031',sequence:1,start_date:null,end_date:null,planning_enabled:true},
+    {code:'END1',academic_year:'2030-2031',sequence:1,start_date:null,end_date:null,planning_enabled:true},
+    {code:'END2',academic_year:'2030-2031',sequence:2,start_date:null,end_date:null,planning_enabled:true},
+    {code:'OUT',academic_year:'2030-2031',sequence:3,start_date:null,end_date:null,planning_enabled:true},
     {code:'PAST',academic_year:'2025-2026',sequence:1,start_date:'2025-01-01',end_date:'2025-02-01',planning_enabled:true},
   ];
-  assert.deepEqual(core.planningTerms([{id:'c',terms:mixed}], 'c', new Date('2026-01-01')).map(t=>t.code),['A1','A2','B1','B2','C','D']);
+  const result=core.planningTerms([{id:'c',terms:mixed}], 'c', new Date('2026-02-01'));
+  assert.deepEqual(result.terms.map(t=>t.code),['A2','B1','B2','C','D','END1','END2']);
+  assert.equal(result.horizon.endpointCovered,true);
+  assert.equal(result.horizon.dependsOnUnpublishedDates,true);
+});
+
+function academicTerms(currentSequence, includeEndpoint=true) {
+  const terms=[];
+  for (let year=2025;year<=2029;year+=1) for (let sequence=1;sequence<=3;sequence+=1) {
+    if (year===2029 && sequence===currentSequence && !includeEndpoint) continue;
+    terms.push({code:`${year}-${sequence}`,academic_year:`${year}-${year+1}`,sequence,start_date:null,end_date:null,planning_enabled:true});
+  }
+  const dates=[['2025-09-01','2025-12-31'],['2026-01-01','2026-05-31'],['2026-06-01','2026-08-31']][currentSequence-1];
+  const current=terms.find(term=>term.code===`2025-${currentSequence}`);
+  current.start_date=dates[0]; current.end_date=dates[1];
+  return terms;
+}
+
+for (const [label,sequence,today] of [['beginning',1,'2025-09-01'],['middle',2,'2026-03-01'],['final',3,'2026-07-01']]) {
+  test(`an academic year at its ${label} retains the equivalent endpoint period`,()=>{
+    const result=core.planningTerms([{id:'c',terms:academicTerms(sequence)}],'c',new Date(today));
+    assert.ok(result.terms.some(term=>term.code===`2029-${sequence}`));
+    assert.ok(!result.terms.some(term=>term.code===`2029-${sequence+1}`));
+    assert.equal(result.horizon.endpointCovered,true);
+    assert.equal(result.horizon.dependsOnUnpublishedDates,true);
+  });
+}
+
+test('dated terms include both exact four-year endpoint boundaries',()=>{
+  const terms=[
+    {code:'CURRENT',academic_year:'2025-2026',sequence:1,start_date:'2025-09-04',end_date:'2025-12-01',planning_enabled:true},
+    {code:'ENDS',academic_year:'2029-2030',sequence:1,start_date:'2029-08-01',end_date:'2029-09-04',planning_enabled:true},
+    {code:'STARTS',academic_year:'2029-2030',sequence:2,start_date:'2029-09-04',end_date:'2029-12-01',planning_enabled:true},
+    {code:'AFTER',academic_year:'2029-2030',sequence:3,start_date:'2029-09-05',end_date:'2029-12-31',planning_enabled:true},
+  ];
+  const result=core.planningTerms([{id:'c',terms}],'c',new Date('2025-09-04'));
+  assert.deepEqual(result.terms.map(term=>term.code),['CURRENT','ENDS','STARTS']);
+  assert.equal(result.horizon.endpointCovered,true);
+  assert.equal(result.horizon.dependsOnUnpublishedDates,false);
+});
+
+test('insufficient future placeholders report that the endpoint is not covered',()=>{
+  const result=core.planningTerms([{id:'c',terms:academicTerms(2,false)}],'c',new Date('2026-03-01'));
+  assert.equal(result.horizon.endpointCovered,false);
+  assert.equal(result.horizon.dependsOnUnpublishedDates,false);
 });
 test('OR prerequisite groups accept either course',()=>assert.deepEqual(core.prerequisiteMissing([{source:'A',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'},{source:'B',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'}],'C',new Set(['B'])),[]));
 test('requirement evaluation handles single edges, AND groups, and accurate messages',()=>{

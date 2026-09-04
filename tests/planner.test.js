@@ -152,7 +152,7 @@ test('undated terms render publication and planning-placeholder labels', async (
   const undatedSection = app.elements['plan-grid'].children.find(section => section.children[0].textContent === 'Future term');
   assert.match(undatedSection.children[1].textContent, /Dates not yet published/);
   assert.match(undatedSection.children[1].textContent, /planning placeholder, not a confirmed schedule/);
-  assert.match(app.elements['calendar-coverage'].textContent, /four-academic-period horizon/);
+  assert.match(app.elements['calendar-coverage'].textContent, /four-year horizon/);
 });
 
 test('course badges show unconfirmed availability while exact cancellation is prominent', async () => {
