@@ -28,7 +28,9 @@ test('course graph has a persistent semantic relationship summary and dedicated 
     assert.match(html, new RegExp(`id="${id}"`));
   }
   assert.match(html, /id="explorer-status"[^>]+role="status"/);
-  assert.match(js, /renderRelationshipSummary\(layers\)/);
+  assert.match(js, /renderRelationshipSummary\(\)/);
+  assert.match(js, /PlannerCore\.requirementGroups\(edges, selectedCode, kind\)/);
+  assert.match(html, /class="external"[^>]*aria-hidden="true"[^>]*>\s*<\/i> external requirement/);
   assert.match(js, /setAttribute\('aria-label',[\s\S]*relationshipToSelected/);
 });
 

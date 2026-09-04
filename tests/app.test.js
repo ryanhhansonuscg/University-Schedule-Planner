@@ -7,8 +7,9 @@ const PlannerCore = require('../assets/planner-core.js');
 const appSource = fs.readFileSync('assets/app.js', 'utf8');
 
 class Element {
-  constructor(id = '') {
+  constructor(id = '', tagName = '') {
     this.id = id;
+    this.tagName = tagName.toUpperCase();
     this.value = '';
     this.textContent = '';
     this.hidden = false;
@@ -38,7 +39,7 @@ function catalog() {
   };
 }
 
-async function initialize(withResizeObserver) {
+async function initialize(withResizeObserver, catalogData = catalog()) {
   const ids = ['department', 'level', 'tag', 'query', 'course-list', 'result-count', 'graph',
     'explorer-status', 'summary-selected', 'summary-prerequisites', 'summary-corequisites',
     'summary-dependents', 'details', 'map-title', 'site-footer', 'load-status', 'explorer', 'app'];
@@ -57,7 +58,7 @@ async function initialize(withResizeObserver) {
     observe(element) { observed = element; }
   }
   const window = {
-    COLLEGE_PLANNER: { loadCatalog: async () => ({ catalog: catalog() }) },
+    COLLEGE_PLANNER: { loadCatalog: async () => ({ catalog: catalogData }) },
     addEventListener: (name, callback) => { windowListeners[name] = callback; },
     setTimeout,
     clearTimeout,
@@ -66,13 +67,74 @@ async function initialize(withResizeObserver) {
   const document = {
     title: '',
     getElementById: id => elements[id],
-    createElement: () => new Element(),
+    createElement: tagName => new Element('', tagName),
     createElementNS: () => new Element(),
   };
   vm.runInNewContext(appSource, { window, document, Option, Node: Element, PlannerCore, Map, Set });
   await new Promise(resolve => setImmediate(resolve));
   return { elements, graphNodes, observed, windowListeners };
 }
+
+function requirementCatalog(edges) {
+  return {
+    university: { short_name: 'Test U', catalog_date: '2026-09-01' },
+    departments: [{ code: 'CS', name: 'Computer Science' }],
+    courses: [
+      { code: 'CS300', department: 'CS', level: 'undergraduate', title: 'Target course', credits: 3, tags: [] },
+      { code: 'CS100', department: 'CS', level: 'undergraduate', title: 'Catalog course', credits: 3, tags: [] },
+    ],
+    edges,
+  };
+}
+
+async function renderRequirements(edges) {
+  const app = await initialize(true, requirementCatalog(edges));
+  // CS300 has the most relationships, so the initial explorer selection is deterministic.
+  const externalNodes = app.graphNodes.children.filter(node => node.className === 'graph-node external');
+  return { ...app, externalNodes };
+}
+
+test('browser smoke: external prerequisite is visible but not selectable', async () => {
+  const app = await renderRequirements([
+    { source: 'PLACEMENT', target: 'CS300', kind: 'prerequisite', source_in_database: false },
+  ]);
+  assert.equal(app.externalNodes.length, 1);
+  assert.equal(app.externalNodes[0].tagName, 'DIV');
+  assert.equal(app.externalNodes[0].listeners.click, undefined);
+  assert.equal(app.externalNodes[0].children[1].textContent, 'External or uncataloged requirement');
+  assert.match(app.elements['summary-prerequisites'].children[0].textContent, /AND — all of: PLACEMENT — External or uncataloged requirement/);
+});
+
+test('browser smoke: external corequisite appears in graph and semantic summary', async () => {
+  const app = await renderRequirements([
+    { source: 'LAB-CONSENT', target: 'CS300', kind: 'corequisite', source_in_database: false },
+  ]);
+  assert.equal(app.externalNodes.length, 1);
+  assert.match(app.elements['summary-corequisites'].children[0].textContent, /LAB-CONSENT — External or uncataloged requirement/);
+});
+
+test('browser smoke: grouped external alternatives retain OR semantics', async () => {
+  const app = await renderRequirements([
+    { source: 'MATH-PLACEMENT', target: 'CS300', kind: 'prerequisite', source_in_database: false, logic_group: 'entry', logic_operator: 'OR' },
+    { source: 'INSTRUCTOR-CONSENT', target: 'CS300', kind: 'prerequisite', source_in_database: false, logic_group: 'entry', logic_operator: 'OR' },
+  ]);
+  assert.equal(app.externalNodes.length, 2);
+  assert.match(app.elements['summary-prerequisites'].children[0].textContent,
+    /OR — one of: MATH-PLACEMENT .* or INSTRUCTOR-CONSENT/);
+});
+
+test('browser smoke: mixed internal and external groups retain AND semantics', async () => {
+  const app = await renderRequirements([
+    { source: 'CS100', target: 'CS300', kind: 'prerequisite', source_in_database: true, logic_group: 'foundation', logic_operator: 'AND' },
+    { source: 'PORTFOLIO', target: 'CS300', kind: 'prerequisite', source_in_database: false, logic_group: 'foundation', logic_operator: 'AND' },
+  ]);
+  assert.equal(app.externalNodes.length, 1);
+  assert.match(app.elements['summary-prerequisites'].children[0].textContent,
+    /AND — all of: CS100 — Catalog course and PORTFOLIO — External or uncataloged requirement/);
+  const internal = app.graphNodes.children.find(node => node.children[0]?.textContent === 'CS100');
+  assert.equal(internal.tagName, 'BUTTON');
+  assert.equal(typeof internal.listeners.click, 'function');
+});
 
 for (const withResizeObserver of [true, false]) {
   test(`explorer initializes ${withResizeObserver ? 'with' : 'without'} ResizeObserver`, async () => {
