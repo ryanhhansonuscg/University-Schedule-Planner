@@ -309,7 +309,15 @@
 
   [department, level, tag].forEach(control => control.addEventListener('change', refresh));
   query.addEventListener('input', refresh);
-  new ResizeObserver(renderGraph).observe(graph);
+  if (typeof window.ResizeObserver === 'function') {
+    new window.ResizeObserver(renderGraph).observe(graph);
+  } else {
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(renderGraph, 150);
+    });
+  }
   document.getElementById('load-status').hidden = true;
   document.getElementById('explorer').hidden = false;
   document.getElementById('app').setAttribute('aria-busy', 'false');
