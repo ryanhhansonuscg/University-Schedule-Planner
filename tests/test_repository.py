@@ -14,9 +14,13 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from build_university import build, normalize_credits, validate_registry  # noqa: E402
 from check_prohibited_terms import violations  # noqa: E402
+from check_llm_instructions import instruction_errors  # noqa: E402
 
 
 class RepositoryTests(unittest.TestCase):
+    def test_readme_links_to_authoritative_llm_guide(self) -> None:
+        self.assertEqual(instruction_errors(ROOT), [])
+
     def test_llm_guide_credit_examples_match_validator_grammar(self) -> None:
         guide = (ROOT / "template" / "university-template" / "LLM-SCRAPING-GUIDE.md").read_text(encoding="utf-8")
         course_rules = re.split(r"\n#{1,4} ", guide.split("#### COURSE RULES", 1)[1], maxsplit=1)[0]

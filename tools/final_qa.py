@@ -45,6 +45,7 @@ REQUIRED_PATHS = (
     "template/university-template/departments/SAMPLE.json",
     "template/university-template/university.json",
     "tools/check_generated.py",
+    "tools/check_llm_instructions.py",
     "tools/build_standalone.py",
     "tools/build_release.py",
     "tools/launcher.py",
@@ -64,6 +65,7 @@ CATEGORIES = (
     ("Python syntax checks", (sys.executable, "-m", "compileall", "-q", "tools", "tests")),
     ("JavaScript syntax checks", ("npm", "run", "check")),
     ("Institution-neutral content checks", (sys.executable, "tools/check_prohibited_terms.py")),
+    ("Authoritative LLM instruction check", (sys.executable, "tools/check_llm_instructions.py")),
     ("Canonical template validation", (sys.executable, "tools/validate_university.py", "--template", "template/university-template")),
 )
 

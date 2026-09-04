@@ -1,32 +1,44 @@
 # LLM university data collection and archive contract
 
-This document is a self-contained prompt for a browsing-capable LLM or coding
-agent. Supply it unchanged with only (a) the university's name **or** one official
-university starting URL and (b) the requested departments. The agent must discover
-the remaining official sources and return an import-ready ZIP. Human review is
-still required because catalogs often express prerequisite alternatives, minimum
-grades, permissions, cross-listings, variable credits, and exceptions in prose.
+This document is the single authoritative prompt for a browsing-capable LLM or
+coding agent. Supply it unchanged with only the university's name **or** one
+official university URL. The agent must discover the institution's course-bearing
+departments, official subject codes, remaining official sources, and an appropriate
+collection scope before returning an import-ready ZIP. Human review is still
+required because catalogs often express prerequisite alternatives, minimum grades,
+permissions, cross-listings, variable credits, and exceptions in prose.
+
+Tell it to browse only official university sources, follow the output contract in the directions, and return a ZIP containing one completed university folder. Review its reported inaccessible pages and ambiguities before accepting the ZIP. Never provide credentials or ask it to bypass access controls.
 
 ## Input to append to this prompt
 
 ```text
 University name OR official university starting URL: <ONE VALUE>
-Requested departments: <OFFICIAL SUBJECT CODES OR DEPARTMENT NAMES>
 ```
 
-If a department name is supplied instead of a subject code, determine its code
-from the official catalog. Do not ask for catalog, registrar, schedule, academic
-year, slug, or snapshot-date fields unless official sources genuinely leave the
-request ambiguous. Use the date on which browsing occurs as the snapshot date.
+This is the complete input contract. Do not ask the user to locate or supply
+catalog, registrar, class-schedule, academic-year, slug, snapshot-date,
+department-name, or department-code details. Discover them from official
+university sources. Use the date on which browsing occurs as the snapshot date.
 
 ## Your task
 
 Collect verified university metadata, academic calendars, courses, relationships,
-and offering history for the requested departments. The field contract below is
-self-contained and uses schema version 3. If
+and offering history for the university's course-bearing departments and subject
+codes. The field contract below is self-contained and uses schema version 3. If
 `template/university-template/README.md` is also available, use it as supplementary
-documentation; the only required user inputs remain the institution and requested
-departments.
+documentation; the only required user input remains the institution name or URL.
+
+Before collection, derive the department and subject-code scope from the official
+catalog and relevant official academic-unit pages. Normally include every current,
+course-bearing subject code, grouping it under its official department where the
+institution publishes that relationship. Do not make a novice enumerate or decode
+departments. Proceed without a scope question when the official sources are clear.
+Only when they genuinely conflict or leave material uncertainty, present a
+conservative proposed scope, identify the exact ambiguity and official sources,
+and ask the user to confirm that scope. Never turn confirmation into a request for
+the user to research catalog, registrar, schedule, academic-year, slug,
+snapshot-date, or department-code details.
 
 ### 1. Discover and verify official sources
 
@@ -38,7 +50,7 @@ departments.
    for links labelled **Academics**, **Catalog**, **Courses**, **Registrar**,
    **Academic Calendar**, **Class Schedule**, **Course Search**, or equivalent.
    Follow official links to find, in order:
-   - the current course catalog and requested subject pages;
+   - the current course catalog and all relevant subject and department pages;
    - the registrar's authoritative academic-calendar page or document; and
    - public term-specific schedules, archives, downloads, or APIs.
 3. If navigation is insufficient, use a web search restricted to the verified
@@ -67,8 +79,8 @@ transliterate where possible, lowercase it, replace each run of non-alphanumeric
 characters with one hyphen, and remove leading/trailing hyphens. Validate the
 result against `^[a-z0-9]+(?:-[a-z0-9]+)*$`. It must be non-empty and must match
 the `slug` in `university.json` and the archive's directory name. If transliteration
-is ambiguous, report the ambiguity and ask for a slug rather than choosing
-nondeterministically.
+is ambiguous, choose the most conservative deterministic result and report the
+ambiguity; do not ask the user to supply a slug.
 
 ### 3. Deterministic ZIP output contract
 
@@ -86,8 +98,9 @@ entries themselves are optional, but the only file paths allowed are:
 <slug>/departments/<CODE>.json
 ```
 
-There must be exactly one department JSON file for each requested department and
-no others. `<CODE>` is the official uppercase subject code and must match the
+There must be exactly one department JSON file for each subject code in the
+confirmed or unambiguous discovered scope and no others. `<CODE>` is the official
+uppercase subject code and must match the
 file's `department.code`. Sort department files by code, JSON object keys in schema
 order, arrays in the stable orders described below, and use UTF-8, two-space JSON
 indentation, a final newline, and no comments. Give ZIP members a fixed timestamp
