@@ -1,0 +1,31 @@
+{
+  "schema_version": 3,
+  "department": {
+    "code": "EX",
+    "name": "Example Studies",
+    "school": "Example College",
+    "source_url": "https://catalog.example.invalid/courses/ex/"
+  },
+  "courses": [
+    {
+      "code": "EX101",
+      "department": "EX",
+      "number": "101",
+      "level": "undergraduate",
+      "title": "Introduction to Examples",
+      "credits": "3",
+      "description": "A fictional course for archive importer tests.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/ex/101",
+      "source_catalog": "2026-2027 catalog",
+      "tags": [
+        "foundations"
+      ],
+      "offering_history": []
+    }
+  ],
+  "edges": []
+}
