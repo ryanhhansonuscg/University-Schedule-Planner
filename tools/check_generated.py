@@ -6,11 +6,14 @@ from __future__ import annotations
 import argparse
 import json
 import sqlite3
+from contextlib import closing
 from pathlib import Path
 
 
 def _database_snapshot(path: Path) -> tuple[list[tuple], dict[str, list[tuple]]]:
-    with sqlite3.connect(path) as database:
+    # sqlite3's context manager manages transactions but does not close the
+    # connection, so explicitly close each handle after taking its snapshot.
+    with closing(sqlite3.connect(path)) as database:
         integrity = database.execute("PRAGMA integrity_check").fetchall()
         if integrity != [("ok",)]:
             raise RuntimeError(f"SQLite integrity check failed for {path}: {integrity}")
