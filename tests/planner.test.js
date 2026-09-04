@@ -47,6 +47,8 @@ function catalog() {
         { code: 'S27', name: 'Spring', academic_year: '2026-2027', sequence: 1, term_type: 'spring', planning_enabled: true, start_date: '2027-01-01', end_date: '2027-05-01' },
         { code: 'TBD', name: 'Future term', academic_year: '2027-2028', sequence: 1, term_type: 'fall', planning_enabled: true, start_date: null, end_date: null },
         { code: 'OLD', name: 'Archive', academic_year: '2019-2020', sequence: 1, term_type: 'fall', planning_enabled: false, start_date: '2020-01-01', end_date: '2020-05-01' },
+        { code: 'PAST', name: 'Past enabled', academic_year: '2020-2021', sequence: 1, term_type: 'fall', planning_enabled: true, start_date: '2020-08-01', end_date: '2020-12-01' },
+        { code: 'OFF', name: 'Disabled future', academic_year: '2027-2028', sequence: 2, term_type: 'spring', planning_enabled: false, start_date: '2028-01-01', end_date: '2028-05-01' },
       ] },
       { id: 'quarter', name: 'Quarter', system_type: 'quarter', terms: [
         { code: 'Q27', name: 'Spring', academic_year: '2026-2027', sequence: 1, term_type: 'spring', planning_enabled: true, start_date: '2027-01-02', end_date: '2027-03-01' },
@@ -56,7 +58,7 @@ function catalog() {
 }
 
 async function setup(saved = null, storageDouble = null) {
-  const ids = ['planner-calendar', 'planner-course-search', 'course-options', 'planner-term', 'completed-courses', 'plan-grid', 'issue-list', 'issue-count', 'calendar-coverage', 'planner-message', 'storage-warning', 'export-schedule', 'clear-schedule', 'import-schedule', 'add-to-plan', 'load-status', 'planner', 'app'];
+  const ids = ['planner-calendar', 'planner-course-search', 'course-options', 'planner-term', 'completed-courses', 'plan-grid', 'issue-list', 'issue-count', 'calendar-coverage', 'planner-message', 'storage-warning', 'export-schedule', 'clear-schedule', 'import-schedule', 'add-to-plan', 'load-status', 'planner', 'app', 'recovery-notice', 'recovery-summary', 'export-recovery', 'reassign-recovery', 'remove-recovery'];
   const elements = Object.fromEntries(ids.map(id => [id, new Element(id)]));
   const values = new Map(saved === null ? [] : [['college-schedule-plan:test-u', JSON.stringify(saved)]]);
   let exportedBlob;
@@ -108,31 +110,66 @@ test('switching calendars isolates plans with overlapping visible term names', a
 test('migrates old storage by term code and preserves unmatched entries', async () => {
   const app = await setup({ S27: ['CS101'], Q27: ['CS102'], MISSING: ['CS101'] });
   const stored = JSON.parse(app.values.get('college-schedule-plan:test-u'));
-  assert.equal(stored.version, 2);
+  assert.equal(stored.version, 3);
   assert.deepEqual(stored.calendars.semester.S27, ['CS101']);
   assert.deepEqual(stored.calendars.quarter.Q27, ['CS102']);
-  assert.deepEqual(stored.migration.unmatched.MISSING, ['CS101']);
+  assert.deepEqual(stored.recovery._unmatched.MISSING, ['CS101']);
   assert.match(app.elements['planner-message'].textContent, /recovery bucket/);
 });
 
-test('clear removes only the active calendar, including hidden entries', async () => {
+test('clear removes visible entries but preserves hidden recovery entries', async () => {
   const app = await setup({ version: 2, calendars: { semester: { OLD: ['CS101'] }, quarter: { Q27: ['CS102'] } }, migration: {} });
-  assert.equal(app.elements['export-schedule'].disabled, false);
+  assert.equal(app.elements['export-schedule'].disabled, true);
+  assert.equal(app.elements['recovery-notice'].hidden, false);
   await app.elements['clear-schedule'].click();
   const stored = JSON.parse(app.values.get('college-schedule-plan:test-u'));
   assert.deepEqual(stored.calendars.semester, {});
+  assert.deepEqual(stored.recovery.semester.OLD, ['CS101']);
   assert.deepEqual(stored.calendars.quarter.Q27, ['CS102']);
   assert.equal(app.elements['clear-schedule'].disabled, true);
 });
 
-test('export includes active calendar ID and term code, including hidden terms', async () => {
+test('ordinary export includes only visible entries and recovery export retains original term code', async () => {
   const app = await setup({ version: 2, calendars: { semester: { S27: ['CS101'], OLD: ['CS102'] }, quarter: { Q27: ['CS102'] } }, migration: {} });
   await app.elements['export-schedule'].click();
   const csv = await app.exported();
   assert.match(csv, /"Calendar ID","Term Code","Term"/);
   assert.match(csv, /"semester","S27","Spring","CS101"/);
-  assert.match(csv, /"semester","OLD","Archive","CS102"/);
+  assert.doesNotMatch(csv, /OLD/);
   assert.doesNotMatch(csv, /quarter|Q27/);
+  await app.elements['export-recovery'].click();
+  assert.match(await app.exported(), /"semester","OLD","Archive","CS102"/);
+});
+
+test('reconciliation reports expired, disabled, and deleted term entries without discarding them', async () => {
+  const app = await setup({ version: 2, calendars: { semester: { PAST: ['CS101'], OFF: ['CS102'], DELETED: ['CS101'] } }, migration: {} });
+  assert.equal(app.elements['export-schedule'].disabled, true);
+  assert.match(app.elements['recovery-summary'].textContent, /1 expired, 1 disabled, 1 unknown/);
+  const stored = JSON.parse(app.values.get('college-schedule-plan:test-u'));
+  assert.deepEqual(stored.calendars.semester, {});
+  assert.deepEqual(stored.recovery.semester.PAST, ['CS101']);
+  assert.deepEqual(stored.recovery.semester.OFF, ['CS102']);
+  assert.deepEqual(stored.recovery.semester.DELETED, ['CS101']);
+});
+
+test('only-hidden schedules can be recovery-exported with a deleted original term code', async () => {
+  const app = await setup({ version: 3, calendars: { semester: {} }, migration: {}, recovery: { semester: { GONE: ['CS102'] } } });
+  assert.equal(app.elements['export-schedule'].disabled, true);
+  await app.elements['export-schedule'].click();
+  assert.equal(await app.exported(), undefined);
+  await app.elements['export-recovery'].click();
+  assert.match(await app.exported(), /"semester","GONE","Unknown term","CS102"/);
+});
+
+test('recovery data is removed only by its explicit removal action', async () => {
+  const app = await setup({ version: 3, calendars: { semester: { S27: ['CS101'] } }, migration: {}, recovery: { semester: { GONE: ['CS102'] } } });
+  await app.elements['clear-schedule'].click();
+  let stored = JSON.parse(app.values.get('college-schedule-plan:test-u'));
+  assert.deepEqual(stored.recovery.semester.GONE, ['CS102']);
+  await app.elements['remove-recovery'].click();
+  stored = JSON.parse(app.values.get('college-schedule-plan:test-u'));
+  assert.deepEqual(stored.recovery.semester, {});
+  assert.equal(app.elements['recovery-notice'].hidden, true);
 });
 
 test('import honors calendar ID and term code rather than an overlapping term name', async () => {

@@ -131,6 +131,8 @@
   function validateStoredPlans(value, version) {
     if (!isRecord(value) || value.version !== version || !isRecord(value.calendars) || !isRecord(value.migration)) return false;
     if (!Object.entries(value.calendars).every(([calendarId, plan]) => validStorageKey(calendarId) && validatePlanMap(plan))) return false;
+    if (version >= 3 && (!isRecord(value.recovery)
+      || !Object.entries(value.recovery).every(([calendarId, plan]) => validStorageKey(calendarId) && validatePlanMap(plan)))) return false;
     const migrationKeys = Object.keys(value.migration);
     return migrationKeys.every(key => key === 'unmatched')
       && (!Object.hasOwn(value.migration, 'unmatched') || validatePlanMap(value.migration.unmatched));
