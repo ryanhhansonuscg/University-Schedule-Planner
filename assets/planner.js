@@ -15,6 +15,7 @@
   const plannerTerm = document.getElementById('planner-term');
   const completedCourses = document.getElementById('completed-courses');
   const planGrid = document.getElementById('plan-grid');
+  const planCreditTotal = document.getElementById('plan-credit-total');
   const issueList = document.getElementById('issue-list');
   const issueCount = document.getElementById('issue-count');
   const calendarCoverage = document.getElementById('calendar-coverage');
@@ -228,6 +229,9 @@
   function renderPlan() {
     const terms = planningTerms();
     const buckets = reconcilePlan(terms);
+    const formatCredits = total => total.min === total.max ? `${total.min}` : `${total.min}–${total.max}`;
+    const planCourses = terms.flatMap(term => (plan[term.code] || []).map(code => courseByCode.get(code)));
+    planCreditTotal.textContent = `Active-calendar plan credits: ${formatCredits(PlannerCore.accumulateCredits(planCourses))}`;
     planGrid.replaceChildren(...terms.map(term => {
       const section = document.createElement('section');
       section.className = 'plan-term';
@@ -236,9 +240,12 @@
       const dates = document.createElement('span');
       dates.className = 'term-dates';
       dates.textContent = termDateLabel(term);
+      const credits = document.createElement('span');
+      credits.className = 'term-credits';
+      const codes = plan[term.code] || [];
+      credits.textContent = `Credits: ${formatCredits(PlannerCore.accumulateCredits(codes.map(code => courseByCode.get(code))))}`;
       const items = document.createElement('div');
       items.className = 'planned-courses';
-      const codes = plan[term.code] || [];
       if (!codes.length) {
         const empty = document.createElement('span');
         empty.className = 'term-empty';
@@ -277,7 +284,7 @@
           items.appendChild(item);
         });
       }
-      section.append(heading, dates, items);
+      section.append(heading, dates, items, credits);
       return section;
     }));
     const hasCourses = Object.values(buckets.visible).some(values => values.length);

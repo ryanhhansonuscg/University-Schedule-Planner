@@ -162,6 +162,23 @@ test('repeatability requires explicit permitting catalog wording',()=>{
   assert.equal(core.repeatabilityWording({repeatable:'Not repeatable'}),'');
   assert.equal(core.repeatabilityWording({}),'');
 });
+test('credit parsing handles fixed, decimal, and range values',()=>{
+  assert.deepEqual(core.parseCredits(3),{min:3,max:3});
+  assert.deepEqual(core.parseCredits('2.5'),{min:2.5,max:2.5});
+  assert.deepEqual(core.parseCredits('1-4'),{min:1,max:4});
+  assert.deepEqual(core.parseCredits(' 1.5 - 3.25 '),{min:1.5,max:3.25});
+});
+test('credit accumulation handles empty and mixed ranges without NaN',()=>{
+  assert.deepEqual(core.accumulateCredits([]),{min:0,max:0});
+  assert.deepEqual(core.accumulateCredits([3,'2.5','1-4']),{min:6.5,max:9.5});
+  assert.deepEqual(core.accumulateCredits([{credits:'0.5-1.5'},{credits:2}]),{min:2.5,max:3.5});
+});
+test('credit totals conservatively ignore unknown and malformed catalog data',()=>{
+  for (const value of [undefined,null,'','three','4-1','3 credits',{},Number.NaN]) assert.equal(core.parseCredits(value),null);
+  const total=core.accumulateCredits([undefined,{credits:'bad'},{credits:3}]);
+  assert.deepEqual(total,{min:3,max:3});
+  assert.ok(Number.isFinite(total.min)&&Number.isFinite(total.max));
+});
 test('CSV parsing, escaping, and import validation',()=>{const csv=core.scheduleCsv(terms,{F1:['CS101']},courses);assert.equal(core.parseCsv(csv).rows[1][2],'Intro, "CS"');assert.match(core.importRows('bad\nrow',terms,courses).error,/Term/);assert.deepEqual(core.importRows('Term,Course #\nFall 2026,CS101',terms,courses).records,[{termCode:'F1',courseCode:'CS101'}]);assert.equal(core.parseCsv('\"bad').errors[0].type,'unterminated-field') });
 test('CSV parser handles BOM, line endings, quoted newlines, commas, and escaped quotes',()=>{
   const parsed=core.parseCsv('\uFEFFName,Note\r\n"Ada","line 1\r\nline 2, and ""quoted"""\r\n');
