@@ -37,6 +37,7 @@ COMMANDS = (
     (sys.executable, "-m", "compileall", "-q", "tools", "tests"),
     ("npm", "run", "check"),
     (sys.executable, "tools/check_prohibited_terms.py"),
+    (sys.executable, "tools/validate_university.py", "--template", "template/university-template"),
 )
 
 

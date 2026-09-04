@@ -13,9 +13,18 @@ from build_university import DataError, build
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("university_dir", type=Path)
+    parser.add_argument(
+        "--template",
+        action="store_true",
+        help="Allow the canonical template/university-template directory's fictional slug",
+    )
     args = parser.parse_args()
     try:
-        catalog = build(args.university_dir, validate_only=True)
+        catalog = build(
+            args.university_dir,
+            validate_only=True,
+            allow_template_directory=args.template,
+        )
     except DataError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1

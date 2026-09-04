@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_PATH = ROOT / "schema.sql"
+TEMPLATE_DIRECTORY = (ROOT / "template" / "university-template").resolve()
 COLOR_RE = re.compile(r"^#[0-9A-Fa-f]{6}$")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 CALENDAR_SYSTEMS = {"semester", "quarter", "trimester", "hybrid", "custom"}
@@ -184,7 +185,9 @@ def parse_date(value: str, context: str) -> dt.date:
         raise DataError(f"{context} is not a real date: {value}") from exc
 
 
-def validate_and_compile(university_dir: Path) -> dict:
+def validate_and_compile(university_dir: Path, *, allow_template_directory: bool = False) -> dict:
+    """Validate source data, optionally allowing the canonical template's placeholder path."""
+    university_dir = university_dir.resolve()
     university = read_json(university_dir / "university.json")
     calendar_doc = read_json(university_dir / "calendars.json")
     errors = ErrorCollector()
@@ -212,7 +215,8 @@ def validate_and_compile(university_dir: Path) -> dict:
             raise DataError(f"university.json {field} must be {expected.__name__}")
     if not SLUG_RE.fullmatch(university["slug"]):
         raise DataError("university.json slug must contain lowercase letters, digits, and hyphens")
-    if university_dir.name != university["slug"]:
+    is_canonical_template = allow_template_directory and university_dir == TEMPLATE_DIRECTORY
+    if university_dir.name != university["slug"] and not is_canonical_template:
         raise DataError(f"University directory {university_dir.name!r} does not match slug {university['slug']!r}")
     if university["academic_calendar_system"] not in CALENDAR_SYSTEMS:
         raise DataError(f"Unknown academic_calendar_system: {university['academic_calendar_system']}")
@@ -511,9 +515,16 @@ def write_database(path: Path, catalog: dict) -> None:
         connection.close()
 
 
-def build(university_dir: Path, validate_only: bool = False) -> dict:
+def build(
+    university_dir: Path,
+    validate_only: bool = False,
+    *,
+    allow_template_directory: bool = False,
+) -> dict:
     university_dir = university_dir.resolve()
-    catalog = validate_and_compile(university_dir)
+    catalog = validate_and_compile(
+        university_dir, allow_template_directory=allow_template_directory
+    )
     if not validate_only:
         (university_dir / "catalog.json").write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         write_database(university_dir / "courses.db", catalog)
