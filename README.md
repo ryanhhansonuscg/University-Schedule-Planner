@@ -6,13 +6,9 @@ No real institution data is shipped by default. The registry intentionally start
 
 ## University Schedule Planner Launcher (V1)
 
-Use **Python 3.12** (the supported Python feature release for V1). Download its
-official 64-bit installer from the Python.org [Python 3.12.10 release
-page](https://www.python.org/downloads/release/python-31210/): choose **Windows
-installer (64-bit)** on Windows or **macOS 64-bit universal2 installer** on macOS.
-Python 3.12.10 is specified because it is the final Python 3.12 release for which
-Python.org provides the Windows and macOS binary installers needed by this
-launcher; do not substitute a Microsoft Store or third-party package.
+The tools require **Python 3.10 or newer** (the minimum required by their syntax)
+with the standard-library Tk interface. Python may come from your operating
+system, Conda/Miniconda, a package manager, Python.org, or another trusted source.
 
 ### 1. Download and extract V1
 
@@ -32,25 +28,23 @@ viewing files inside the ZIP.
 
 ### 2. Install Python
 
-**Windows:** run the downloaded Python installer, enable **Add python.exe to
-PATH** on its first screen, choose **Install Now**, and finish the installer.
-Open a new PowerShell or Command Prompt window and confirm the launcher works:
+If Python is not already installed, use a trusted distribution that supplies
+Python 3.10+ and tkinter. You can confirm a command-line installation with:
 
 ```powershell
 py -3 --version
 ```
 
-The result must begin with `Python 3.12`. The `py -3` launcher is used in the
-Windows commands below even when `python` is not on PATH.
+The result must report Python 3.10 or newer.
 
-**macOS:** open the downloaded official `.pkg`, complete the installer, and then
-open a new Terminal window. Confirm the installed command:
+**macOS:** after installing your chosen distribution, open a new Terminal
+window and confirm the installed command:
 
 ```bash
 python3 --version
 ```
 
-The result must begin with `Python 3.12`.
+The result must report Python 3.10 or newer.
 
 ### 3. Ask a browsing-capable LLM for university data
 
@@ -73,6 +67,14 @@ Never provide credentials or ask it to bypass access controls.
 
 Save the returned ZIP anywhere convenient. Do not extract it yourself. Start the
 **University Schedule Planner Launcher** from the extracted V1 project folder:
+
+On Windows, double-click `launch-planner.bat`; on macOS, double-click
+`launch-planner.command`. The bootstraps share this discovery strategy: probe
+only version and tkinter capability, prefer an active environment, then try
+`py -3`, `python3`, and `python`, discoverable Conda/Miniconda environments, and
+common platform locations. They do not assume who installed Python. Rejected
+candidates are reported with a reason, and resolved executable paths are
+deduplicated by the launcher. Terminal equivalents are:
 
 **Windows (PowerShell or Command Prompt):**
 
@@ -97,6 +99,11 @@ state, command, and any startup error, and reports ready only after its HTTP
 endpoint responds. Use **Open Planner** to open the displayed selectable URL or
 **Copy URL** to copy it. Closing the launcher stops only the server processes it
 started.
+Use **Python Settings…** to inspect detected and rejected interpreters, select a
+detected interpreter, or browse to a custom executable. **Auto-detect** reapplies
+discovery and **Reset** removes the override. A validated selection is stored in
+the operating system's user configuration directory, never in the repository;
+new child processes use that exact resolved executable even when its path has spaces.
 
 The old `tools/quickstart.py <zip>` command remains temporarily as a compatibility
 wrapper for scripted archive imports. New workflows should use the launcher.
@@ -230,9 +237,9 @@ Course catalogs and calendars change. Store official source URLs and a `catalog_
 
 ## Release validation and test commands
 
-The test harness deliberately has no third-party runtime or development dependencies. JavaScript tests use the `node:test` runner included with Node.js; `package-lock.json` pins the empty dependency graph and the supported toolchain is Python 3.12 and Node.js 24 or newer.
+The test harness deliberately has no third-party runtime or development dependencies. JavaScript tests use the `node:test` runner included with Node.js; `package-lock.json` pins the empty dependency graph and the supported toolchain is Python 3.10 or newer and Node.js 24 or newer.
 
-From the repository root, install the locked (dependency-free) npm project, then run the single canonical final-QA command. It requires Git, Python 3.12, Node.js 24+, and npm:
+From the repository root, install the locked (dependency-free) npm project, then run the single canonical final-QA command. It requires Git, Python 3.10+, Node.js 24+, and npm:
 
 ```bash
 npm ci
@@ -275,8 +282,8 @@ Before release, serve the site locally and check both pages with a populated uni
 ## Build an end-user release
 
 End-user releases support **64-bit Windows 10 and Windows 11** and **macOS
-Monterey 12 or newer**. They require the official Python 3.12 installation
-described in the launcher instructions and a current version of Safari, Chrome, Edge, or
+Monterey 12 or newer**. They require Python 3.10+ with tkinter as described in
+the launcher instructions and a current version of Safari, Chrome, Edge, or
 Firefox. The planner itself runs from extracted local files; neither platform
 needs an HTTP server.
 

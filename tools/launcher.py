@@ -4,7 +4,9 @@
 from __future__ import annotations
 
 import os
+import json
 import queue
+import shutil
 import socket
 import subprocess
 import sys
@@ -15,7 +17,7 @@ import urllib.request
 import webbrowser
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Iterable
 
 if __package__:
     from tools.build_university import DataError
@@ -48,6 +50,148 @@ APP_NAME = "University Schedule Planner Launcher"
 HOST = "127.0.0.1"
 STARTUP_TIMEOUT = 15.0
 SHUTDOWN_TIMEOUT = 3.0
+MINIMUM_PYTHON = (3, 10)
+CONFIG_FILENAME = "launcher.json"
+
+
+@dataclass(frozen=True)
+class InterpreterCandidate:
+    """A probed Python executable and the reason it was considered."""
+
+    command: tuple[str, ...]
+    source: str
+    path: Path | None = None
+    version: tuple[int, int, int] | None = None
+    compatible: bool = False
+    reason: str = "Not probed"
+
+    @property
+    def display(self) -> str:
+        location = str(self.path) if self.path else subprocess.list2cmdline(self.command)
+        version = ".".join(map(str, self.version)) if self.version else "unknown version"
+        return f"{location} — {version} — {self.reason}"
+
+
+def config_path(platform: str | None = None, environ: dict[str, str] | None = None) -> Path:
+    """Return an OS user-level settings path; never write into the checkout."""
+    platform, env = platform or sys.platform, environ or os.environ
+    if platform == "win32":
+        base = Path(env.get("APPDATA") or Path.home() / "AppData" / "Roaming")
+    elif platform == "darwin":
+        base = Path.home() / "Library" / "Application Support"
+    else:
+        base = Path(env.get("XDG_CONFIG_HOME") or Path.home() / ".config")
+    return base / "university-schedule-planner" / CONFIG_FILENAME
+
+
+def load_interpreter_override(path: Path | None = None) -> Path | None:
+    try:
+        value = json.loads((path or config_path()).read_text(encoding="utf-8"))["python"]
+        return Path(value).expanduser().resolve() if isinstance(value, str) else None
+    except (OSError, ValueError, KeyError, TypeError):
+        return None
+
+
+def save_interpreter_override(executable: Path, path: Path | None = None) -> None:
+    target = path or config_path()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps({"python": str(executable.resolve())}, indent=2) + "\n", encoding="utf-8")
+
+
+def reset_interpreter_override(path: Path | None = None) -> None:
+    (path or config_path()).unlink(missing_ok=True)
+
+
+def _conda_candidates(prefix: Path) -> Iterable[Path]:
+    executable = "python.exe" if os.name == "nt" else "bin/python"
+    yield prefix / executable
+    envs = prefix / "envs"
+    if envs.is_dir():
+        for environment in sorted(envs.iterdir()):
+            yield environment / executable
+
+
+def candidate_commands(platform: str | None = None, environ: dict[str, str] | None = None) -> list[tuple[tuple[str, ...], str]]:
+    """Build a stable, broad candidate list without asserting who installed Python."""
+    platform, env = platform or sys.platform, environ or os.environ
+    items: list[tuple[tuple[str, ...], str]] = []
+    active_root = None
+    if env.get("CONDA_PREFIX"):
+        prefix = Path(env["CONDA_PREFIX"])
+        items.append(((str(prefix / ("python.exe" if platform == "win32" else "bin/python")),), "active Conda environment"))
+        if "envs" in prefix.parts:
+            active_root = Path(*prefix.parts[:prefix.parts.index("envs")])
+    items.append(((sys.executable,), "current interpreter"))
+    items.extend([(("py", "-3"), "Python launcher"), (("python3",), "PATH"), (("python",), "PATH")])
+    conda_roots: list[Path] = []
+    if active_root:
+        conda_roots.append(active_root)
+    for name in ("conda", "mamba"):
+        found = shutil.which(name)
+        if found:
+            conda_roots.append(Path(found).resolve().parent.parent)
+    home = Path(env.get("USERPROFILE" if platform == "win32" else "HOME", Path.home()))
+    conda_roots.extend([home / "miniconda3", home / "anaconda3"])
+    if platform == "win32":
+        conda_roots.extend([home / "Miniconda3", home / "Anaconda3"])
+        local = Path(env.get("LOCALAPPDATA", home / "AppData" / "Local"))
+        program = Path(env.get("ProgramFiles", "C:/Program Files"))
+        items.extend([((str(local / "Programs/Python/Python313/python.exe"),), "common Windows location"),
+                      ((str(local / "Programs/Python/Python312/python.exe"),), "common Windows location"),
+                      ((str(program / "Python313/python.exe"),), "common Windows location"),
+                      ((str(program / "Python312/python.exe"),), "common Windows location")])
+    elif platform == "darwin":
+        items.extend([(("/opt/homebrew/bin/python3",), "Homebrew"), (("/usr/local/bin/python3",), "local installation"),
+                      (("/Library/Frameworks/Python.framework/Versions/Current/bin/python3",), "macOS framework")])
+    for root in conda_roots:
+        items.extend(((str(path),), "discoverable Conda environment") for path in _conda_candidates(root))
+    return items
+
+
+def probe_interpreter(command: tuple[str, ...], source: str, timeout: float = 3.0) -> InterpreterCandidate:
+    """Run one lightweight version/Tk probe and resolve the executable path."""
+    script = ("import pathlib,sys,tkinter; "
+              "print(str(pathlib.Path(sys.executable).resolve())); "
+              "print('.'.join(map(str,sys.version_info[:3])))")
+    try:
+        result = subprocess.run((*command, "-c", script), capture_output=True, text=True, timeout=timeout, check=False)
+    except (OSError, subprocess.TimeoutExpired) as exc:
+        return InterpreterCandidate(command, source, reason=f"rejected: could not execute ({exc})")
+    lines = result.stdout.strip().splitlines()
+    if result.returncode or len(lines) < 2:
+        detail = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else f"exit status {result.returncode}"
+        return InterpreterCandidate(command, source, reason=f"rejected: version/Tk probe failed ({detail})")
+    try:
+        version = tuple(int(part) for part in lines[-1].split("."))
+        resolved = Path(lines[-2]).resolve()
+    except (ValueError, OSError):
+        return InterpreterCandidate(command, source, reason="rejected: probe returned malformed output")
+    if version < (*MINIMUM_PYTHON, 0):
+        return InterpreterCandidate(command, source, resolved, version, False,
+                                    f"rejected: Python {MINIMUM_PYTHON[0]}.{MINIMUM_PYTHON[1]}+ is required")
+    return InterpreterCandidate(command, source, resolved, version, True, f"compatible ({source})")
+
+
+def discover_interpreters(commands=None) -> list[InterpreterCandidate]:
+    """Probe candidates in preference order and deduplicate their resolved paths."""
+    results, seen = [], set()
+    for command, source in commands or candidate_commands():
+        candidate = probe_interpreter(tuple(command), source)
+        key = os.path.normcase(str(candidate.path)) if candidate.path else (tuple(command), source)
+        if candidate.path and key in seen:
+            continue
+        if candidate.path:
+            seen.add(key)
+        results.append(candidate)
+    return results
+
+
+def select_interpreter(candidates: list[InterpreterCandidate], override: Path | None = None) -> InterpreterCandidate | None:
+    if override:
+        selected = probe_interpreter((str(override),), "saved override")
+        if selected.compatible:
+            return selected
+    return next((candidate for candidate in candidates if candidate.compatible), None)
 
 
 def repository_root() -> Path:
@@ -82,7 +226,8 @@ class ManagedProcess:
 class LauncherService:
     """Own launcher-created subprocesses and perform blocking work off the Tk thread."""
 
-    def __init__(self, notify: Callable[[str, object], None], root: Path | None = None) -> None:
+    def __init__(self, notify: Callable[[str, object], None], root: Path | None = None,
+                 executable: Path | None = None) -> None:
         self.root = (root or repository_root()).resolve()
         self.notify = notify
         self.stop_event = threading.Event()
@@ -90,6 +235,7 @@ class LauncherService:
         self.workers: set[threading.Thread] = set()
         self._lock = threading.Lock()
         self.url = ""
+        self.executable = executable or Path(sys.executable).resolve()
 
     def _start_worker(self, target: Callable[..., None], *args: object) -> bool:
         if self.stop_event.is_set():
@@ -121,7 +267,7 @@ class LauncherService:
 
     def _launch_server(self) -> None:
         port = available_port()
-        command = (sys.executable, str(self.root / "tools" / "serve.py"), "--port", str(port))
+        command = (str(self.executable), str(self.root / "tools" / "serve.py"), "--port", str(port))
         startup_flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         try:
             process = subprocess.Popen(
@@ -254,7 +400,9 @@ class LauncherWindow:
         self.root.title(APP_NAME)
         self.root.minsize(820, 430)
         self.events: queue.Queue[tuple[str, object]] = queue.Queue()
-        self.service = LauncherService(self._post)
+        self.interpreters = discover_interpreters()
+        selected = select_interpreter(self.interpreters, load_interpreter_override())
+        self.service = LauncherService(self._post, executable=selected.path if selected else Path(sys.executable))
         self.closing = False
         self.shutdown_done = threading.Event()
 
@@ -293,10 +441,67 @@ class LauncherWindow:
         self.open_button.grid(row=0, column=2, padx=4)
         self.copy_button = ttk.Button(buttons, text="Copy URL", command=self._copy, state="disabled")
         self.copy_button.grid(row=0, column=3, padx=4)
+        ttk.Button(buttons, text="Python Settings…", command=self._python_settings).grid(row=0, column=4, padx=4)
 
         self.root.protocol("WM_DELETE_WINDOW", self._close)
         self.root.after(40, self._drain_events)
         self.service.start_server()
+
+    def _python_settings(self) -> None:
+        window = self.tk.Toplevel(self.root)
+        window.title("Python settings")
+        window.minsize(720, 300)
+        frame = self.ttk.Frame(window, padding=12)
+        frame.pack(fill="both", expand=True)
+        self.ttk.Label(frame, text="Detected interpreters (selection applies to new child processes):").pack(anchor="w")
+        listing = self.tk.Listbox(frame, height=8)
+        listing.pack(fill="both", expand=True, pady=6)
+        for candidate in self.interpreters:
+            listing.insert("end", candidate.display)
+        message = self.tk.StringVar(value=f"Selected: {self.service.executable}")
+        self.ttk.Label(frame, textvariable=message, wraplength=680).pack(anchor="w")
+
+        def use(path: Path, save: bool = True) -> None:
+            candidate = probe_interpreter((str(path),), "custom selection")
+            if not candidate.compatible or candidate.path is None:
+                from tkinter import messagebox
+                messagebox.showerror("Invalid Python interpreter", candidate.reason, parent=window)
+                return
+            if save:
+                save_interpreter_override(candidate.path)
+            self.service.executable = candidate.path
+            message.set(f"Selected: {candidate.path}. New child processes will use it.")
+
+        def choose_detected() -> None:
+            selection = listing.curselection()
+            if selection:
+                candidate = self.interpreters[selection[0]]
+                if candidate.path:
+                    use(candidate.path)
+
+        def browse() -> None:
+            from tkinter import filedialog
+            filename = filedialog.askopenfilename(title="Select a Python executable", parent=window)
+            if filename:
+                use(Path(filename))
+
+        def automatic(reset: bool = False) -> None:
+            if reset:
+                reset_interpreter_override()
+            selected = select_interpreter(self.interpreters)
+            if selected and selected.path:
+                use(selected.path, save=not reset)
+                if reset:
+                    message.set(f"Override removed. Auto-detected: {selected.path}")
+            else:
+                message.set("No compatible Python 3.10+ interpreter with tkinter was detected.")
+
+        buttons = self.ttk.Frame(frame)
+        buttons.pack(anchor="e", pady=(8, 0))
+        self.ttk.Button(buttons, text="Use selected", command=choose_detected).pack(side="left", padx=3)
+        self.ttk.Button(buttons, text="Browse…", command=browse).pack(side="left", padx=3)
+        self.ttk.Button(buttons, text="Auto-detect", command=automatic).pack(side="left", padx=3)
+        self.ttk.Button(buttons, text="Reset", command=lambda: automatic(True)).pack(side="left", padx=3)
 
     def _post(self, event: str, value: object) -> None:
         if not self.closing:
