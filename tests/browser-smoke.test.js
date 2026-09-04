@@ -14,7 +14,7 @@ test('planner exposes calendar switching and keyboard add controls', () => {
 test('schedule persistence and CSV round-trip preserve browser data', () => {
   const plan={FALL:['CS101']}; const courses=[{code:'CS101',title:'Intro',credits:'3'}]; const terms=[{code:'FALL',name:'Fall'}];
   assert.deepEqual(core.deserializePlan(core.serializePlan(plan)),plan);
-  assert.deepEqual(core.parseCsv(core.scheduleCsv(terms,plan,courses))[1],['Fall','CS101','Intro','3']);
+  assert.deepEqual(core.parseCsv(core.scheduleCsv(terms,plan,courses)).rows[1],['Fall','CS101','Intro','3']);
 });
 test('catalog loader reports fetch failures rather than leaving busy UI', () => {
   const js=fs.readFileSync('assets/loader.js','utf8'); assert.match(js,/catch/); assert.match(js,/load-status/); assert.match(js,/aria-busy/);
