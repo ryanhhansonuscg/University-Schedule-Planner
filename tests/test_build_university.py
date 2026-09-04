@@ -4,6 +4,7 @@ import shutil
 import sqlite3
 import tempfile
 import unittest
+from contextlib import closing
 from unittest import mock
 from pathlib import Path
 
@@ -287,7 +288,7 @@ class BuildUniversityTests(unittest.TestCase):
         with self.assertRaisesRegex(DataError, "must match department code"): validate_and_compile(self.directory)
     def test_generated_sqlite_integrity_and_foreign_keys(self):
         build(self.directory)
-        with sqlite3.connect(self.directory / "courses.db") as db:
+        with closing(sqlite3.connect(self.directory / "courses.db")) as db:
             self.assertEqual("ok", db.execute("PRAGMA integrity_check").fetchone()[0])
             self.assertEqual(2, db.execute("SELECT count(*) FROM courses").fetchone()[0])
             self.assertGreater(db.execute("SELECT count(*) FROM academic_terms WHERE start_date IS NULL AND dates_status = 'unpublished'").fetchone()[0], 0)
