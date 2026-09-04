@@ -26,6 +26,7 @@ REQUIRED_PATHS = (
     ".gitignore",
     ".nojekyll",
     "CONTRIBUTING.md",
+    "LICENSE",
     "README.md",
     "assets/app.js",
     "assets/loader.js",

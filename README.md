@@ -222,9 +222,14 @@ The planner flags duplicate courses, explicit prerequisite/corequisite edges, an
 1. Upload this folder as the repository root.
 2. In repository **Settings → Pages**, deploy from the main branch and root folder.
 3. Keep `universities/*/catalog.json` committed; the browser cannot build it itself.
-4. Add a repository license before accepting outside contributions. No license has been selected automatically for you.
 
 No server-side code or secrets are required. The static application can also be hosted by Netlify, Cloudflare Pages, or any ordinary web server.
+
+## License
+
+This project is licensed under the MIT License. You may use and modify it as
+long as you retain the copyright and license notices that credit the original
+source. See [`LICENSE`](LICENSE) for the complete terms.
 
 ## Data responsibility
 
