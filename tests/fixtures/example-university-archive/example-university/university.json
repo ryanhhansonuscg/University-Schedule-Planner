@@ -1,0 +1,13 @@
+{
+  "slug": "example-university",
+  "name": "Example University",
+  "short_name": "EU",
+  "map_title": "Example course explorer",
+  "primary_color": "#123456",
+  "secondary_color": "#ABCDEF",
+  "accent_color": "#654321",
+  "catalog_url": "https://catalog.example.invalid/",
+  "catalog_date": "2026-09-04",
+  "schema_version": 3,
+  "academic_calendar_system": "semester"
+}
