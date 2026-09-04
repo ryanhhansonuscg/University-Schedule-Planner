@@ -24,6 +24,8 @@
   --accent-soft: color-mix(in srgb, var(--brand-primary) 15%, var(--surface));
   --coreq: #856319;
   --coreq: light-dark(#856319, #e5be61);
+  --external: #68458c;
+  --external: light-dark(#68458c, #d7b7f4);
   --danger: #b3261e;
   --danger: light-dark(#b3261e, #ffb4ab);
   --warning: #835500;
@@ -75,10 +77,13 @@ select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px 
 .graph-node { position: absolute; width: 158px; min-height: 58px; padding: 9px 10px; transform: translate(-50%, -50%); box-shadow: 0 3px 12px #1d32231a; box-shadow: 0 3px 12px light-dark(#1d32231a, #00000038); }
 .graph-node.selected { color: var(--brand-on-primary); background: var(--accent); border-color: var(--accent); }
 .graph-node.selected strong, .graph-node.selected span { color: inherit; }
+.graph-node.external { border: 2px dashed var(--external); background: var(--surface-2); cursor: default; }
+.graph-node.external strong { color: var(--external); }
 .graph-empty { position: absolute; inset: 0; display: grid; place-items: center; padding: 30px; color: var(--muted); text-align: center; }
 .legend { font-size: .78rem; white-space: nowrap; }
 .legend i { display: inline-block; width: 22px; margin: 0 5px 3px 8px; border-top: 2px solid var(--border); }
 .legend i.coreq { border-color: var(--coreq); border-top-style: dashed; }
+.legend i.external { width: 16px; height: 12px; margin-bottom: -2px; border: 2px dashed var(--external); border-radius: 3px; background: var(--surface-2); }
 .relationship-summary { margin-top: 12px; padding: 16px 18px; border: 1px solid var(--border); border-radius: 14px; background: var(--surface); }
 .relationship-summary h3 { margin-bottom: 10px; font-size: 1rem; }
 .relationship-summary h4 { margin: 0; color: var(--muted); font-size: .82rem; }

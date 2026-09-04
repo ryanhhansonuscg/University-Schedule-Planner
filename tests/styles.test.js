@@ -38,6 +38,12 @@ test('focus rings contrast with light and dark surfaces', () => {
   assert.ok(contrast('#8ecaff', '#111513') >= 3);
 });
 
+test('external requirement labels meet WCAG AA contrast', () => {
+  assert.ok(contrast('#68458c', '#eef3ef') >= 4.5);
+  assert.ok(contrast('#d7b7f4', '#222a26') >= 4.5);
+  assert.match(css, /\.graph-node\.external\s*\{[^}]*border:\s*2px dashed var\(--external\)/);
+});
+
 test('file import focus remains visible in normal and forced colors', () => {
   assert.match(css, /\.file-action:focus-within\s*\{[^}]*outline:/);
   assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.file-action:focus-within[^}]*outline:\s*3px solid Highlight/);

@@ -99,9 +99,13 @@
     for (let depth = 1; depth <= 3; depth += 1) {
       const next = [];
       frontier.forEach(target => (incoming.get(target) || []).forEach(edge => {
-        if (courseByCode.has(edge.source) && !layers.has(edge.source)) {
+        // Direct requirements remain useful even when the catalog does not
+        // contain enough metadata to make their nodes interactive. Do not
+        // traverse beyond those external requirements.
+        const isDirectRequirement = depth === 1 && target === code;
+        if ((courseByCode.has(edge.source) || isDirectRequirement) && !layers.has(edge.source)) {
           layers.set(edge.source, -depth);
-          next.push(edge.source);
+          if (courseByCode.has(edge.source)) next.push(edge.source);
         }
       }));
       frontier = next;
@@ -141,16 +145,24 @@
     }));
   }
 
-  function renderRelationshipSummary(layers) {
+  function requirementLabel(code) {
+    const course = courseByCode.get(code);
+    return course ? `${course.code} — ${course.title}` : `${code} — External or uncataloged requirement`;
+  }
+
+  function summarizedRequirementGroups(kind) {
+    return PlannerCore.requirementGroups(edges, selectedCode, kind).map(group => {
+      const joiner = group.operator === 'OR' ? ' or ' : ' and ';
+      const instruction = group.operator === 'OR' ? 'one of' : 'all of';
+      return `${group.operator} — ${instruction}: ${group.sources.map(requirementLabel).join(joiner)}`;
+    });
+  }
+
+  function renderRelationshipSummary() {
     const selected = courseByCode.get(selectedCode);
     replaceSummaryList(summaryLists.selected, selected ? [`${selected.code} — ${selected.title}`] : [], 'No course selected');
-    const labels = edge => {
-      const course = courseByCode.get(edge.source);
-      return course ? `${course.code} — ${course.title}` : edge.source;
-    };
-    const direct = incoming.get(selectedCode) || [];
-    replaceSummaryList(summaryLists.prerequisite, direct.filter(edge => edge.kind === 'prerequisite').map(labels), 'None listed');
-    replaceSummaryList(summaryLists.corequisite, direct.filter(edge => edge.kind === 'corequisite').map(labels), 'None listed');
+    replaceSummaryList(summaryLists.prerequisite, summarizedRequirementGroups('prerequisite'), 'None listed');
+    replaceSummaryList(summaryLists.corequisite, summarizedRequirementGroups('corequisite'), 'None listed');
     replaceSummaryList(summaryLists.dependent, (outgoing.get(selectedCode) || []).map(edge => {
       const course = courseByCode.get(edge.target);
       const kind = edge.kind === 'corequisite' ? 'corequisite relationship' : 'prerequisite relationship';
@@ -162,7 +174,7 @@
     const layers = neighborhood(selectedCode);
     graphNodes.replaceChildren();
     edgeLayer.replaceChildren();
-    renderRelationshipSummary(layers);
+    renderRelationshipSummary();
     if (!layers.size) {
       const empty = document.createElement('p');
       empty.className = 'graph-empty';
@@ -191,15 +203,22 @@
 
     layers.forEach((_column, code) => {
       const course = courseByCode.get(code);
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.className = `graph-node${code === selectedCode ? ' selected' : ''}`;
-      button.setAttribute('aria-label', `${course.code}, ${course.title}; ${relationshipToSelected(code, layers)}`);
-      button.style.left = `${positions.get(code).x}px`;
-      button.style.top = `${positions.get(code).y}px`;
-      appendCourseLabel(button, course);
-      button.addEventListener('click', () => selectCourse(code));
-      graphNodes.appendChild(button);
+      const node = document.createElement(course ? 'button' : 'div');
+      if (course) {
+        node.type = 'button';
+        node.className = `graph-node${code === selectedCode ? ' selected' : ''}`;
+        node.setAttribute('aria-label', `${course.code}, ${course.title}; ${relationshipToSelected(code, layers)}`);
+        appendCourseLabel(node, course);
+        node.addEventListener('click', () => selectCourse(code));
+      } else {
+        node.className = 'graph-node external';
+        node.setAttribute('aria-label', `${code}, External or uncataloged requirement; ${relationshipToSelected(code, layers)}`);
+        const external = { code, title: 'External or uncataloged requirement' };
+        appendCourseLabel(node, external);
+      }
+      node.style.left = `${positions.get(code).x}px`;
+      node.style.top = `${positions.get(code).y}px`;
+      graphNodes.appendChild(node);
     });
 
     edges.filter(edge => layers.has(edge.source) && layers.has(edge.target)).forEach(edge => {
