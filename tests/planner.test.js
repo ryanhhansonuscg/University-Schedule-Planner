@@ -55,8 +55,8 @@ function catalog() {
   };
 }
 
-async function setup(saved = null) {
-  const ids = ['planner-calendar', 'planner-course-search', 'course-options', 'planner-term', 'completed-courses', 'plan-grid', 'issue-list', 'issue-count', 'calendar-coverage', 'planner-message', 'export-schedule', 'clear-schedule', 'import-schedule', 'add-to-plan', 'load-status', 'planner', 'app'];
+async function setup(saved = null, storageDouble = null) {
+  const ids = ['planner-calendar', 'planner-course-search', 'course-options', 'planner-term', 'completed-courses', 'plan-grid', 'issue-list', 'issue-count', 'calendar-coverage', 'planner-message', 'storage-warning', 'export-schedule', 'clear-schedule', 'import-schedule', 'add-to-plan', 'load-status', 'planner', 'app'];
   const elements = Object.fromEntries(ids.map(id => [id, new Element(id)]));
   const values = new Map(saved === null ? [] : [['college-schedule-plan:test-u', JSON.stringify(saved)]]);
   let exportedBlob;
@@ -73,9 +73,9 @@ async function setup(saved = null) {
   const context = {
     window: { COLLEGE_PLANNER: { loadCatalog: async () => ({ catalog: catalog() }) }, confirm: () => true },
     document,
-    localStorage: { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value) },
+    localStorage: storageDouble || { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) },
     Option: class extends Element { constructor(text, value) { super(); this.text = text; this.textContent = text; this.value = value; } },
-    Blob, Date, Set, Map,
+    Blob, Date, Set, Map, setTimeout, clearTimeout,
     PlannerCore,
     URL: { createObjectURL: blob => { exportedBlob = blob; return 'blob:test'; }, revokeObjectURL() {} },
   };
@@ -185,4 +185,61 @@ test('oversized and unreadable imports leave the plan unchanged', async () => {
   await app.elements['import-schedule'].dispatch('change');
   assert.match(app.elements['planner-message'].textContent, /could not be read/);
   assert.equal(JSON.parse(app.values.get('college-schedule-plan:test-u')).calendars.semester, undefined);
+});
+
+test('denied reads show an accessible persistent warning and start empty', async () => {
+  const app = await setup(null, { getItem() { const error = new Error('denied'); error.name = 'SecurityError'; throw error; }, setItem() {}, removeItem() {} });
+  assert.equal(app.elements['storage-warning'].hidden, false);
+  assert.match(app.elements['storage-warning'].textContent, /continue planning during this session/);
+});
+
+test('malformed JSON and malformed versioned payloads are rejected', async () => {
+  const malformedJson = new Map([['college-schedule-plan:test-u', '{nope']]);
+  const first = await setup(null, { getItem: key => malformedJson.get(key) ?? null, setItem: (key, value) => malformedJson.set(key, value), removeItem() {} });
+  assert.match(first.elements['storage-warning'].textContent, /malformed/);
+
+  const malformedPayload = { version: 2, calendars: { semester: { S27: [17] } }, migration: {} };
+  const second = await setup(malformedPayload);
+  assert.equal(second.elements['export-schedule'].disabled, true);
+  assert.match(second.elements['storage-warning'].textContent, /invalid format/);
+});
+
+test('quota failures preserve in-memory add, switch, import, remove, and clear behavior', async () => {
+  const values = new Map();
+  const storage = {
+    getItem: key => values.get(key) ?? null,
+    setItem() { const error = new Error('quota'); error.name = 'QuotaExceededError'; throw error; },
+    removeItem() {},
+  };
+  const app = await setup(null, storage);
+  await addCourse(app, 'CS101', 'S27');
+  assert.equal(app.elements['export-schedule'].disabled, false);
+  assert.equal(app.elements['storage-warning'].hidden, false);
+  app.elements['planner-calendar'].value = 'quarter';
+  await app.elements['planner-calendar'].dispatch('change');
+  await addCourse(app, 'CS102', 'Q27');
+  app.elements['planner-calendar'].value = 'semester';
+  await app.elements['planner-calendar'].dispatch('change');
+  let spring = app.elements['plan-grid'].children.find(section => section.children[0].textContent === 'Spring');
+  await spring.children[2].children[0].children[1].click();
+  assert.equal(app.elements['export-schedule'].disabled, true);
+  app.elements['import-schedule'].files = [{ size: 100, text: async () => 'Term Code,Course #\nS27,CS101\n' }];
+  await app.elements['import-schedule'].dispatch('change');
+  assert.equal(app.elements['export-schedule'].disabled, false);
+  await app.elements['clear-schedule'].click();
+  assert.equal(app.elements['export-schedule'].disabled, true);
+});
+
+test('completed-course persistence is debounced and warns only once', async () => {
+  let writes = 0;
+  const storage = { getItem: () => null, setItem() { writes += 1; throw new Error('denied'); }, removeItem() {} };
+  const app = await setup(null, storage);
+  app.elements['completed-courses'].value = 'CS';
+  await app.elements['completed-courses'].dispatch('input');
+  app.elements['completed-courses'].value = 'CS101';
+  await app.elements['completed-courses'].dispatch('input');
+  assert.equal(writes, 1); // Initial empty-plan migration only.
+  await new Promise(resolve => setTimeout(resolve, 350));
+  assert.equal(writes, 2);
+  assert.equal(app.elements['storage-warning'].hidden, false);
 });

@@ -55,6 +55,46 @@
   function deserializePlan(value) {
     try { const plan = JSON.parse(value || '{}'); return plan && typeof plan === 'object' && !Array.isArray(plan) ? plan : {}; } catch { return {}; }
   }
+
+  function storageError(operation, error) {
+    return {
+      operation,
+      name: typeof error?.name === 'string' ? error.name : 'Error',
+      message: typeof error?.message === 'string' ? error.message : 'Browser storage is unavailable.',
+    };
+  }
+
+  function createStorageAdapter(storage) {
+    return {
+      read(key) {
+        try { return { ok: true, value: storage.getItem(key) }; }
+        catch (error) { return { ok: false, value: null, error: storageError('read', error) }; }
+      },
+      write(key, value) {
+        try { storage.setItem(key, value); return { ok: true }; }
+        catch (error) { return { ok: false, error: storageError('write', error) }; }
+      },
+      remove(key) {
+        try { storage.removeItem(key); return { ok: true }; }
+        catch (error) { return { ok: false, error: storageError('remove', error) }; }
+      },
+    };
+  }
+
+  function isRecord(value) { return value !== null && typeof value === 'object' && !Array.isArray(value); }
+  function validStorageKey(value) { return typeof value === 'string' && value.length > 0 && value.length <= 200 && !/[\u0000-\u001f]/.test(value); }
+  function validCourseCode(value) { return typeof value === 'string' && value === value.trim() && value.length > 0 && value.length <= 100 && !/[\u0000-\u001f]/.test(value); }
+  function validatePlanMap(value) {
+    return isRecord(value) && Object.entries(value).every(([termCode, codes]) =>
+      validStorageKey(termCode) && Array.isArray(codes) && codes.every(validCourseCode));
+  }
+  function validateStoredPlans(value, version) {
+    if (!isRecord(value) || value.version !== version || !isRecord(value.calendars) || !isRecord(value.migration)) return false;
+    if (!Object.entries(value.calendars).every(([calendarId, plan]) => validStorageKey(calendarId) && validatePlanMap(plan))) return false;
+    const migrationKeys = Object.keys(value.migration);
+    return migrationKeys.every(key => key === 'unmatched')
+      && (!Object.hasOwn(value.migration, 'unmatched') || validatePlanMap(value.migration.unmatched));
+  }
   function csvCell(value) { return `"${String(value ?? '').replaceAll('"', '""')}"`; }
   function scheduleCsv(terms, plan, courses) {
     const byCode = new Map(courses.map(course => [course.code, course]));
@@ -203,5 +243,5 @@
     if (status === 'historically-unusual') return 'unusual';
     return status === 'confirmed' ? null : status;
   }
-  return { planningTerms, compareTerms, resolveCourse, serializePlan, deserializePlan, scheduleCsv, parseCsv, importRows, requirementGroups, evaluateRequirements, describeRequirementGroups, prerequisiteMissing, evaluateOffering, offeringDiagnostic };
+  return { planningTerms, compareTerms, resolveCourse, serializePlan, deserializePlan, createStorageAdapter, validatePlanMap, validateStoredPlans, scheduleCsv, parseCsv, importRows, requirementGroups, evaluateRequirements, describeRequirementGroups, prerequisiteMissing, evaluateOffering, offeringDiagnostic };
 }));

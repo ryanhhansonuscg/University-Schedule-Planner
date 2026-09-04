@@ -1,6 +1,27 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const core = require('../assets/planner-core.js');
+
+test('storage adapter contains denied, quota, and removal failures', () => {
+  const denied = new Error('blocked'); denied.name = 'SecurityError';
+  const quota = new Error('full'); quota.name = 'QuotaExceededError';
+  const adapter = core.createStorageAdapter({
+    getItem() { throw denied; }, setItem() { throw quota; }, removeItem() { throw denied; },
+  });
+  assert.deepEqual(adapter.read('plan'), { ok: false, value: null, error: { operation: 'read', name: 'SecurityError', message: 'blocked' } });
+  assert.equal(adapter.write('plan', '{}').error.name, 'QuotaExceededError');
+  assert.equal(adapter.remove('plan').error.operation, 'remove');
+});
+
+test('versioned storage validator checks nested maps and migration data', () => {
+  const valid = { version: 2, calendars: { semester: { F27: ['CS101'] } }, migration: { unmatched: { OLD: ['MATH9'] } } };
+  assert.equal(core.validateStoredPlans(valid, 2), true);
+  assert.equal(core.validateStoredPlans({ ...valid, calendars: [] }, 2), false);
+  assert.equal(core.validateStoredPlans({ ...valid, calendars: { semester: { F27: 'CS101' } } }, 2), false);
+  assert.equal(core.validateStoredPlans({ ...valid, calendars: { semester: { '': ['CS101'] } } }, 2), false);
+  assert.equal(core.validateStoredPlans({ ...valid, calendars: { semester: { F27: [42] } } }, 2), false);
+  assert.equal(core.validateStoredPlans({ ...valid, migration: { unmatched: [] } }, 2), false);
+});
 const courses = [{code:'CS101',title:'Intro, "CS"',credits:'3',offering_history:[]},{code:'CS201',title:'Algorithms',credits:'4',offering_history:[{term_code:'F1',term_type:'fall',term_status:'future',offering_status:'scheduled'}]}];
 const terms = [{code:'F1',name:'Fall 2026',academic_year:'2026-2027',sequence:1,start_date:'2026-09-01',end_date:'2026-12-01',planning_enabled:true,term_type:'fall'},{code:'FAR',name:'Far',academic_year:'2031-2032',sequence:1,start_date:'2031-01-01',end_date:'2031-02-01',planning_enabled:true}];
 test('planning horizon uses four academic periods and sorts dated and undated terms',()=>{
