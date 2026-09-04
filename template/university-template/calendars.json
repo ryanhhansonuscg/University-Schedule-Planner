@@ -210,7 +210,7 @@
           "end_date": null,
           "dates_status": "unpublished",
           "status": "future",
-          "planning_enabled": true
+          "planning_enabled": false
         }
       ]
     }

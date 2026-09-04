@@ -83,6 +83,14 @@ test('insufficient future placeholders report that the endpoint is not covered',
   assert.equal(result.horizon.endpointCovered,false);
   assert.equal(result.horizon.dependsOnUnpublishedDates,false);
 });
+test('an intentionally disabled future term is excluded from planning terms',()=>{
+  const futureTerms = [
+    {code:'ENABLED',academic_year:'2025-2026',sequence:1,start_date:'2026-01-01',end_date:'2026-05-31',status:'current',planning_enabled:true},
+    {code:'DISABLED',academic_year:'2026-2027',sequence:2,start_date:null,end_date:null,status:'future',planning_enabled:false},
+  ];
+  const result=core.planningTerms([{id:'c',terms:futureTerms}],'c',new Date('2026-03-01'));
+  assert.deepEqual(result.terms.map(term=>term.code),['ENABLED']);
+});
 test('OR prerequisite groups accept either course',()=>assert.deepEqual(core.prerequisiteMissing([{source:'A',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'},{source:'B',target:'C',kind:'prerequisite',logic_group:'g',logic_operator:'OR'}],'C',new Set(['B'])),[]));
 test('requirement evaluation handles single edges, AND groups, and accurate messages',()=>{
   const edges=[
