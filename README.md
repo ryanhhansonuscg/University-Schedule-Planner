@@ -237,9 +237,9 @@ Course catalogs and calendars change. Store official source URLs and a `catalog_
 
 ## Release validation and test commands
 
-The test harness deliberately has no third-party runtime or development dependencies. JavaScript tests use the `node:test` runner included with Node.js; `package-lock.json` pins the empty dependency graph and the supported toolchain is Python 3.12 and Node.js 20 or newer.
+The test harness deliberately has no third-party runtime or development dependencies. JavaScript tests use the `node:test` runner included with Node.js; `package-lock.json` pins the empty dependency graph and the supported toolchain is Python 3.12 and Node.js 24 or newer.
 
-From the repository root, install the locked (dependency-free) npm project, then run the single canonical final-QA command. It requires Git, Python 3.12, Node.js 20+, and npm:
+From the repository root, install the locked (dependency-free) npm project, then run the single canonical final-QA command. It requires Git, Python 3.12, Node.js 24+, and npm:
 
 ```bash
 npm ci
