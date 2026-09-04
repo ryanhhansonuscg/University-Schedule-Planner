@@ -9,7 +9,8 @@ from pathlib import Path
 from unittest import mock
 
 from tools.build_university import DataError
-from tools.launcher import import_archive, inspect_archive
+from tools.import_university import (choose_source, differing_source_files, import_archive,
+    import_directory, inspect_archive, inspect_directory, inspect_source, matching_sources)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -147,12 +148,65 @@ class LauncherImportTests(unittest.TestCase):
         registry_before = (self.repo / "universities/index.json").read_bytes()
         output = self.repo / "dist" / SLUG
         (output / "old.txt").write_text("old")
-        with mock.patch("tools.launcher.build_standalone", side_effect=DataError("forced")):
+        with mock.patch("tools.import_university.build_standalone", side_effect=DataError("forced")):
             with self.assertRaisesRegex(DataError, "forced"):
                 import_archive(archive, replace=True, repo_root=self.repo)
         self.assertEqual("old", marker.read_text())
         self.assertEqual("old", (output / "old.txt").read_text())
         self.assertEqual(registry_before, (self.repo / "universities/index.json").read_bytes())
+
+    def directory(self, name="folder"):
+        source = self.base / name
+        if source.exists(): shutil.rmtree(source)
+        shutil.copytree(FIXTURE, source)
+        return source
+
+    def test_folder_layout_allowlist_and_symlinks(self):
+        source = self.directory()
+        root, files = inspect_directory(source)
+        self.assertEqual(source.resolve(), root)
+        self.assertIn("university.json", files)
+        (source / "catalog.json").write_text("generated")
+        with self.assertRaisesRegex(DataError, "not allowed"):
+            inspect_directory(source)
+        (source / "catalog.json").unlink()
+        (source / "departments/link.json").symlink_to(source / "university.json")
+        with self.assertRaisesRegex(DataError, "symbolic links"):
+            inspect_directory(source)
+
+    def test_folder_is_copied_before_validation_and_remains_immutable(self):
+        source = self.directory()
+        original = json.loads((source / "university.json").read_text())
+        def mutate(_manifest):
+            changed = dict(original); changed["name"] = "Edited during import"
+            (source / "university.json").write_text(json.dumps(changed))
+        import_directory(source, repo_root=self.repo, manifest_callback=mutate)
+        installed = json.loads((self.repo / "universities" / SLUG / "university.json").read_text())
+        self.assertEqual(original["name"], installed["name"])
+
+    def test_zip_folder_conflict_requires_explicit_selection(self):
+        archive, directory = self.archive(), self.directory(SLUG)
+        pair = matching_sources(archive, directory)
+        self.assertIsNotNone(pair)
+        self.assertEqual(archive.resolve(), choose_source(archive, directory, "zip"))
+        self.assertEqual(directory.resolve(), choose_source(archive, directory, "directory"))
+        self.assertIsNone(choose_source(archive, directory, "cancel"))
+        with self.assertRaisesRegex(DataError, "Choose"):
+            choose_source(archive, directory, "automatic")
+        (directory / "README.md").write_text("newer manual edit")
+        left, right = matching_sources(archive, directory)
+        self.assertEqual(("README.md",), differing_source_files(left, right))
+
+    def test_directory_replacement_requires_confirmation_and_rolls_back(self):
+        source = self.directory()
+        import_directory(source, repo_root=self.repo)
+        marker = self.repo / "universities" / SLUG / "marker.txt"; marker.write_text("old")
+        with self.assertRaisesRegex(DataError, "explicit replacement confirmation"):
+            import_directory(source, repo_root=self.repo)
+        with mock.patch("tools.import_university.build_standalone", side_effect=DataError("forced")):
+            with self.assertRaisesRegex(DataError, "forced"):
+                import_directory(source, replace=True, repo_root=self.repo)
+        self.assertEqual("old", marker.read_text())
 
 
 class LauncherServiceTests(unittest.TestCase):

@@ -43,6 +43,7 @@ RELEASE_FILES = (
     "template/university-template/university.json",
     "tools/build_standalone.py",
     "tools/build_university.py",
+    "tools/import_university.py",
     "tools/launcher.py",
     "tools/quickstart.py",
     "tools/validate_university.py",
