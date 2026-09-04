@@ -310,9 +310,10 @@ It excludes tests, package-manager and CI configuration, caches, temporary
 files, contributor-only tools, generated distributions, and every real
 university source-data directory. Before reporting success, the command checks
 the ZIP's exact manifest and file contents, rejects unsafe archive paths and
-links, and extracts it into a temporary directory for static inspection. Upload
-both generated files to the matching release; users can compare the ZIP's
-SHA-256 digest with the single line in the `.sha256` file.
+links, extracts it into a temporary directory, and completes a quickstart import
+using only the packaged files. Upload both generated files to the matching
+release; users can compare the ZIP's SHA-256 digest with the single line in the
+`.sha256` file.
 
 ### Clean-machine manual release checklist
 

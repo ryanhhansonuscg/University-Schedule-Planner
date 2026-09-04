@@ -117,6 +117,34 @@ def inspect_and_extract(archive_path: Path, destination: Path) -> None:
                 raise ValueError(f"Release content differs from source: {member.filename}")
 
 
+def smoke_test_extracted_release(extracted: Path) -> None:
+    """Exercise the documented quickstart using only files in the release."""
+    slug = "fictional-template-university"
+    template = extracted / "template" / "university-template"
+    fixture_archive = extracted / "quickstart-smoke.zip"
+    with zipfile.ZipFile(fixture_archive, "w", zipfile.ZIP_DEFLATED) as archive:
+        for source in sorted(path for path in template.rglob("*") if path.is_file()):
+            relative = source.relative_to(template)
+            archive.write(source, (PurePosixPath(slug) / relative.as_posix()).as_posix())
+
+    subprocess.run(
+        (sys.executable, "tools/quickstart.py", str(fixture_archive)),
+        cwd=extracted,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    standalone = extracted / "dist" / slug
+    required = (
+        standalone / "index.html",
+        standalone / "planner.html",
+        standalone / "assets/embedded-data.js",
+    )
+    missing = [path.relative_to(extracted).as_posix() for path in required if not path.is_file()]
+    if missing:
+        raise RuntimeError(f"Extracted release quickstart did not create: {', '.join(missing)}")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", type=Path, default=ROOT / "release")
@@ -130,14 +158,16 @@ def main() -> int:
     archive_path = args.output_dir.resolve() / f"university-schedule-planner-v{version}.zip"
     create_archive(archive_path)
     with tempfile.TemporaryDirectory() as temporary:
-        inspect_and_extract(archive_path, Path(temporary))
+        extracted = Path(temporary)
+        inspect_and_extract(archive_path, extracted)
+        smoke_test_extracted_release(extracted)
 
     digest = hashlib.sha256(archive_path.read_bytes()).hexdigest()
     checksum_path = archive_path.with_suffix(archive_path.suffix + ".sha256")
     checksum_path.write_text(f"{digest}  {archive_path.name}\n", encoding="ascii")
     print(f"Release: {archive_path}")
     print(f"SHA-256: {checksum_path}")
-    print("Archive manifest and safe extraction smoke inspection passed.")
+    print("Archive manifest, safe extraction, and extracted quickstart smoke test passed.")
     return 0
 
 
