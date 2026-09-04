@@ -30,7 +30,7 @@ class QuickstartTests(unittest.TestCase):
     def tearDown(self):
         self.temporary.cleanup()
 
-    def archive(self, name="input.zip", transform=None):
+    def archive(self, name="input.zip", transform=None, root_name=SLUG):
         source = self.base / "source" / SLUG
         if source.exists():
             shutil.rmtree(source.parent)
@@ -41,7 +41,7 @@ class QuickstartTests(unittest.TestCase):
         with zipfile.ZipFile(output, "w", zipfile.ZIP_DEFLATED) as zipped:
             for path in source.rglob("*"):
                 if path.is_file():
-                    zipped.write(path, f"{SLUG}/{path.relative_to(source).as_posix()}")
+                    zipped.write(path, f"{root_name}/{path.relative_to(source).as_posix()}")
         return output
 
     def test_valid_import_builds_artifacts_registry_and_standalone(self):
@@ -68,6 +68,22 @@ class QuickstartTests(unittest.TestCase):
         with self.assertRaisesRegex(DataError, "Malformed university layout"):
             import_archive(invalid, repo_root=self.repo)
         self.assertFalse((self.repo / "universities" / SLUG).exists())
+
+    def test_wrapper_must_match_normalized_slug_without_side_effects(self):
+        registry_path = self.repo / "universities/index.json"
+        registry_before = registry_path.read_bytes()
+        archive = self.archive(root_name="different-wrapper")
+
+        with self.assertRaisesRegex(
+            DataError,
+            "Archive wrapper 'different-wrapper' does not match normalized university slug "
+            f"'{SLUG}'",
+        ):
+            import_archive(archive, repo_root=self.repo)
+
+        self.assertFalse((self.repo / "universities" / SLUG).exists())
+        self.assertFalse((self.repo / "dist" / SLUG).exists())
+        self.assertEqual(registry_before, registry_path.read_bytes())
 
     def test_rejects_traversal_absolute_and_symlink_entries(self):
         for filename in (f"{SLUG}/../escape.json", "/absolute.json", "C:/drive.json"):

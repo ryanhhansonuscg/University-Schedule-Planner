@@ -271,8 +271,13 @@ def validate_prerequisite_graph(
             visit(code)
 
 
-def validate_and_compile(university_dir: Path, *, allow_template_directory: bool = False) -> dict:
-    """Validate source data, optionally allowing the canonical template's placeholder path."""
+def validate_and_compile(
+    university_dir: Path,
+    *,
+    allow_template_directory: bool = False,
+    check_directory_name: bool = True,
+) -> dict:
+    """Validate source data, with configurable checks for its containing directory."""
     university_dir = university_dir.resolve()
     university = read_json(university_dir / "university.json")
     calendar_doc = read_json(university_dir / "calendars.json")
@@ -302,7 +307,11 @@ def validate_and_compile(university_dir: Path, *, allow_template_directory: bool
     if not SLUG_RE.fullmatch(university["slug"]):
         raise DataError("university.json slug must contain lowercase letters, digits, and hyphens")
     is_canonical_template = allow_template_directory and university_dir == TEMPLATE_DIRECTORY
-    if university_dir.name != university["slug"] and not is_canonical_template:
+    if (
+        check_directory_name
+        and university_dir.name != university["slug"]
+        and not is_canonical_template
+    ):
         raise DataError(f"University directory {university_dir.name!r} does not match slug {university['slug']!r}")
     if university["academic_calendar_system"] not in CALENDAR_SYSTEMS:
         raise DataError(f"Unknown academic_calendar_system: {university['academic_calendar_system']}")

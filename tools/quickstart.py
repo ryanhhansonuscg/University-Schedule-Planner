@@ -163,9 +163,13 @@ def import_archive(
         extracted.mkdir()
         _extract(archive, extracted, members, max_expanded_bytes)
         source = extracted / root_name
-        catalog = validate_and_compile(source)
+        catalog = validate_and_compile(source, check_directory_name=False)
         university = catalog["university"]
         slug = university["slug"]
+        if root_name != slug:
+            raise DataError(
+                f"Archive wrapper {root_name!r} does not match normalized university slug {slug!r}"
+            )
         destination = universities / slug
         output = dist / slug
         if destination.exists() and not replace:
