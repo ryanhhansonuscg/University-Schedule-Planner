@@ -23,8 +23,13 @@
   const exportButton = document.getElementById('export-schedule');
   const clearButton = document.getElementById('clear-schedule');
   const importInput = document.getElementById('import-schedule');
+  const recoveryNotice = document.getElementById('recovery-notice');
+  const recoverySummary = document.getElementById('recovery-summary');
+  const exportRecoveryButton = document.getElementById('export-recovery');
+  const reassignRecoveryButton = document.getElementById('reassign-recovery');
+  const removeRecoveryButton = document.getElementById('remove-recovery');
   const storageKey = `college-schedule-plan:${data.university?.slug || 'university'}`;
-  const storageVersion = 2;
+  const storageVersion = 3;
   const storage = PlannerCore.createStorageAdapter(localStorage);
   let migrationNotice = '';
   let savedPlans = loadPlans();
@@ -49,14 +54,21 @@
 
   function loadPlans() {
     const result = storage.read(storageKey);
-    if (!result.ok) { warnStorage(); return { version: storageVersion, calendars: {}, migration: {} }; }
+    if (!result.ok) { warnStorage(); return { version: storageVersion, calendars: {}, migration: {}, recovery: {} }; }
     let saved;
     try { saved = JSON.parse(result.value || '{}'); }
-    catch { warnStorage('Saved planner data is malformed and could not be loaded. New changes will use a fresh in-memory schedule.'); return { version: storageVersion, calendars: {}, migration: {} }; }
+    catch { warnStorage('Saved planner data is malformed and could not be loaded. New changes will use a fresh in-memory schedule.'); return { version: storageVersion, calendars: {}, migration: {}, recovery: {} }; }
     if (Object.hasOwn(saved, 'version')) {
+      if (saved.version === 2 && PlannerCore.validateStoredPlans(saved, 2)) {
+        const unmatched = cleanPlan(saved.migration?.unmatched);
+        saved = { version: storageVersion, calendars: saved.calendars, migration: {}, recovery: {} };
+        if (Object.keys(unmatched).length) saved.recovery._unmatched = unmatched;
+        storage.write(storageKey, JSON.stringify(saved));
+        return saved;
+      }
       if (!PlannerCore.validateStoredPlans(saved, storageVersion)) {
         warnStorage('Saved planner data has an invalid format and could not be loaded. New changes will use a fresh in-memory schedule.');
-        return { version: storageVersion, calendars: {}, migration: {} };
+        return { version: storageVersion, calendars: {}, migration: {}, recovery: {} };
       }
       return saved;
     }
@@ -74,9 +86,9 @@
           calendars[calendar.id][termCode] = codes;
         });
       });
-      const migrated = { version: storageVersion, calendars, migration: {} };
+      const migrated = { version: storageVersion, calendars, migration: {}, recovery: {} };
       if (Object.keys(unmatched).length) {
-        migrated.migration.unmatched = unmatched;
+        migrated.recovery._unmatched = unmatched;
         migrationNotice = `Schedule storage was upgraded. ${Object.keys(unmatched).length} unmatched term entr${Object.keys(unmatched).length === 1 ? 'y was' : 'ies were'} preserved in the migration recovery bucket.`;
       } else if (Object.keys(saved || {}).length) {
         migrationNotice = 'Schedule storage was upgraded for calendar-specific plans.';
@@ -85,7 +97,7 @@
       return migrated;
     } catch {
       warnStorage('Saved planner data has an invalid format and could not be loaded. New changes will use a fresh in-memory schedule.');
-      return { version: storageVersion, calendars: {}, migration: {} };
+      return { version: storageVersion, calendars: {}, migration: {}, recovery: {} };
     }
   }
 
@@ -99,6 +111,41 @@
   function loadActivePlan() {
     activeCalendarId = activeCalendar()?.id || '';
     plan = cleanPlan(savedPlans.calendars[activeCalendarId]);
+  }
+
+  function recoveryPlan() {
+    return cleanPlan(savedPlans.recovery?.[activeCalendarId]);
+  }
+
+  function reconcilePlan(terms) {
+    const calendarTerms = activeCalendar()?.terms || [];
+    const visibleCodes = new Set(terms.map(term => term.code));
+    const hidden = recoveryPlan();
+    let changed = false;
+    Object.entries(plan).forEach(([termCode, codes]) => {
+      if (!visibleCodes.has(termCode) && codes.length) {
+        hidden[termCode] = [...new Set([...(hidden[termCode] || []), ...codes])];
+        changed = true;
+      }
+    });
+    plan = Object.fromEntries(Object.entries(plan).filter(([termCode]) => visibleCodes.has(termCode)));
+    savedPlans.recovery ||= {};
+    savedPlans.recovery[activeCalendarId] = hidden;
+    savedPlans.calendars[activeCalendarId] = cleanPlan(plan);
+    if (changed && !storage.write(storageKey, JSON.stringify(savedPlans)).ok) warnStorage();
+
+    const byCode = new Map(calendarTerms.map(term => [term.code, term]));
+    const buckets = { visible: cleanPlan(plan), expired: {}, disabled: {}, unknown: {} };
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const classify = (termCode, codes) => {
+      const term = byCode.get(termCode);
+      if (!term) buckets.unknown[termCode] = codes;
+      else if (term.planning_enabled && dateValue(term.end_date) && dateValue(term.end_date) < today) buckets.expired[termCode] = codes;
+      else buckets.disabled[termCode] = codes;
+    };
+    Object.entries(hidden).forEach(([termCode, codes]) => classify(termCode, codes));
+    Object.entries(cleanPlan(savedPlans.recovery?._unmatched)).forEach(([termCode, codes]) => classify(termCode, codes));
+    return buckets;
   }
 
   function dateValue(value) {
@@ -173,6 +220,7 @@
 
   function renderPlan() {
     const terms = planningTerms();
+    const buckets = reconcilePlan(terms);
     planGrid.replaceChildren(...terms.map(term => {
       const section = document.createElement('section');
       section.className = 'plan-term';
@@ -225,10 +273,22 @@
       section.append(heading, dates, items);
       return section;
     }));
-    const hasCourses = Object.values(plan).some(values => Array.isArray(values) && values.length);
+    const hasCourses = Object.values(buckets.visible).some(values => values.length);
     exportButton.disabled = !hasCourses;
     clearButton.disabled = !hasCourses;
+    renderRecovery(buckets);
     checkPlan(terms);
+  }
+
+  function bucketCount(bucket) { return Object.values(bucket).reduce((total, codes) => total + codes.length, 0); }
+
+  function renderRecovery(buckets) {
+    const counts = ['expired', 'disabled', 'unknown'].map(name => [name, bucketCount(buckets[name])]);
+    const total = counts.reduce((sum, [, count]) => sum + count, 0);
+    recoveryNotice.hidden = !total;
+    if (!total) return;
+    recoverySummary.textContent = `${total} hidden course entr${total === 1 ? 'y is' : 'ies are'} preserved: ${counts.map(([name, count]) => `${count} ${name}`).join(', ')}. Export, remove, or move them to a currently displayed term.`;
+    reassignRecoveryButton.disabled = !planningTerms().length;
   }
 
   function addIssue(severity, title, message) {
@@ -301,23 +361,38 @@
     return `"${String(value ?? '').replaceAll('"', '""')}"`;
   }
 
-  function exportSchedule() {
+  function downloadSchedule(planToExport, terms, suffix = 'proposed-schedule') {
     const rows = [['Calendar ID', 'Term Code', 'Term', 'Course #', 'Course Name', 'Course Hours']];
     const calendar = activeCalendar();
-    (calendar?.terms || []).forEach(term => (plan[term.code] || []).forEach(code => {
+    const termByCode = new Map((calendar?.terms || []).map(term => [term.code, term]));
+    Object.entries(planToExport).forEach(([termCode, codes]) => codes.forEach(code => {
       const course = courseByCode.get(code);
-      rows.push([calendar.id, term.code, term.name, code, course?.title || '', course?.credits || '']);
+      const term = termByCode.get(termCode);
+      rows.push([calendar?.id || '', termCode, term?.name || 'Unknown term', code, course?.title || '', course?.credits || '']);
     }));
     if (rows.length === 1) return;
     const csv = `\uFEFF${rows.map(row => row.map(csvCell).join(',')).join('\r\n')}\r\n`;
     const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${data.university?.slug || 'university'}-proposed-schedule.csv`;
+    link.download = `${data.university?.slug || 'university'}-${suffix}.csv`;
     document.body.appendChild(link);
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
+  }
+
+  function exportSchedule() {
+    const visibleCodes = new Set(planningTerms().map(term => term.code));
+    downloadSchedule(Object.fromEntries(Object.entries(plan).filter(([termCode]) => visibleCodes.has(termCode))), planningTerms());
+  }
+
+  function combinedRecovery() {
+    const combined = recoveryPlan();
+    Object.entries(cleanPlan(savedPlans.recovery?._unmatched)).forEach(([termCode, codes]) => {
+      combined[termCode] = [...new Set([...(combined[termCode] || []), ...codes])];
+    });
+    return combined;
   }
 
   function reportImportError(message) {
@@ -390,8 +465,26 @@
     }
   });
   exportButton.addEventListener('click', exportSchedule);
+  exportRecoveryButton.addEventListener('click', () => downloadSchedule(combinedRecovery(), activeCalendar()?.terms || [], 'recovery-schedule'));
+  removeRecoveryButton.addEventListener('click', () => {
+    if (!window.confirm('Permanently remove all recovery data shown for this calendar?')) return;
+    savedPlans.recovery[activeCalendarId] = {};
+    savedPlans.recovery._unmatched = {};
+    savePlan(); renderPlan();
+    plannerMessage.textContent = 'Recovery data removed.';
+  });
+  reassignRecoveryButton.addEventListener('click', () => {
+    const target = plannerTerm.value || planningTerms()[0]?.code;
+    if (!target) return;
+    const codes = Object.values(combinedRecovery()).flat();
+    plan[target] = [...new Set([...(plan[target] || []), ...codes])];
+    savedPlans.recovery[activeCalendarId] = {};
+    savedPlans.recovery._unmatched = {};
+    savePlan(); renderPlan();
+    plannerMessage.textContent = `${codes.length} recovery course entr${codes.length === 1 ? 'y was' : 'ies were'} moved to a current term.`;
+  });
   clearButton.addEventListener('click', () => {
-    if (!window.confirm(`Clear every course from ${activeCalendar()?.name || 'this calendar'}?`)) return;
+    if (!window.confirm(`Clear displayed courses from ${activeCalendar()?.name || 'this calendar'}? Recovery data will be kept.`)) return;
     plan = {};
     savePlan();
     renderPlan();

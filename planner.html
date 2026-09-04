@@ -60,6 +60,15 @@
       </div>
       <p id="planner-message" class="planner-message" role="status" aria-live="polite" aria-atomic="true" tabindex="-1"></p>
       <p id="storage-warning" class="storage-warning" role="alert" aria-live="assertive" aria-atomic="true" hidden></p>
+      <section id="recovery-notice" class="planner-guidance" aria-labelledby="recovery-heading" hidden>
+        <h3 id="recovery-heading">Courses need recovery</h3>
+        <p id="recovery-summary"></p>
+        <div class="schedule-toolbar" aria-label="Recovery data actions">
+          <button id="export-recovery" class="secondary-action" type="button">Export recovery data (.csv)</button>
+          <button id="reassign-recovery" type="button">Move courses to current terms</button>
+          <button id="remove-recovery" class="quiet-action" type="button">Remove recovery data</button>
+        </div>
+      </section>
       <p id="calendar-coverage" class="calendar-coverage"></p>
       <div class="planner-guidance">
         <p id="prerequisite-advisory">Prerequisite and corequisite checks are advisory. Confirm catalog wording, alternatives, grades, and permissions with an adviser.</p>
