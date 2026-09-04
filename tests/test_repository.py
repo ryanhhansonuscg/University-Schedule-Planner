@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import sys
 import tempfile
@@ -11,11 +12,40 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 
-from build_university import build, validate_registry  # noqa: E402
+from build_university import build, normalize_credits, validate_registry  # noqa: E402
 from check_prohibited_terms import violations  # noqa: E402
 
 
 class RepositoryTests(unittest.TestCase):
+    def test_llm_guide_credit_examples_match_validator_grammar(self) -> None:
+        guide = (ROOT / "template" / "university-template" / "LLM-SCRAPING-GUIDE.md").read_text(encoding="utf-8")
+        course_rules = re.split(r"\n#{1,4} ", guide.split("#### COURSE RULES", 1)[1], maxsplit=1)[0]
+        normalized_rules = " ".join(course_rules.split())
+
+        def documented_examples(label: str) -> list[object]:
+            sentence = re.search(rf"{label} examples: (.*?)\.(?: Do| Preserve)", course_rules, re.DOTALL)
+            self.assertIsNotNone(sentence)
+            return [json.loads(value) for value in re.findall(r"`([^`]+)`", sentence.group(1))]
+
+        accepted = documented_examples("Accepted")
+        rejected = documented_examples("Rejected")
+        self.assertEqual([3, "3", "1-4"], accepted)
+        self.assertEqual(["3 credits", "variable", "3, 4", "4-1"], rejected)
+        self.assertTrue(all(normalize_credits(value) is not None for value in accepted))
+        self.assertTrue(all(normalize_credits(value) is None for value in rejected))
+        for terminology in (
+            "non-negative JSON number",
+            "numeric string",
+            "ascending numeric range",
+            "units",
+            "comma-separated alternatives",
+            "descending ranges",
+            "appropriate prose field",
+            "provenance",
+            "never invent a numeric value",
+        ):
+            self.assertIn(terminology, normalized_rules)
+
     def test_production_registry_is_consistent(self) -> None:
         registry = validate_registry(ROOT / "universities" / "index.json")
         entries = registry["universities"]

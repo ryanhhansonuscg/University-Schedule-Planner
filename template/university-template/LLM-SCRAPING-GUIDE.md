@@ -127,8 +127,7 @@ All named prose fields remain strings even when the official source has no value
 (use `""`); `tags`, `offering_history`, `courses`, and `edges` remain arrays even
 when empty. Allowed university/calendar systems are `semester`, `quarter`,
 `trimester`, `hybrid`, and `custom`. Allowed course levels are `undergraduate`,
-`graduate`, `professional`, `continuing-education`, and `other`. Credits are a
-non-negative JSON number or a numeric string/range such as `"3"` or `"1-4"`.
+`graduate`, `professional`, `continuing-education`, and `other`.
 
 - `university.json`: use the official name and branding, the validated slug, the
   official top-level catalog URL, the snapshot date (`YYYY-MM-DD`), schema version
@@ -144,6 +143,17 @@ non-negative JSON number or a numeric string/range such as `"3"` or `"1-4"`.
   `dates_status: "unpublished"` with both dates `null`. Never estimate dates.
   Historical terms have `planning_enabled: false`. Check unexpected overlaps and
   document legitimate sessions or overlaps.
+
+#### COURSE RULES
+
+`credits` must be either a non-negative JSON number, a numeric string, or an
+ascending numeric range. Accepted examples: `3`, `"3"`, `"1-4"`. Do not put
+units, prose such as `"variable"`, comma-separated alternatives, or descending
+ranges in `credits`. Rejected examples: `"3 credits"`, `"variable"`, `"3, 4"`,
+`"4-1"`. Preserve any unsupported credit qualification in an appropriate prose
+field (such as `description` or `restrictions`) or in the university provenance
+`README.md`; never invent a numeric value to replace it.
+
 - `departments/<CODE>.json`: preserve official titles, descriptions, credit
   values/ranges, prerequisite and corequisite prose, restrictions, repeatability,
   and cross-listing text. Course `code` is uppercase subject plus printed number
