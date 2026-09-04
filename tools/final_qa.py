@@ -4,16 +4,19 @@
 from __future__ import annotations
 
 import json
+import os
 import shutil
-import sqlite3
 import subprocess
 import sys
 import tempfile
 from html.parser import HTMLParser
 from pathlib import Path
 
+from check_generated import verify_generated
+
 
 ROOT = Path(__file__).resolve().parents[1]
+REPRODUCIBLE_EPOCH = "1767225600"  # 2026-01-01T00:00:00+00:00
 REQUIRED_PATHS = (
     ".github/workflows/ci.yml",
     "CONTRIBUTING.md",
@@ -30,6 +33,7 @@ REQUIRED_PATHS = (
     "template/university-template/departments/SAMPLE.json",
     "template/university-template/university.json",
     "universities/index.json",
+    "tools/check_generated.py",
 )
 COMMANDS = (
     (sys.executable, "-m", "unittest", "discover", "-s", "tests", "-v"),
@@ -94,22 +98,18 @@ def verify_reproducible_fixture() -> None:
     with tempfile.TemporaryDirectory() as temporary:
         fixture = Path(temporary) / "fictional-template-university"
         shutil.copytree(source, fixture)
-        subprocess.run((sys.executable, str(ROOT / "tools/build_university.py"), str(fixture)), check=True)
-        first_catalog = json.loads((fixture / "catalog.json").read_text(encoding="utf-8"))
-        first_database = (fixture / "courses.db").read_bytes()
-        subprocess.run((sys.executable, str(ROOT / "tools/build_university.py"), str(fixture)), check=True)
-        second_catalog = json.loads((fixture / "catalog.json").read_text(encoding="utf-8"))
-        first_catalog.pop("generated_at", None)
-        second_catalog.pop("generated_at", None)
-        if first_catalog != second_catalog:
-            raise RuntimeError("Template catalog rebuild is not semantically reproducible")
-        if first_database != (fixture / "courses.db").read_bytes():
-            raise RuntimeError("Template SQLite rebuild is not byte-for-byte reproducible")
-        with sqlite3.connect(fixture / "courses.db") as database:
-            if database.execute("PRAGMA integrity_check").fetchone() != ("ok",):
-                raise RuntimeError("Template SQLite integrity check failed")
-            if database.execute("PRAGMA foreign_key_check").fetchall():
-                raise RuntimeError("Template SQLite foreign-key check failed")
+        environment = {**os.environ, "SOURCE_DATE_EPOCH": REPRODUCIBLE_EPOCH}
+        command = (sys.executable, str(ROOT / "tools/build_university.py"), str(fixture))
+        subprocess.run(command, check=True, env=environment)
+        first_catalog = Path(temporary) / "first.json"
+        first_database = Path(temporary) / "first.db"
+        shutil.copy2(fixture / "catalog.json", first_catalog)
+        shutil.copy2(fixture / "courses.db", first_database)
+        subprocess.run(command, check=True, env=environment)
+        verify_generated(
+            first_catalog, first_database,
+            fixture / "catalog.json", fixture / "courses.db",
+        )
 
 
 def main() -> int:

@@ -23,6 +23,8 @@ jobs:
       - name: Validate template fixture
         run: python tools/validate_university.py --template template/university-template
       - name: Reproducible build and SQLite integrity
+        env:
+          SOURCE_DATE_EPOCH: '1767225600'
         run: |
           tmp=$(mktemp -d)
           cp -R template/university-template "$tmp/fictional-template-university"
@@ -30,16 +32,10 @@ jobs:
           cp "$tmp/fictional-template-university/catalog.json" "$tmp/first.json"
           cp "$tmp/fictional-template-university/courses.db" "$tmp/first.db"
           python tools/build_university.py "$tmp/fictional-template-university"
-          python - "$tmp" <<'PY'
-          import json, sqlite3, sys
-          from pathlib import Path
-          p=Path(sys.argv[1]); fixture=p/'fictional-template-university'; a=json.loads((p/'first.json').read_text()); b=json.loads((fixture/'catalog.json').read_text())
-          a.pop('generated_at'); b.pop('generated_at'); assert a == b
-          assert (p/'first.db').read_bytes() == (fixture/'courses.db').read_bytes()
-          with sqlite3.connect(fixture/'courses.db') as db:
-              assert db.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
-              assert not db.execute('PRAGMA foreign_key_check').fetchall()
-          PY
+          python tools/check_generated.py \
+            "$tmp/first.json" "$tmp/first.db" \
+            "$tmp/fictional-template-university/catalog.json" \
+            "$tmp/fictional-template-university/courses.db"
       - name: Accessibility smoke checks
         run: node --test tests/browser-smoke.test.js
       - name: Final repository QA

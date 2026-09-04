@@ -4,11 +4,12 @@ import shutil
 import sqlite3
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 from tools.build_university import (
     DataError, ErrorCollector, build, validate_and_compile, validate_array,
-    validate_boolean, validate_enum, validate_integer, validate_nullable_date,
+    generated_at, validate_boolean, validate_enum, validate_integer, validate_nullable_date,
     validate_object, validate_registry, validate_string, validate_string_array,
     validate_url,
 )
@@ -33,6 +34,24 @@ class BuildUniversityTests(unittest.TestCase):
         catalog = build(self.directory, validate_only=True)
         self.assertEqual(["SAMPLE101", "SAMPLE201"], [c["code"] for c in catalog["courses"]])
         self.assertFalse((self.directory / "catalog.json").exists())
+    def test_valid_source_date_epoch(self):
+        with mock.patch.dict("os.environ", {"SOURCE_DATE_EPOCH": "0"}, clear=True):
+            self.assertEqual("1970-01-01T00:00:00+00:00", generated_at())
+    def test_invalid_source_date_epoch(self):
+        with mock.patch.dict("os.environ", {"SOURCE_DATE_EPOCH": "not-a-time"}, clear=True):
+            with self.assertRaisesRegex(DataError, "SOURCE_DATE_EPOCH"):
+                generated_at()
+    def test_source_date_epoch_is_converted_in_utc(self):
+        with mock.patch.dict("os.environ", {"SOURCE_DATE_EPOCH": "946684800"}, clear=True):
+            timestamp = generated_at()
+        self.assertEqual("2000-01-01T00:00:00+00:00", timestamp)
+        self.assertTrue(timestamp.endswith("+00:00"))
+    def test_same_source_date_epoch_produces_identical_catalogs(self):
+        with mock.patch.dict("os.environ", {"SOURCE_DATE_EPOCH": "1767225600"}, clear=True):
+            first = build(self.directory, validate_only=True)
+            second = build(self.directory, validate_only=True)
+        self.assertEqual(first, second)
+        self.assertEqual("2026-01-01T00:00:00+00:00", first["generated_at"])
     def test_malformed_json_and_root_documents(self):
         (self.directory / "university.json").write_text("[")
         with self.assertRaisesRegex(DataError, "Invalid JSON"): validate_and_compile(self.directory)

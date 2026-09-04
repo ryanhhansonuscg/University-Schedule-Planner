@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
+import os
 import re
 import sqlite3
 import sys
@@ -33,6 +34,24 @@ COURSE_NUMBER_RE = re.compile(r"^[0-9]{1,4}[A-Z]?$")
 
 class DataError(ValueError):
     pass
+
+
+def generated_at() -> str:
+    """Return the build timestamp, honoring the reproducible-build convention."""
+    value = os.environ.get("SOURCE_DATE_EPOCH")
+    if value is None:
+        timestamp = dt.datetime.now(dt.timezone.utc)
+    else:
+        try:
+            epoch = int(value)
+            if epoch < 0:
+                raise ValueError
+            timestamp = dt.datetime.fromtimestamp(epoch, dt.timezone.utc)
+        except (ValueError, OverflowError, OSError) as exc:
+            raise DataError(
+                "SOURCE_DATE_EPOCH must be a non-negative integer Unix timestamp"
+            ) from exc
+    return timestamp.replace(microsecond=0).isoformat()
 
 
 class ErrorCollector:
@@ -449,7 +468,7 @@ def validate_and_compile(university_dir: Path, *, allow_template_directory: bool
     departments.sort(key=lambda item: item["code"])
     return {
         "schema_version": university["schema_version"],
-        "generated_at": dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat(),
+        "generated_at": generated_at(),
         "university": university,
         "departments": departments,
         "academic_calendars": calendars,

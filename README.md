@@ -33,7 +33,7 @@ College Schedule Planner/
     └── LLM-SCRAPING-GUIDE.md     Copy/paste collection prompt
 ```
 
-`university.json`, `calendars.json`, and `departments/*.json` are source files. `catalog.json` and `courses.db` are generated artifacts. Commit both artifacts for registered institutions so the static site works on GitHub Pages and downstream users can query SQLite. Do not generate them inside `template/`; tests build that fictional fixture only in a temporary directory.
+`university.json`, `calendars.json`, and `departments/*.json` are source files. `catalog.json` and `courses.db` are generated artifacts. Commit both artifacts for registered institutions so the static site works on GitHub Pages and downstream users can query SQLite. Do not generate them inside `template/`; tests build that fictional fixture only in a temporary directory. Builds honor the reproducible-build `SOURCE_DATE_EPOCH` environment variable: set it to a non-negative integer Unix timestamp and `generated_at` is that instant converted to UTC. If it is unset, the build uses the current UTC time; malformed, negative, or out-of-range values fail validation.
 
 ## Add a university
 
@@ -112,24 +112,17 @@ The Python suite copies `template/university-template/` into a temporary directo
 ```bash
 tmp=$(mktemp -d)
 cp -R template/university-template "$tmp/fictional-template-university"
-python tools/build_university.py "$tmp/fictional-template-university"
+SOURCE_DATE_EPOCH=1767225600 python tools/build_university.py "$tmp/fictional-template-university"
 cp "$tmp/fictional-template-university/catalog.json" "$tmp/first.json"
 cp "$tmp/fictional-template-university/courses.db" "$tmp/first.db"
-python tools/build_university.py "$tmp/fictional-template-university"
-python - "$tmp" <<'PY'
-import json, sqlite3, sys
-from pathlib import Path
-p = Path(sys.argv[1]); fixture = p / "fictional-template-university"
-a = json.loads((p / "first.json").read_text())
-b = json.loads((fixture / "catalog.json").read_text())
-a.pop("generated_at"); b.pop("generated_at")
-assert a == b
-assert (p / "first.db").read_bytes() == (fixture / "courses.db").read_bytes()
-with sqlite3.connect(fixture / "courses.db") as db:
-    assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
-    assert not db.execute("PRAGMA foreign_key_check").fetchall()
-PY
+SOURCE_DATE_EPOCH=1767225600 python tools/build_university.py "$tmp/fictional-template-university"
+python tools/check_generated.py \
+  "$tmp/first.json" "$tmp/first.db" \
+  "$tmp/fictional-template-university/catalog.json" \
+  "$tmp/fictional-template-university/courses.db"
 ```
+
+Use the exact epoch `1767225600` (`2026-01-01T00:00:00+00:00`) for both builds, as CI and `tools/final_qa.py` do. The verifier compares the complete catalogs (including `generated_at`), SQLite schemas, and deterministically ordered rows from every table; it also runs SQLite integrity and foreign-key checks. Raw database bytes are checked as an additional diagnostic, not as the sole content comparison.
 
 The browser smoke checks exercise the pages' navigation/loading contracts plus calendar switching, Enter-key scheduling, local-storage serialization, CSV round-tripping, catalog failure handling, and accessible landmarks without adding a browser automation dependency.
 
