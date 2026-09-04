@@ -26,6 +26,12 @@ class BuildUniversityTests(unittest.TestCase):
     def load(self, relative): return json.loads((self.directory / relative).read_text())
     def save(self, relative, value): (self.directory / relative).write_text(json.dumps(value))
     def reset(self): shutil.rmtree(self.directory); shutil.copytree(FIXTURE, self.directory)
+    def add_course(self, doc, number):
+        course = copy.deepcopy(doc["courses"][0])
+        course.update(code=f"SAMPLE{number}", number=str(number), title=f"Course {number}")
+        course["offering_history"] = []
+        doc["courses"].append(course)
+        return course["code"]
     def assert_invalid(self, relative, mutate, message):
         doc = self.load(relative); mutate(doc); self.save(relative, doc)
         with self.assertRaisesRegex(DataError, message): validate_and_compile(self.directory)
@@ -189,6 +195,73 @@ class BuildUniversityTests(unittest.TestCase):
         self.assert_invalid("departments/SAMPLE.json", contradictory, "contradictory target, kind, or operator")
     def test_relationship_group_requires_multiple_members(self):
         self.assert_invalid("departments/SAMPLE.json", lambda d: d["edges"][0].update(logic_group="g", logic_operator="AND"), "at least two edges")
+    def test_prerequisite_self_dependency_reports_complete_cycle(self):
+        def self_dependency(doc):
+            doc["edges"] = [{"source": "SAMPLE101", "target": "SAMPLE101", "kind": "prerequisite"}]
+        self.assert_invalid(
+            "departments/SAMPLE.json", self_dependency,
+            r"Prerequisite cycle detected: SAMPLE101 -> SAMPLE101; source department files: departments/SAMPLE.json",
+        )
+    def test_two_course_prerequisite_cycle_is_a_hard_failure(self):
+        def reverse_dependency(doc):
+            doc["edges"].append({"source": "SAMPLE201", "target": "SAMPLE101", "kind": "prerequisite"})
+        self.assert_invalid(
+            "departments/SAMPLE.json", reverse_dependency,
+            r"SAMPLE101 -> SAMPLE201 -> SAMPLE101",
+        )
+    def test_longer_prerequisite_cycle_reports_every_source_file(self):
+        sample = self.load("departments/SAMPLE.json")
+        sample["edges"].append({"source": "OTHER101", "target": "SAMPLE101", "kind": "prerequisite"})
+        self.save("departments/SAMPLE.json", sample)
+        other_course = copy.deepcopy(sample["courses"][0])
+        other_course.update(code="OTHER101", department="OTHER", number="101", title="Other Course")
+        other_course["offering_history"] = []
+        other = {
+            "schema_version": 3,
+            "department": {"code": "OTHER", "name": "Other Studies", "source_url": "https://example.invalid/other"},
+            "courses": [other_course],
+            "edges": [{"source": "SAMPLE201", "target": "OTHER101", "kind": "prerequisite"}],
+        }
+        self.save("departments/OTHER.json", other)
+        with self.assertRaises(DataError) as raised:
+            validate_and_compile(self.directory)
+        message = str(raised.exception)
+        self.assertIn("OTHER101 -> SAMPLE101 -> SAMPLE201 -> OTHER101", message)
+        self.assertIn("departments/OTHER.json, departments/SAMPLE.json", message)
+    def test_acyclic_prerequisite_diamond_is_valid(self):
+        doc = self.load("departments/SAMPLE.json")
+        self.add_course(doc, 202)
+        self.add_course(doc, 301)
+        doc["edges"] = [
+            {"source": "SAMPLE101", "target": "SAMPLE201", "kind": "prerequisite"},
+            {"source": "SAMPLE101", "target": "SAMPLE202", "kind": "prerequisite"},
+            {"source": "SAMPLE201", "target": "SAMPLE301", "kind": "prerequisite"},
+            {"source": "SAMPLE202", "target": "SAMPLE301", "kind": "prerequisite"},
+        ]
+        self.save("departments/SAMPLE.json", doc)
+        self.assertEqual(4, len(validate_and_compile(self.directory)["edges"]))
+    def test_external_prerequisite_source_is_not_a_graph_vertex(self):
+        doc = self.load("departments/SAMPLE.json")
+        doc["edges"] = [{"source": "EXTERNAL101", "target": "SAMPLE101", "kind": "prerequisite"}]
+        self.save("departments/SAMPLE.json", doc)
+        edge = validate_and_compile(self.directory)["edges"][0]
+        self.assertFalse(edge["source_in_database"])
+    def test_corequisite_cycle_is_permissible(self):
+        doc = self.load("departments/SAMPLE.json")
+        doc["edges"] = [
+            {"source": "SAMPLE101", "target": "SAMPLE201", "kind": "corequisite"},
+            {"source": "SAMPLE201", "target": "SAMPLE101", "kind": "corequisite"},
+        ]
+        self.save("departments/SAMPLE.json", doc)
+        self.assertEqual(2, len(validate_and_compile(self.directory)["edges"]))
+    def test_mixed_cycle_is_permissible_when_corequisite_removal_breaks_it(self):
+        doc = self.load("departments/SAMPLE.json")
+        doc["edges"] = [
+            {"source": "SAMPLE101", "target": "SAMPLE201", "kind": "prerequisite"},
+            {"source": "SAMPLE201", "target": "SAMPLE101", "kind": "corequisite"},
+        ]
+        self.save("departments/SAMPLE.json", doc)
+        self.assertEqual(2, len(validate_and_compile(self.directory)["edges"]))
     def test_source_membership_is_always_recomputed(self):
         doc = self.load("departments/SAMPLE.json")
         doc["edges"][0]["source_in_database"] = False
