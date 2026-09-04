@@ -5,7 +5,7 @@
   "description": "Dependency-free tests for the static schedule planner",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check assets/app.js && node --check assets/loader.js && node --check assets/planner-core.js && node --check assets/planner.js"
+    "check": "node --check assets/app.js && node --check assets/loader.js && node --check assets/planner-core.js && node --check assets/planner.js && node --check tests/loader.test.js"
   },
   "engines": { "node": ">=20" }
 }

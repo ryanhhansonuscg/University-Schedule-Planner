@@ -47,6 +47,19 @@ College Schedule Planner/
    python tools/build_university.py universities/<unique-slug>
    ```
 
+To make a directory that can be copied to removable media or opened directly
+without a web server, build a standalone distribution for one university:
+
+```bash
+python tools/build_standalone.py universities/<unique-slug> dist/<unique-slug>
+```
+
+The command runs the same validation and catalog compilation as the normal build,
+then writes `index.html`, `planner.html`, and their assets to the destination. The
+registry and compiled catalog are embedded in `assets/embedded-data.js`, so both
+pages work under `file://`; the selected university is retained when moving between
+the explorer and planner. The source university directory is not modified.
+
 5. Add the university to `universities/index.json`.
 6. Run the local server and test both pages with `?university=<unique-slug>`.
 

@@ -37,9 +37,15 @@
   async function loadCatalog() {
     const status = document.getElementById('load-status');
     try {
-      const manifestResponse = await fetch('universities/index.json', { cache: 'no-cache' });
-      if (!manifestResponse.ok) throw new Error(`University index returned ${manifestResponse.status}.`);
-      const manifest = await manifestResponse.json();
+      const embedded = window.COLLEGE_PLANNER_EMBEDDED;
+      let manifest;
+      if (embedded?.manifest) {
+        manifest = embedded.manifest;
+      } else {
+        const manifestResponse = await fetch('universities/index.json', { cache: 'no-cache' });
+        if (!manifestResponse.ok) throw new Error(`University index returned ${manifestResponse.status}.`);
+        manifest = await manifestResponse.json();
+      }
       const available = manifest.universities || [];
       if (!available.length) {
         status.classList.add('load-error');
@@ -63,9 +69,13 @@
         window.location.assign(next);
       });
 
-      const catalogResponse = await fetch(selected.path, { cache: 'no-cache' });
-      if (!catalogResponse.ok) throw new Error(`${selected.name} catalog returned ${catalogResponse.status}.`);
-      const catalog = await catalogResponse.json();
+      let catalog = embedded?.catalogs?.[selected.slug];
+      if (!catalog) {
+        if (embedded) throw new Error(`${selected.name} is missing embedded catalog data.`);
+        const catalogResponse = await fetch(selected.path, { cache: 'no-cache' });
+        if (!catalogResponse.ok) throw new Error(`${selected.name} catalog returned ${catalogResponse.status}.`);
+        catalog = await catalogResponse.json();
+      }
       applyUniversityTheme(catalog.university || {});
 
       document.getElementById('university-name').textContent = catalog.university?.name || selected.name;
@@ -76,7 +86,10 @@
       return { catalog, manifest, selected };
     } catch (error) {
       status.classList.add('load-error');
-      status.textContent = `Could not load the catalog. ${error.message} Serve this folder through a web server; opening index.html directly does not allow JSON loading.`;
+      const hint = window.location.protocol === 'file:'
+        ? 'This standalone copy does not contain usable embedded data.'
+        : 'Check the published JSON files and try again.';
+      status.textContent = `Could not load the catalog. ${error.message} ${hint}`;
       document.getElementById('app').setAttribute('aria-busy', 'false');
       throw error;
     }
