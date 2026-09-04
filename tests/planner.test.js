@@ -41,6 +41,9 @@ function catalog() {
         { term_code: 'OLD', term_type: 'fall', term_status: 'historical', offering_status: 'held' },
       ] },
       { code: 'ART200', title: 'Studio', credits: 3, repeatable: 'May be repeated for up to 9 credits.', offering_history: [] },
+      { code: 'DEC150', title: 'Decimal', credits: 2.5, offering_history: [] },
+      { code: 'VAR199', title: 'Variable', credits: '1-4', offering_history: [] },
+      { code: 'BAD999', title: 'Malformed', credits: 'not known', offering_history: [] },
     ],
     edges: [{ source: 'EXTERNAL100', target: 'CS102', kind: 'prerequisite', source_in_database: false }],
     academic_calendars: [
@@ -59,7 +62,7 @@ function catalog() {
 }
 
 async function setup(saved = null, storageDouble = null) {
-  const ids = ['planner-calendar', 'planner-course-search', 'course-options', 'planner-term', 'completed-courses', 'plan-grid', 'issue-list', 'issue-count', 'calendar-coverage', 'planner-message', 'storage-warning', 'export-schedule', 'clear-schedule', 'import-schedule', 'add-to-plan', 'load-status', 'planner', 'app', 'recovery-notice', 'recovery-summary', 'export-recovery', 'reassign-recovery', 'remove-recovery'];
+  const ids = ['planner-calendar', 'planner-course-search', 'course-options', 'planner-term', 'completed-courses', 'plan-grid', 'plan-credit-total', 'issue-list', 'issue-count', 'calendar-coverage', 'planner-message', 'storage-warning', 'export-schedule', 'clear-schedule', 'import-schedule', 'add-to-plan', 'load-status', 'planner', 'app', 'recovery-notice', 'recovery-summary', 'export-recovery', 'reassign-recovery', 'remove-recovery'];
   const elements = Object.fromEntries(ids.map(id => [id, new Element(id)]));
   const values = new Map(saved === null ? [] : [['college-schedule-plan:test-u', JSON.stringify(saved)]]);
   let exportedBlob;
@@ -106,6 +109,43 @@ test('switching calendars isolates plans with overlapping visible term names', a
   const stored = JSON.parse(app.values.get('college-schedule-plan:test-u'));
   assert.deepEqual(stored.calendars.semester.S27, ['CS101']);
   assert.deepEqual(stored.calendars.quarter.Q27, ['CS102']);
+});
+
+test('credit totals update after add, remove, clear, import, and calendar switching', async () => {
+  const app = await setup();
+  const springCredits = () => app.elements['plan-grid'].children.find(section => section.children[0].textContent === 'Spring').children[3].textContent;
+  assert.equal(springCredits(), 'Credits: 0');
+  assert.equal(app.elements['plan-credit-total'].textContent, 'Active-calendar plan credits: 0');
+
+  await addCourse(app, 'DEC150', 'S27');
+  await addCourse(app, 'VAR199', 'S27');
+  assert.equal(springCredits(), 'Credits: 3.5–6.5');
+  assert.equal(app.elements['plan-credit-total'].textContent, 'Active-calendar plan credits: 3.5–6.5');
+
+  const spring = app.elements['plan-grid'].children.find(section => section.children[0].textContent === 'Spring');
+  await spring.children[2].children[0].children[1].click();
+  assert.equal(springCredits(), 'Credits: 1–4');
+
+  app.elements['planner-calendar'].value = 'quarter';
+  await app.elements['planner-calendar'].dispatch('change');
+  assert.equal(app.elements['plan-credit-total'].textContent, 'Active-calendar plan credits: 0');
+  await addCourse(app, 'CS101', 'Q27');
+  assert.equal(app.elements['plan-credit-total'].textContent, 'Active-calendar plan credits: 3');
+  app.elements['planner-calendar'].value = 'semester';
+  await app.elements['planner-calendar'].dispatch('change');
+  assert.equal(app.elements['plan-credit-total'].textContent, 'Active-calendar plan credits: 1–4');
+
+  app.elements['import-schedule'].files = [{ size: 100, text: async () => 'Term Code,Course #\nS27,DEC150\n' }];
+  await app.elements['import-schedule'].dispatch('change');
+  assert.equal(app.elements['plan-credit-total'].textContent, 'Active-calendar plan credits: 3.5–6.5');
+  await app.elements['clear-schedule'].click();
+  assert.equal(app.elements['plan-credit-total'].textContent, 'Active-calendar plan credits: 0');
+});
+
+test('unknown courses and malformed credits do not produce NaN totals', async () => {
+  const app = await setup({ version: 3, calendars: { semester: { S27: ['MISSING', 'BAD999', 'CS101'] } }, migration: {}, recovery: {} });
+  assert.equal(app.elements['plan-credit-total'].textContent, 'Active-calendar plan credits: 3');
+  assert.doesNotMatch(app.elements['plan-credit-total'].textContent, /NaN/);
 });
 
 test('migrates old storage by term code and preserves unmatched entries', async () => {

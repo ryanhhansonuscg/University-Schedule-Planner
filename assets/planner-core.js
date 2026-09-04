@@ -122,6 +122,32 @@
     return /\b(?:repeat(?:ed|able|ing)?|multiple times|additional credit|more than once)\b/i.test(wording) ? wording : '';
   }
 
+  function parseCredits(value) {
+    if (typeof value !== 'string' && typeof value !== 'number') return null;
+    const text = String(value).trim();
+    // Catalog credit values are either one non-negative number or a range. Do
+    // not partially parse malformed values (for example, "3 credits").
+    const match = text.match(/^(\d+(?:\.\d+)?)\s*(?:-\s*(\d+(?:\.\d+)?))?$/);
+    if (!match) return null;
+    const min = Number(match[1]);
+    const max = Number(match[2] ?? match[1]);
+    if (!Number.isFinite(min) || !Number.isFinite(max) || min > max) return null;
+    return { min, max };
+  }
+
+  function accumulateCredits(values) {
+    return (Array.isArray(values) ? values : []).reduce((total, value) => {
+      const parsed = parseCredits(value && typeof value === 'object' ? value.credits : value);
+      if (parsed) {
+        // Limit floating-point artifacts without changing meaningful decimal
+        // credit precision.
+        total.min = Number((total.min + parsed.min).toFixed(12));
+        total.max = Number((total.max + parsed.max).toFixed(12));
+      }
+      return total;
+    }, { min: 0, max: 0 });
+  }
+
   function serializePlan(plan) { return JSON.stringify(plan && typeof plan === 'object' ? plan : {}); }
   function deserializePlan(value) {
     try { const plan = JSON.parse(value || '{}'); return plan && typeof plan === 'object' && !Array.isArray(plan) ? plan : {}; } catch { return {}; }
@@ -343,5 +369,5 @@
     if (status === 'historically-unusual') return 'unusual';
     return status === 'confirmed' ? null : status;
   }
-  return { planningTerms, compareTerms, resolveCourse, parseCompletedCourses, repeatabilityWording, serializePlan, deserializePlan, createStorageAdapter, validatePlanMap, validateStoredPlans, scheduleCsv, csvRowCount, parseCsv, importRows, requirementGroups, evaluateRequirements, describeRequirementGroups, prerequisiteMissing, evaluateOffering, offeringDiagnostic };
+  return { planningTerms, compareTerms, resolveCourse, parseCompletedCourses, repeatabilityWording, parseCredits, accumulateCredits, serializePlan, deserializePlan, createStorageAdapter, validatePlanMap, validateStoredPlans, scheduleCsv, csvRowCount, parseCsv, importRows, requirementGroups, evaluateRequirements, describeRequirementGroups, prerequisiteMissing, evaluateOffering, offeringDiagnostic };
 }));
