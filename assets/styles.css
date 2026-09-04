@@ -18,6 +18,8 @@
   --brand-on-primary: #ffffff;
   --brand-on-secondary: #111111;
   --accent: var(--brand-primary);
+  --focus-ring: #005fcc;
+  --focus-ring: light-dark(#005fcc, #8ecaff);
   --accent-soft: #dce9e1;
   --accent-soft: color-mix(in srgb, var(--brand-primary) 15%, var(--surface));
   --coreq: #856319;
@@ -53,7 +55,7 @@ a { color: var(--brand-primary); }
 .controls { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 18px; }
 label { display: grid; gap: 6px; color: var(--muted); font-size: .8rem; font-weight: 650; }
 select, input { min-width: 0; width: 100%; padding: 11px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); }
-select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px solid #1d6d45; outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 2px; }
+select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px solid #005fcc; outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 .visually-hidden { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 
 .layout { display: grid; grid-template-columns: minmax(230px, .7fr) minmax(0, 2fr); gap: 18px; align-items: start; }
@@ -100,7 +102,7 @@ select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px 
 .planner-controls > button, .schedule-toolbar button, .file-action { min-height: 44px; padding: 10px 15px; border: 0; border-radius: 10px; background: var(--brand-primary); color: var(--brand-on-primary); font-weight: 700; }
 .schedule-toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
 .file-action { display: inline-flex; align-items: center; cursor: pointer; }
-.file-action:focus-within { outline: 3px solid #1d6d45; outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 2px; }
+.file-action:focus-within { outline: 3px solid #005fcc; outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 .file-action input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 .schedule-toolbar .secondary-action { border: 1px solid var(--border); background: var(--surface); color: var(--text); }
 .schedule-toolbar .quiet-action { border: 0; background: transparent; color: var(--muted); }
@@ -109,7 +111,7 @@ select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px 
 .calendar-coverage { margin: 12px 0; color: var(--muted); font-size: .82rem; }
 .planner-guidance { color: var(--muted); font-size: .82rem; }
 .planner-guidance p { margin-bottom: 6px; }
-.planner-message:focus-visible { outline: 3px solid #1d6d45; outline: 3px solid color-mix(in srgb, var(--accent) 35%, transparent); outline-offset: 2px; }
+.planner-message:focus-visible { outline: 3px solid #005fcc; outline: 3px solid var(--focus-ring); outline-offset: 2px; }
 .storage-warning { padding: 10px 12px; border: 2px solid #a33a20; border-radius: 6px; background: #fff1ec; color: #70230f; font-weight: 700; }
 .plan-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 10px; align-items: start; }
 .plan-term { min-width: 0; padding: 13px; border: 1px solid var(--border); border-top: 4px solid var(--brand-secondary); border-radius: 12px; background: var(--surface); }
