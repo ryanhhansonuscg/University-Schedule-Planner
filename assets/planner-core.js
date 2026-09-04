@@ -91,6 +91,37 @@
     return matches.length === 1 ? matches[0] : null;
   }
 
+  function parseCompletedCourses(value, courses, edges = []) {
+    const catalogCodes = new Map((courses || []).map(course => [course.code.replace(/\s/g, '').toUpperCase(), course.code]));
+    const externalCodes = new Map((edges || [])
+      .filter(edge => edge.source_in_database === false && typeof edge.source === 'string')
+      .map(edge => [edge.source.replace(/\s/g, '').toUpperCase(), edge.source]));
+    const codes = []; const unknownTokens = [];
+    // Commas, semicolons, and lines are the unambiguous delimiters. Within each
+    // part, accept either compact codes or the common "CS 101" spelling.
+    String(value || '').split(/[,;\n]+/).forEach(part => {
+      const words = part.trim().split(/\s+/).filter(Boolean);
+      for (let index = 0; index < words.length; index += 1) {
+        let token = words[index];
+        if (/^[A-Za-z][A-Za-z&-]*$/.test(token) && /^\d{2,4}[A-Za-z]?$/.test(words[index + 1] || '')) {
+          token += words[index + 1]; index += 1;
+        }
+        const normalized = token.replace(/\s/g, '').toUpperCase();
+        const code = catalogCodes.get(normalized) || externalCodes.get(normalized);
+        if (code) codes.push(code);
+        else unknownTokens.push(token);
+      }
+    });
+    return { codes: [...new Set(codes)], unknownTokens };
+  }
+
+  function repeatabilityWording(course) {
+    const wording = typeof course?.repeatable === 'string' ? course.repeatable.trim() : '';
+    if (!wording || /^(?:no|none|false|not repeatable)$/i.test(wording)
+      || /\b(?:not|never|cannot|can't|may not)\s+(?:be\s+)?repeat/i.test(wording)) return '';
+    return /\b(?:repeat(?:ed|able|ing)?|multiple times|additional credit|more than once)\b/i.test(wording) ? wording : '';
+  }
+
   function serializePlan(plan) { return JSON.stringify(plan && typeof plan === 'object' ? plan : {}); }
   function deserializePlan(value) {
     try { const plan = JSON.parse(value || '{}'); return plan && typeof plan === 'object' && !Array.isArray(plan) ? plan : {}; } catch { return {}; }
@@ -312,5 +343,5 @@
     if (status === 'historically-unusual') return 'unusual';
     return status === 'confirmed' ? null : status;
   }
-  return { planningTerms, compareTerms, resolveCourse, serializePlan, deserializePlan, createStorageAdapter, validatePlanMap, validateStoredPlans, scheduleCsv, csvRowCount, parseCsv, importRows, requirementGroups, evaluateRequirements, describeRequirementGroups, prerequisiteMissing, evaluateOffering, offeringDiagnostic };
+  return { planningTerms, compareTerms, resolveCourse, parseCompletedCourses, repeatabilityWording, serializePlan, deserializePlan, createStorageAdapter, validatePlanMap, validateStoredPlans, scheduleCsv, csvRowCount, parseCsv, importRows, requirementGroups, evaluateRequirements, describeRequirementGroups, prerequisiteMissing, evaluateOffering, offeringDiagnostic };
 }));

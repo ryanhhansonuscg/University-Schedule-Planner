@@ -148,6 +148,20 @@ test('offering evaluation keeps historical patterns subordinate to exact-term ab
 });
 test('storage serialization tolerates corrupt data',()=>{assert.deepEqual(core.deserializePlan(core.serializePlan({F1:['CS101']})),{F1:['CS101']});assert.deepEqual(core.deserializePlan('{'),{})});
 test('course resolution supports spaced codes, title, and rejects ambiguity',()=>{assert.equal(core.resolveCourse(courses,'cs 101').code,'CS101');assert.equal(core.resolveCourse(courses,'Algorithms').code,'CS201')});
+test('completed-course parsing resolves catalog codes, spacing, and supported external requirements',()=>{
+  const edges=[{source:'EXTERNAL100',target:'CS201',kind:'prerequisite',source_in_database:false}];
+  assert.deepEqual(core.parseCompletedCourses('cs101, CS 201; external 100',courses,edges),{
+    codes:['CS101','CS201','EXTERNAL100'],unknownTokens:[],
+  });
+});
+test('completed-course parsing reports unknown and malformed tokens',()=>{
+  assert.deepEqual(core.parseCompletedCourses('CS999, not-a-code',courses),{codes:[],unknownTokens:['CS999','not-a-code']});
+});
+test('repeatability requires explicit permitting catalog wording',()=>{
+  assert.equal(core.repeatabilityWording({repeatable:'May be repeated for up to 6 credits.'}),'May be repeated for up to 6 credits.');
+  assert.equal(core.repeatabilityWording({repeatable:'Not repeatable'}),'');
+  assert.equal(core.repeatabilityWording({}),'');
+});
 test('CSV parsing, escaping, and import validation',()=>{const csv=core.scheduleCsv(terms,{F1:['CS101']},courses);assert.equal(core.parseCsv(csv).rows[1][2],'Intro, "CS"');assert.match(core.importRows('bad\nrow',terms,courses).error,/Term/);assert.deepEqual(core.importRows('Term,Course #\nFall 2026,CS101',terms,courses).records,[{termCode:'F1',courseCode:'CS101'}]);assert.equal(core.parseCsv('\"bad').errors[0].type,'unterminated-field') });
 test('CSV parser handles BOM, line endings, quoted newlines, commas, and escaped quotes',()=>{
   const parsed=core.parseCsv('\uFEFFName,Note\r\n"Ada","line 1\r\nline 2, and ""quoted"""\r\n');
