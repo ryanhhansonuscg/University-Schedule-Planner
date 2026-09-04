@@ -66,4 +66,26 @@ test('offering evaluation keeps historical patterns subordinate to exact-term ab
 });
 test('storage serialization tolerates corrupt data',()=>{assert.deepEqual(core.deserializePlan(core.serializePlan({F1:['CS101']})),{F1:['CS101']});assert.deepEqual(core.deserializePlan('{'),{})});
 test('course resolution supports spaced codes, title, and rejects ambiguity',()=>{assert.equal(core.resolveCourse(courses,'cs 101').code,'CS101');assert.equal(core.resolveCourse(courses,'Algorithms').code,'CS201')});
-test('CSV parsing, escaping, and import validation',()=>{const csv=core.scheduleCsv(terms,{F1:['CS101']},courses);assert.equal(core.parseCsv(csv)[1][2],'Intro, "CS"');assert.match(core.importRows('bad\nrow',terms,courses).error,/Term/);assert.deepEqual(core.importRows('Term,Course #\nFall 2026,CS101',terms,courses).records,[{termCode:'F1',courseCode:'CS101'}]);assert.throws(()=>core.parseCsv('"bad'),/Unclosed/) });
+test('CSV parsing, escaping, and import validation',()=>{const csv=core.scheduleCsv(terms,{F1:['CS101']},courses);assert.equal(core.parseCsv(csv).rows[1][2],'Intro, "CS"');assert.match(core.importRows('bad\nrow',terms,courses).error,/Term/);assert.deepEqual(core.importRows('Term,Course #\nFall 2026,CS101',terms,courses).records,[{termCode:'F1',courseCode:'CS101'}]);assert.equal(core.parseCsv('\"bad').errors[0].type,'unterminated-field') });
+test('CSV parser handles BOM, line endings, quoted newlines, commas, and escaped quotes',()=>{
+  const parsed=core.parseCsv('\uFEFFName,Note\r\n"Ada","line 1\r\nline 2, and ""quoted"""\r\n');
+  assert.deepEqual(parsed.errors,[]);
+  assert.deepEqual(parsed.rows,[['Name','Note'],['Ada','line 1\r\nline 2, and "quoted"']]);
+  assert.deepEqual(core.parseCsv('A,B\n1,2\n').rows,[['A','B'],['1','2']]);
+});
+test('CSV parser reports malformed quotes, headers, and widths with locations',()=>{
+  const parsed=core.parseCsv('Term,,TERM\n"Fall"oops,CS101\nshort\n"open');
+  assert.ok(parsed.errors.every(error=>Number.isInteger(error.row)&&Number.isInteger(error.column)));
+  for (const type of ['empty-header','duplicate-header','unexpected-quote','inconsistent-width','unterminated-field']) assert.ok(parsed.errors.some(error=>error.type===type),type);
+});
+test('imports categorize ambiguous labels and all other row failures',()=>{
+  const importTerms=[...terms,{code:'F2',name:'Fall 2026'}];
+  const importCourses=[...courses,{code:'CS301',title:'Algorithms'}];
+  const csv='Calendar ID,Term Code,Term,Course #,Course Name\nother,F1,,CS101,\ncal,BAD,,CS101,\ncal,,Fall 2026,CS101,\ncal,F1,,BAD,\ncal,F1,,,Algorithms\ncal,F1,,CS101,\ncal,F1,,,\n';
+  const result=core.importRows(csv,importTerms,importCourses,'cal',{F1:['CS101']});
+  assert.deepEqual(result.failures.map(f=>f.category),['wrong calendar','unknown term','ambiguous term name','unknown course','ambiguous course title','duplicate schedule entry','malformed row']);
+});
+test('imports reject header-only files and prefer stable identifiers',()=>{
+  assert.match(core.importRows('Term Code,Course #\n',terms,courses,'cal').error,/only headers/);
+  assert.deepEqual(core.importRows('Term Code,Term,Course #,Course Name\nF1,Wrong,CS101,Wrong',terms,courses,'cal').additions,[{termCode:'F1',courseCode:'CS101'}]);
+});

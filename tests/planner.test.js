@@ -142,7 +142,7 @@ test('import honors calendar ID and term code rather than an overlapping term na
   const stored = JSON.parse(app.values.get('college-schedule-plan:test-u'));
   assert.deepEqual(stored.calendars.semester.S27, ['CS102']);
   assert.equal(stored.calendars.quarter, undefined);
-  assert.match(app.elements['planner-message'].textContent, /Skipped row 2/);
+  assert.match(app.elements['planner-message'].textContent, /Rejected row 2: wrong calendar/);
 });
 
 test('undated terms render publication and planning-placeholder labels', async () => {
@@ -165,4 +165,24 @@ test('course badges show unconfirmed availability while exact cancellation is pr
   assert.equal(badges[1].textContent, 'Unconfirmed · unusual term');
   assert.match(badges[1].title, /do not predict availability/);
   assert.match(app.elements['issue-list'].children[0].children[1].children[0].textContent, /Cancelled offering: CS101/);
+});
+
+test('mixed-validity imports apply valid additions after confirmation', async () => {
+  const app = await setup();
+  app.elements['import-schedule'].files = [{ size: 100, text: async () => 'Calendar ID,Term Code,Course #\nsemester,S27,CS101\nother,S27,CS102\n' }];
+  await app.elements['import-schedule'].dispatch('change');
+  const stored = JSON.parse(app.values.get('college-schedule-plan:test-u'));
+  assert.deepEqual(stored.calendars.semester.S27, ['CS101']);
+  assert.match(app.elements['planner-message'].textContent, /Rejected row 3: wrong calendar/);
+});
+
+test('oversized and unreadable imports leave the plan unchanged', async () => {
+  const app = await setup();
+  app.elements['import-schedule'].files = [{ size: 1024 * 1024 + 1, text: async () => '' }];
+  await app.elements['import-schedule'].dispatch('change');
+  assert.match(app.elements['planner-message'].textContent, /too large/);
+  app.elements['import-schedule'].files = [{ size: 10, text: async () => { throw new Error('read'); } }];
+  await app.elements['import-schedule'].dispatch('change');
+  assert.match(app.elements['planner-message'].textContent, /could not be read/);
+  assert.equal(JSON.parse(app.values.get('college-schedule-plan:test-u')).calendars.semester, undefined);
 });

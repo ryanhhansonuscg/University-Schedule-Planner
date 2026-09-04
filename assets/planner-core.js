@@ -63,25 +63,87 @@
     return `\uFEFF${rows.map(row => row.map(csvCell).join(',')).join('\r\n')}\r\n`;
   }
   function parseCsv(text) {
-    const rows = []; let row = []; let cell = ''; let quoted = false;
-    for (let i = 0; i < text.length; i += 1) { const char = text[i];
-      if (quoted) { if (char === '"' && text[i + 1] === '"') { cell += '"'; i += 1; } else if (char === '"') quoted = false; else cell += char; }
-      else if (char === '"') quoted = true; else if (char === ',') { row.push(cell.trim()); cell = ''; }
-      else if (char === '\n') { row.push(cell.trim()); if (row.some(Boolean)) rows.push(row); row = []; cell = ''; }
-      else if (char !== '\r' && char !== '\uFEFF') cell += char;
+    const rows = []; const errors = []; let row = []; let cell = ''; let quoted = false; let closedQuote = false;
+    let physicalRow = 1; let column = 1;
+    const addError = (type, message, atRow = physicalRow, atColumn = column) => errors.push({ type, message, row: atRow, column: atColumn });
+    const finishCell = () => { row.push(quoted || closedQuote ? cell : cell.trim()); cell = ''; closedQuote = false; };
+    const finishRow = () => {
+      finishCell();
+      if (row.some(value => value !== '')) rows.push(row); else if (row.length > 1) rows.push(row);
+      row = [];
+    };
+    const source = String(text ?? '').replace(/^\uFEFF/, '');
+    for (let i = 0; i < source.length; i += 1) {
+      const char = source[i];
+      if (quoted) {
+        if (char === '"' && source[i + 1] === '"') { cell += '"'; i += 1; column += 1; }
+        else if (char === '"') { quoted = false; closedQuote = true; }
+        else { cell += char; if (char === '\n') { physicalRow += 1; column = 0; } }
+      } else if (closedQuote) {
+        if (char === ',') finishCell();
+        else if (char === '\n') finishRow();
+        else if (char !== '\r' && !/\s/.test(char)) { addError('unexpected-quote', 'Unexpected character after a closing quote.'); cell += char; closedQuote = false; }
+      } else if (char === '"') {
+        if (cell.trim() !== '') { addError('unexpected-quote', 'Unexpected quote in an unquoted field.'); cell += char; }
+        else { cell = ''; quoted = true; }
+      } else if (char === ',') finishCell();
+      else if (char === '\n') finishRow();
+      else if (char !== '\r') cell += char;
+      if (char !== '\n') column += 1;
     }
-    if (quoted) throw new Error('Unclosed quoted CSV field');
-    row.push(cell.trim()); if (row.some(Boolean)) rows.push(row); return rows;
+    if (quoted) addError('unterminated-field', 'Unterminated quoted field.', physicalRow, column);
+    if (cell !== '' || row.length) finishRow();
+    if (rows.length) {
+      const width = rows[0].length;
+      rows.forEach((values, index) => { if (values.length !== width) errors.push({ type: 'inconsistent-width', message: `Expected ${width} cells but found ${values.length}.`, row: index + 1, column: Math.min(values.length + 1, width) }); });
+      const normalized = rows[0].map(value => String(value).toLowerCase().replace(/[^a-z0-9]/g, ''));
+      const seen = new Map();
+      normalized.forEach((value, index) => {
+        if (!value) errors.push({ type: 'empty-header', message: 'Header cells cannot be empty.', row: 1, column: index + 1 });
+        else if (seen.has(value)) errors.push({ type: 'duplicate-header', message: `Duplicate normalized header “${value}”.`, row: 1, column: index + 1 });
+        else seen.set(value, index);
+      });
+    }
+    return { rows, errors };
   }
-  function importRows(text, terms, courses) {
-    const rows = parseCsv(text); if (rows.length < 2) return { error: 'The CSV must include a header and at least one schedule row.' };
+  function importRows(text, terms, courses, activeCalendarId = '', existingPlan = {}) {
+    const parsed = parseCsv(text); const { rows } = parsed; const additions = []; const failures = [];
+    if (!rows.length) return { additions, records: additions, failures, errors: parsed.errors, error: 'The CSV must include a header and at least one schedule row.' };
     const headers = rows[0].map(value => value.toLowerCase().replace(/[^a-z0-9]/g, ''));
-    const termIndex = headers.indexOf('term'); const codeIndex = headers.findIndex(value => ['course', 'coursecode', 'coursenumber'].includes(value)); const nameIndex = headers.indexOf('coursename');
-    if (termIndex < 0 || (codeIndex < 0 && nameIndex < 0)) return { error: 'Import requires a Term column and either Course # or Course Name.' };
-    const termMap = new Map(); terms.forEach(term => { termMap.set(term.code.toLowerCase(), term); termMap.set(term.name.toLowerCase(), term); });
-    const records = []; const skipped = [];
-    rows.slice(1).forEach((row, i) => { const term = termMap.get((row[termIndex] || '').toLowerCase()); const course = resolveCourse(courses, (codeIndex >= 0 ? row[codeIndex] : '') || (nameIndex >= 0 ? row[nameIndex] : '')); if (term && course) records.push({ termCode: term.code, courseCode: course.code }); else skipped.push(i + 2); });
-    return { records, skipped };
+    const termIndex = headers.indexOf('term'); const termCodeIndex = headers.indexOf('termcode'); const calendarIndex = headers.indexOf('calendarid');
+    const codeIndex = headers.findIndex(value => ['course', 'coursecode', 'coursenumber'].includes(value)); const nameIndex = headers.indexOf('coursename');
+    if ((termIndex < 0 && termCodeIndex < 0) || (codeIndex < 0 && nameIndex < 0)) return { additions, records: additions, failures, errors: parsed.errors, error: 'Import requires a Term Code or Term column and either Course # or Course Name.' };
+    if (rows.length < 2) return { additions, records: additions, failures, errors: parsed.errors, error: 'The CSV contains only headers; include at least one schedule row.' };
+    const parseRows = new Set(parsed.errors.filter(error => error.row > 1).map(error => error.row));
+    const termByCode = new Map(terms.map(term => [term.code.toLowerCase(), term]));
+    const coursesByCode = new Map(courses.map(course => [course.code.toUpperCase(), course]));
+    const scheduled = new Set(Object.entries(existingPlan || {}).flatMap(([term, codes]) => (codes || []).map(code => `${term}\0${code}`)));
+    rows.slice(1).forEach((row, index) => {
+      const rowNumber = index + 2; const fail = (category, message) => failures.push({ row: rowNumber, category, message });
+      if (parseRows.has(rowNumber) || row.length !== headers.length) { fail('malformed row', 'The row is malformed or has an inconsistent number of cells.'); return; }
+      if ((calendarIndex >= 0 && !row[calendarIndex]) || ((termCodeIndex < 0 || !row[termCodeIndex]) && (termIndex < 0 || !row[termIndex])) || ((codeIndex < 0 || !row[codeIndex]) && (nameIndex < 0 || !row[nameIndex]))) { fail('malformed row', 'A required cell is missing.'); return; }
+      if (calendarIndex >= 0 && row[calendarIndex] && row[calendarIndex] !== activeCalendarId) { fail('wrong calendar', `Calendar ID does not match ${activeCalendarId}.`); return; }
+      let term;
+      if (termCodeIndex >= 0 && row[termCodeIndex]) term = termByCode.get(row[termCodeIndex].toLowerCase());
+      else {
+        const label = (row[termIndex] || '').toLowerCase(); const matches = terms.filter(item => item.name.toLowerCase() === label);
+        if (matches.length > 1) { fail('ambiguous term name', 'The term name matches multiple terms; use Term Code.'); return; }
+        term = matches[0];
+      }
+      if (!term) { fail('unknown term', 'The term was not recognized.'); return; }
+      let course;
+      if (codeIndex >= 0 && row[codeIndex]) course = coursesByCode.get(row[codeIndex].replace(/\s/g, '').toUpperCase());
+      else {
+        const title = (row[nameIndex] || '').toLowerCase(); const matches = courses.filter(item => item.title.toLowerCase() === title || item.title.toLowerCase().includes(title));
+        if (matches.length > 1) { fail('ambiguous course title', 'The course title matches multiple courses; use Course #.'); return; }
+        course = matches[0];
+      }
+      if (!course) { fail('unknown course', 'The course was not recognized.'); return; }
+      const key = `${term.code}\0${course.code}`;
+      if (scheduled.has(key)) { fail('duplicate schedule entry', 'The course is already scheduled in this term.'); return; }
+      scheduled.add(key); additions.push({ termCode: term.code, courseCode: course.code });
+    });
+    return { additions, records: additions, failures, skipped: failures.map(item => item.row), errors: parsed.errors, rowCount: rows.length - 1 };
   }
   function requirementGroups(edges, target, kind) {
     const groups = new Map();

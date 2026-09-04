@@ -300,52 +300,30 @@
     URL.revokeObjectURL(url);
   }
 
-  function parseCsv(text) { return PlannerCore.parseCsv(text); }
-
-  function normalizedHeader(value) {
-    return value.toLowerCase().replace(/[^a-z0-9]/g, '');
-  }
-
   async function importSchedule(file) {
-    const rows = parseCsv(await file.text());
-    if (rows.length < 2) {
-      plannerMessage.textContent = 'The CSV must include a header and at least one schedule row.';
-      return;
+    const maxFileSize = 1024 * 1024; const maxRows = 10000;
+    if (Number.isFinite(file.size) && file.size > maxFileSize) { plannerMessage.textContent = 'The CSV is too large. Choose a file no larger than 1 MB.'; return; }
+    let text;
+    try { text = await file.text(); } catch { plannerMessage.textContent = 'The CSV could not be read. Choose another file and try again.'; return; }
+    let result;
+    try { result = PlannerCore.importRows(text, activeCalendar()?.terms || [], courses, activeCalendarId, plan); }
+    catch { plannerMessage.textContent = 'The CSV could not be parsed. Check its formatting and try again.'; return; }
+    if (result.rowCount > maxRows) { plannerMessage.textContent = `The CSV has too many rows. The limit is ${maxRows.toLocaleString()}.`; return; }
+    if (result.error) { plannerMessage.textContent = result.error; return; }
+    const headerErrors = result.errors.filter(error => error.row === 1);
+    if (headerErrors.length) { plannerMessage.textContent = `The CSV header is invalid: ${headerErrors.map(error => `${error.message} (row ${error.row}, column ${error.column})`).join(' ')}`; return; }
+    const rejected = result.failures;
+    const failureSummary = rejected.map(item => `row ${item.row}: ${item.category}`).join('; ');
+    if (!result.additions.length) { plannerMessage.textContent = `No courses were imported.${rejected.length ? ` Rejected ${failureSummary}.` : ''}`; return; }
+    if (rejected.length && !window.confirm(`Import ${result.additions.length} valid course${result.additions.length === 1 ? '' : 's'} and reject ${rejected.length} row${rejected.length === 1 ? '' : 's'}? ${failureSummary}`)) {
+      plannerMessage.textContent = 'Import cancelled; the schedule was not changed.'; return;
     }
-    const headers = rows[0].map(normalizedHeader);
-    const termIndex = headers.indexOf('term');
-    const termCodeIndex = headers.indexOf('termcode');
-    const calendarIndex = headers.indexOf('calendarid');
-    const codeIndex = headers.findIndex(value => ['course', 'coursecode', 'coursenumber'].includes(value));
-    const nameIndex = headers.indexOf('coursename');
-    if ((termIndex < 0 && termCodeIndex < 0) || (codeIndex < 0 && nameIndex < 0)) {
-      plannerMessage.textContent = 'Import requires a Term Code or Term column and either Course # or Course Name.';
-      return;
-    }
-    const terms = activeCalendar()?.terms || [];
-    const termByLabel = new Map();
-    terms.forEach(term => {
-      termByLabel.set(term.code.toLowerCase(), term);
-      termByLabel.set(term.name.toLowerCase(), term);
-    });
-    let imported = 0;
-    const skipped = [];
-    rows.slice(1).forEach((row, rowIndex) => {
-      const rowCalendarId = calendarIndex >= 0 ? row[calendarIndex]?.trim() : '';
-      const termValue = (termCodeIndex >= 0 ? row[termCodeIndex] : '') || (termIndex >= 0 ? row[termIndex] : '');
-      const term = termByLabel.get(termValue?.trim().toLowerCase());
-      const course = resolveCourse((codeIndex >= 0 ? row[codeIndex] : '') || (nameIndex >= 0 ? row[nameIndex] : ''));
-      if ((rowCalendarId && rowCalendarId !== activeCalendar()?.id) || !term || !course) {
-        skipped.push(rowIndex + 2);
-        return;
-      }
-      const before = (plan[term.code] || []).length;
-      plan[term.code] = [...new Set([...(plan[term.code] || []), course.code])];
-      if (plan[term.code].length > before) imported += 1;
-    });
+    const nextPlan = cleanPlan(plan);
+    result.additions.forEach(({ termCode, courseCode }) => { nextPlan[termCode] = [...(nextPlan[termCode] || []), courseCode]; });
+    plan = nextPlan;
     savePlan();
     renderPlan();
-    plannerMessage.textContent = `${imported} course${imported === 1 ? '' : 's'} imported into ${activeCalendar()?.name || 'the schedule'}.${skipped.length ? ` Skipped row${skipped.length === 1 ? '' : 's'} ${skipped.join(', ')} because the term or course was not recognized.` : ''}`;
+    plannerMessage.textContent = `${result.additions.length} course${result.additions.length === 1 ? '' : 's'} imported into ${activeCalendar()?.name || 'the schedule'}.${rejected.length ? ` Rejected ${failureSummary}.` : ''}`;
   }
 
   plannerCalendar.addEventListener('change', () => {
