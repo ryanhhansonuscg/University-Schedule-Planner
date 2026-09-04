@@ -26,7 +26,8 @@ class StandaloneBuildTests(unittest.TestCase):
     def test_build_contains_pages_assets_and_embedded_compiled_data(self):
         catalog = build_standalone(self.source, self.output)
         for relative in (
-            "index.html", "planner.html", "assets/styles.css", "assets/loader.js",
+            "index.html", "planner.html", "editor.html", "assets/styles.css", "assets/loader.js",
+            "assets/editor-core.js", "assets/editor.js",
             "assets/app.js", "assets/planner.js", "assets/planner-core.js",
             "assets/embedded-data.js",
         ):

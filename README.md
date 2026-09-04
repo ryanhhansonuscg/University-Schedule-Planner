@@ -17,6 +17,23 @@ university schedule data.
    choose the folder import option for one completed university folder. After the
    import succeeds, select **Open Planner**.
 
+## Review scraped department data
+
+Open **Data editor** from either browser page (or open `editor.html` directly),
+then choose a scraped `departments/<CODE>.json` file. The editor keeps data local,
+lets a reviewer correct course metadata and structured requirements, reports
+structural problems, and downloads a corrected JSON copy. Run
+`python tools/validate_university.py <university-folder>` on the complete folder
+before importing or publishing it.
+
+Requirement timing is explicit: a `prerequisite` must be completed in an earlier
+term; a `corequisite` may be completed earlier or placed in the same term; and a
+`recommended` relationship is advisory. Requirements sharing a `logic_group` use
+`OR` when any one member is sufficient and `AND` when every member is required.
+Un-grouped requirements are independently required. Preserve the catalog's prose
+fields alongside these structured edges so ambiguous rules remain visible for
+human confirmation.
+
 ## Import performance and acceleration
 
 The **University Schedule Planner Launcher** keeps server health checks and import/build work off the Tk event

@@ -15,8 +15,8 @@ else:
     from build_university import DataError, ROOT, validate_and_compile
 
 
-ASSETS = ("app.js", "loader.js", "planner-core.js", "planner.js", "styles.css")
-PAGES = ("index.html", "planner.html")
+ASSETS = ("app.js", "editor-core.js", "editor.js", "loader.js", "planner-core.js", "planner.js", "styles.css")
+PAGES = ("index.html", "planner.html", "editor.html")
 EMBEDDED_SCRIPT = '<script src="assets/embedded-data.js" defer></script>'
 
 
@@ -62,9 +62,8 @@ def build_standalone(
     for page in PAGES:
         html = (ROOT / page).read_text(encoding="utf-8")
         marker = '<script src="assets/loader.js" defer></script>'
-        if marker not in html:
-            raise DataError(f"Could not find loader script in {page}")
-        html = html.replace(marker, f"{EMBEDDED_SCRIPT}\n  {marker}", 1)
+        if marker in html:
+            html = html.replace(marker, f"{EMBEDDED_SCRIPT}\n  {marker}", 1)
         (output_dir / page).write_text(html, encoding="utf-8")
     return catalog
 

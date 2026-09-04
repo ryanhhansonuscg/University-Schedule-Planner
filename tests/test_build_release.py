@@ -18,7 +18,8 @@ class ReleaseBuilderTests(unittest.TestCase):
         self.assertTrue({
             ".nojekyll", "launch-planner.bat", "launch-planner.command",
             "tools/launcher.py", "tools/import_university.py", "tools/serve.py",
-            "index.html", "planner.html", "assets/app.js", "assets/loader.js",
+            "index.html", "planner.html", "editor.html", "assets/app.js", "assets/loader.js",
+            "assets/editor-core.js", "assets/editor.js",
             "assets/planner-core.js", "assets/planner.js", "assets/styles.css",
         }.issubset(RELEASE_FILES))
 
