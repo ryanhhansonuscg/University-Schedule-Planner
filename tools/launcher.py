@@ -10,9 +10,11 @@ import shutil
 import socket
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 import webbrowser
 from dataclasses import dataclass, field
@@ -52,6 +54,7 @@ STARTUP_TIMEOUT = 15.0
 SHUTDOWN_TIMEOUT = 3.0
 MINIMUM_PYTHON = (3, 10)
 CONFIG_FILENAME = "launcher.json"
+HEALTH_PATH = "/.well-known/university-schedule-planner-health"
 
 
 @dataclass(frozen=True)
@@ -209,6 +212,30 @@ def available_port(host: str = HOST) -> int:
         return int(server.getsockname()[1])
 
 
+def server_health(url: str, root: Path, timeout: float = 0.4) -> dict[str, object] | None:
+    """Return trusted server metadata only when it identifies this checkout."""
+    try:
+        with urllib.request.urlopen(url.rstrip("/") + HEALTH_PATH, timeout=timeout) as response:
+            if response.status != 200 or response.headers.get_content_type() != "application/json":
+                return None
+            metadata = json.loads(response.read())
+        required = {"host", "port", "pid", "repository_root"}
+        if not isinstance(metadata, dict) or not required.issubset(metadata):
+            return None
+        if Path(str(metadata["repository_root"])).resolve() != root.resolve():
+            return None
+        if not isinstance(metadata["port"], int) or not isinstance(metadata["pid"], int):
+            return None
+        parsed = urllib.parse.urlsplit(url)
+        if parsed.port != metadata["port"] or parsed.hostname != metadata["host"]:
+            return None
+        if metadata["pid"] <= 0:
+            return None
+        return metadata
+    except (OSError, ValueError, TypeError, urllib.error.URLError):
+        return None
+
+
 @dataclass
 class ManagedProcess:
     name: str
@@ -266,8 +293,19 @@ class LauncherService:
         return self._start_worker(self._launch_server)
 
     def _launch_server(self) -> None:
-        port = available_port()
-        command = (str(self.executable), str(self.root / "tools" / "serve.py"), "--port", str(port))
+        # The conventional URL may belong to another application. Reuse it only
+        # when its identity-bearing health record names this exact checkout.
+        conventional_url = f"http://{HOST}:8000/"
+        if server_health(conventional_url, self.root):
+            self.url = conventional_url
+            self.notify("ready", conventional_url)
+            return
+        descriptor, readiness_name = tempfile.mkstemp(prefix="planner-ready-", suffix=".json")
+        os.close(descriptor)
+        readiness = Path(readiness_name)
+        readiness.unlink(missing_ok=True)
+        command = (str(self.executable), str(self.root / "tools" / "serve.py"),
+                   "--host", HOST, "--port", "0", "--ready-file", str(readiness))
         startup_flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         try:
             process = subprocess.Popen(
@@ -282,6 +320,7 @@ class LauncherService:
                 creationflags=startup_flags,
             )
         except OSError as exc:
+            readiness.unlink(missing_ok=True)
             self.notify("error", f"Could not start the planner server: {exc}")
             return
         managed = ManagedProcess("Planner server", command, process)
@@ -293,10 +332,10 @@ class LauncherService:
         self.notify("process", managed)
         self._start_worker(self._read_output, managed)
         if self.stop_event.is_set():
+            readiness.unlink(missing_ok=True)
             self._terminate(managed)
             return
-        self.url = f"http://{HOST}:{port}/"
-        self._wait_until_ready(managed, self.url)
+        self._wait_until_ready(managed, readiness)
 
     def _read_output(self, managed: ManagedProcess) -> None:
         stream = managed.process.stdout
@@ -316,31 +355,39 @@ class LauncherService:
         except (OSError, ValueError):
             pass
 
-    def _wait_until_ready(self, managed: ManagedProcess, url: str) -> None:
+    def _wait_until_ready(self, managed: ManagedProcess, readiness: Path) -> None:
         deadline = time.monotonic() + STARTUP_TIMEOUT
-        while not self.stop_event.is_set() and time.monotonic() < deadline:
-            return_code = managed.process.poll()
-            if return_code is not None:
-                managed.state = f"Exited ({return_code})"
-                managed.error = managed.error or "Server exited before becoming reachable."
-                self.notify("process", managed)
-                return
-            try:
-                with urllib.request.urlopen(url, timeout=0.4) as response:
-                    if response.status < 500:
+        try:
+            while not self.stop_event.is_set() and time.monotonic() < deadline:
+                return_code = managed.process.poll()
+                if return_code is not None:
+                    managed.state = f"Exited ({return_code})"
+                    managed.error = managed.error or "Server exited before publishing readiness."
+                    self.notify("process", managed)
+                    return
+                try:
+                    metadata = json.loads(readiness.read_text(encoding="utf-8"))
+                    port = int(metadata["port"])
+                    url = f"http://{metadata['host']}:{port}/"
+                    healthy = server_health(url, self.root)
+                    if (healthy and healthy == metadata and healthy["pid"] == managed.pid):
+                        self.url = url
                         managed.state = "Ready"
                         managed.error = ""
                         self.notify("ready", url)
                         self.notify("process", managed)
                         return
-            except (OSError, urllib.error.URLError):
+                except (OSError, ValueError, KeyError, TypeError, json.JSONDecodeError):
+                    pass
                 self.stop_event.wait(0.1)
-        if self.stop_event.is_set():
-            return
-        managed.state = "Startup failed"
-        managed.error = managed.error or f"HTTP endpoint was not reachable after {STARTUP_TIMEOUT:g}s."
-        self.notify("process", managed)
-        self._terminate(managed)
+            if self.stop_event.is_set():
+                return
+            managed.state = "Startup failed"
+            managed.error = managed.error or f"Valid readiness was not published after {STARTUP_TIMEOUT:g}s."
+            self.notify("process", managed)
+            self._terminate(managed)
+        finally:
+            readiness.unlink(missing_ok=True)
 
     def import_in_background(self, source: Path, replace: bool = False) -> bool:
         return self._start_worker(self._import, source, replace)
