@@ -225,9 +225,16 @@ test('oversized and unreadable imports leave the plan unchanged', async () => {
 });
 
 test('denied reads show an accessible persistent warning and start empty', async () => {
-  const app = await setup(null, { getItem() { const error = new Error('denied'); error.name = 'SecurityError'; throw error; }, setItem() {}, removeItem() {} });
+  const app = await setup(null, { getItem() { const error = new Error('denied'); error.name = 'SecurityError'; throw error; }, setItem() { throw new Error('denied'); }, removeItem() {} });
   assert.equal(app.elements['storage-warning'].hidden, false);
-  assert.match(app.elements['storage-warning'].textContent, /continue planning during this session/);
+  assert.match(app.elements['storage-warning'].textContent, /current planning session still works/);
+  await addCourse(app, 'CS101', 'S27');
+  assert.equal(app.elements['export-schedule'].disabled, false);
+  app.elements['planner-calendar'].value = 'quarter';
+  await app.elements['planner-calendar'].dispatch('change');
+  app.elements['planner-calendar'].value = 'semester';
+  await app.elements['planner-calendar'].dispatch('change');
+  assert.equal(app.elements['export-schedule'].disabled, false);
 });
 
 test('malformed JSON and malformed versioned payloads are rejected', async () => {
@@ -279,4 +286,16 @@ test('completed-course persistence is debounced and warns only once', async () =
   await new Promise(resolve => setTimeout(resolve, 350));
   assert.equal(writes, 2);
   assert.equal(app.elements['storage-warning'].hidden, false);
+});
+
+test('clearing completed courses uses guarded removal after the debounce', async () => {
+  let removals = 0;
+  const storage = { getItem: key => key.endsWith(':completed') ? 'CS101' : null, setItem() {}, removeItem() { removals += 1; throw new Error('denied'); } };
+  const app = await setup(null, storage);
+  app.elements['completed-courses'].value = '';
+  await app.elements['completed-courses'].dispatch('input');
+  assert.equal(removals, 0);
+  await new Promise(resolve => setTimeout(resolve, 350));
+  assert.equal(removals, 1);
+  assert.match(app.elements['storage-warning'].textContent, /will not survive a reload/);
 });

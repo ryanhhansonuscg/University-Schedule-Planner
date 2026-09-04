@@ -30,7 +30,7 @@
   const removeRecoveryButton = document.getElementById('remove-recovery');
   const storageKey = `college-schedule-plan:${data.university?.slug || 'university'}`;
   const storageVersion = 3;
-  const storage = PlannerCore.createStorageAdapter(localStorage);
+  const storage = PlannerCore.createStorageAdapter(() => localStorage);
   let migrationNotice = '';
   let savedPlans = loadPlans();
   let activeCalendarId = '';
@@ -46,7 +46,7 @@
       .map(([termCode, codes]) => [termCode, [...new Set(codes.filter(code => typeof code === 'string'))]]));
   }
 
-  function warnStorage(message = 'Changes cannot be saved in this browser. You can continue planning during this session; export your schedule before leaving.') {
+  function warnStorage(message = 'Changes cannot be saved in this browser. The current planning session still works, but changes will not survive a reload. Export your schedule before leaving.') {
     if (storageWarning.textContent === message && !storageWarning.hidden) return;
     storageWarning.textContent = message;
     storageWarning.hidden = false;
@@ -57,17 +57,17 @@
     if (!result.ok) { warnStorage(); return { version: storageVersion, calendars: {}, migration: {}, recovery: {} }; }
     let saved;
     try { saved = JSON.parse(result.value || '{}'); }
-    catch { warnStorage('Saved planner data is malformed and could not be loaded. New changes will use a fresh in-memory schedule.'); return { version: storageVersion, calendars: {}, migration: {}, recovery: {} }; }
+    catch { warnStorage('Saved planner data is malformed and could not be loaded. The current planning session still works with a fresh schedule, but changes may not survive a reload.'); return { version: storageVersion, calendars: {}, migration: {}, recovery: {} }; }
     if (Object.hasOwn(saved, 'version')) {
       if (saved.version === 2 && PlannerCore.validateStoredPlans(saved, 2)) {
         const unmatched = cleanPlan(saved.migration?.unmatched);
         saved = { version: storageVersion, calendars: saved.calendars, migration: {}, recovery: {} };
         if (Object.keys(unmatched).length) saved.recovery._unmatched = unmatched;
-        storage.write(storageKey, JSON.stringify(saved));
+        if (!storage.write(storageKey, JSON.stringify(saved)).ok) warnStorage();
         return saved;
       }
       if (!PlannerCore.validateStoredPlans(saved, storageVersion)) {
-        warnStorage('Saved planner data has an invalid format and could not be loaded. New changes will use a fresh in-memory schedule.');
+        warnStorage('Saved planner data has an invalid format and could not be loaded. The current planning session still works with a fresh schedule, but changes may not survive a reload.');
         return { version: storageVersion, calendars: {}, migration: {}, recovery: {} };
       }
       return saved;
@@ -96,7 +96,7 @@
       if (!storage.write(storageKey, JSON.stringify(migrated)).ok) warnStorage();
       return migrated;
     } catch {
-      warnStorage('Saved planner data has an invalid format and could not be loaded. New changes will use a fresh in-memory schedule.');
+      warnStorage('Saved planner data has an invalid format and could not be loaded. The current planning session still works with a fresh schedule, but changes may not survive a reload.');
       return { version: storageVersion, calendars: {}, migration: {}, recovery: {} };
     }
   }
@@ -106,6 +106,13 @@
     const result = storage.write(storageKey, JSON.stringify(savedPlans));
     if (!result.ok) warnStorage();
     return result;
+  }
+
+  function saveCompletedCourses() {
+    const result = completedCourses.value
+      ? storage.write(`${storageKey}:completed`, completedCourses.value)
+      : storage.remove(`${storageKey}:completed`);
+    if (!result.ok) warnStorage();
   }
 
   function loadActivePlan() {
@@ -438,7 +445,7 @@
     checkPlan(planningTerms());
     clearTimeout(completedSaveTimer);
     completedSaveTimer = setTimeout(() => {
-      if (!storage.write(`${storageKey}:completed`, completedCourses.value).ok) warnStorage();
+      saveCompletedCourses();
     }, 300);
   });
   document.getElementById('add-to-plan').addEventListener('click', () => {
