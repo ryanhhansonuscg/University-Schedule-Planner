@@ -93,19 +93,14 @@ Course catalogs and calendars change. Store official source URLs and a `catalog_
 
 The test harness deliberately has no third-party runtime or development dependencies. JavaScript tests use the `node:test` runner included with Node.js; `package-lock.json` pins the empty dependency graph and the supported toolchain is Python 3.12 and Node.js 20 or newer.
 
-From the repository root, install the locked (dependency-free) npm project and run every local check:
+From the repository root, install the locked (dependency-free) npm project, then run the single canonical final-QA command. It requires Git, Python 3.12+, Node.js 20+, and npm:
 
 ```bash
 npm ci
-python -m unittest discover -s tests -v
-npm test
-python -m compileall -q tools tests
-npm run check
-python tools/validate_university.py --template template/university-template
-python tools/check_prohibited_terms.py
-node --test tests/semantic-markup-smoke.test.js
 python tools/final_qa.py
 ```
+
+The gate normally requires a clean tracked worktree so it validates exactly what will be reviewed. During local development, `python tools/final_qa.py --allow-dirty` is an explicit override; CI and release validation must use the canonical command without that option.
 
 The Python suite copies `template/university-template/` into a temporary directory before invoking any writing build. To reproduce CI's generated-artifact and SQLite checks locally:
 
@@ -136,4 +131,4 @@ Before release, serve the site locally and check both pages with a populated uni
 - **Dark mode:** select the system dark color scheme and confirm text, borders, focus indicators, badges, selected states, and links retain readable contrast.
 - **Screen reader relationship navigation:** with a screen reader, select several courses, navigate the Relationship summary by heading and list, and confirm the selected course, prerequisites, corequisites, and dependents are understandable. Then navigate graph buttons and confirm each accessible name states its course and relationship. Ensure graph redraws are not announced wholesale and only concise selection/result-count status messages are spoken.
 
-`tools/final_qa.py` is the final release gate. It detects unresolved merge markers, missing required files and local HTML assets, malformed tracked JSON, test or syntax failures, institution-specific content, and non-reproducible template artifacts. Run it after merging parallel work to ensure no conflict residue or required element was lost.
+`python tools/final_qa.py` is the single canonical final release gate. It detects unresolved merge markers, missing required files and local references from HTML, CSS, and JavaScript modules, malformed tracked JSON, test or syntax failures, institution-specific content, and non-reproducible template artifacts. It reports each completed test layer separately. Run it from a clean worktree after merging work to ensure no conflict residue or required element was lost.

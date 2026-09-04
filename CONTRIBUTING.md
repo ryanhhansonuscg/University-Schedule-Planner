@@ -17,7 +17,7 @@ Thanks for improving College Schedule Planner. Data changes should be reviewable
 - Describe missing or ambiguous data in the university README.
 - Run `python tools/check_prohibited_terms.py` to ensure removed institution-specific names, domains, and colors have not returned.
 - Run `python -m unittest discover -s tests` to build the fictional template fixture in a temporary directory and exercise repository checks.
-- Run `python tools/final_qa.py` after merging changes; it is the final gate for unresolved conflict markers, missing repository elements, broken local asset references, malformed JSON, tests, and generated-artifact integrity.
+- With Git, Python 3.12+, Node.js 20+, and npm installed, run `npm ci` and then the single canonical gate, `python tools/final_qa.py`, from a clean tracked worktree after merging changes. It checks unresolved conflict markers, missing repository elements, broken local references, malformed JSON, all test layers, and generated-artifact integrity. `--allow-dirty` is only an explicit local-development override; do not use it for release or CI validation.
 
 Keep unrelated universities and departments out of the same pull request when practical. This makes source review and future updates easier.
 
