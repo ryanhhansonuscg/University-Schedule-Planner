@@ -33,10 +33,13 @@ RELEASE_FILES = (
     "launch-planner.bat",
     "launch-planner.command",
     "index.html",
+    "editor.html",
     "planner.html",
     "schedule-import-template.csv",
     "schema.sql",
     "assets/app.js",
+    "assets/editor-core.js",
+    "assets/editor.js",
     "assets/loader.js",
     "assets/planner-core.js",
     "assets/planner.js",
@@ -130,8 +133,8 @@ def smoke_test_extracted_release(extracted: Path) -> None:
     """Exercise an extracted release without relying on the source checkout."""
     required_release_files = (
         "launch-planner.bat", "launch-planner.command", "tools/launcher.py",
-        "tools/import_university.py", "tools/serve.py", "index.html", "planner.html",
-        "assets/app.js", "assets/loader.js", "assets/planner-core.js",
+        "tools/import_university.py", "tools/serve.py", "index.html", "planner.html", "editor.html",
+        "assets/app.js", "assets/editor-core.js", "assets/editor.js", "assets/loader.js", "assets/planner-core.js",
         "assets/planner.js", "assets/styles.css",
     )
     missing = [name for name in required_release_files if not (extracted / name).is_file()]
@@ -158,7 +161,7 @@ def smoke_test_extracted_release(extracted: Path) -> None:
 
         generated = (
             f"universities/{slug}/catalog.json", f"universities/{slug}/courses.db",
-            f"dist/{slug}/index.html", f"dist/{slug}/planner.html",
+            f"dist/{slug}/index.html", f"dist/{slug}/planner.html", f"dist/{slug}/editor.html",
             f"dist/{slug}/assets/embedded-data.js",
         )
         missing = [name for name in generated if not (extracted / name).is_file()]

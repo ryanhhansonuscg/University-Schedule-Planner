@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Review and correct scraped university course data before publishing it.">
+  <title>Scraped Course Data Editor</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+  <header>
+    <p class="eyebrow">Catalog preparation</p>
+    <h1>Review scraped course data</h1>
+    <p class="lede">Open a department JSON file, check the source text and structured relationships, make corrections, then download a validator-ready copy.</p>
+    <nav class="site-nav" aria-label="Application sections">
+      <a href="index.html">Course explorer</a>
+      <a href="planner.html">Schedule planner</a>
+      <a class="active" href="editor.html" aria-current="page">Data editor</a>
+    </nav>
+  </header>
+
+  <main class="editor-shell">
+    <section class="editor-import" aria-labelledby="import-heading">
+      <div><h2 id="import-heading">1. Load scraped JSON</h2><p>Data stays in this browser tab; it is not uploaded.</p></div>
+      <label class="file-action">Open JSON<input id="editor-file" type="file" accept="application/json"></label>
+      <button id="load-example" class="secondary-action" type="button">Load example</button>
+    </section>
+    <p id="editor-status" class="editor-status" role="status" aria-live="polite">Choose a department JSON file to begin.</p>
+
+    <section id="editor-workspace" class="editor-workspace" hidden>
+      <aside class="editor-course-panel" aria-labelledby="editor-courses-heading">
+        <div class="section-heading"><h2 id="editor-courses-heading">2. Select a course</h2><span id="editor-count"></span></div>
+        <label>Find a course<input id="editor-query" type="search" placeholder="Code or title"></label>
+        <div id="editor-course-list" class="course-list"></div>
+      </aside>
+      <form id="course-form" class="editor-form">
+        <div class="section-heading"><h2>3. Review and correct</h2><span id="dirty-indicator">No unsaved edits</span></div>
+        <div id="validation-summary" class="validation-summary" role="status"></div>
+        <div class="editor-fields">
+          <label>Course code<input name="code" required></label>
+          <label>Number<input name="number" required></label>
+          <label class="wide-field">Title<input name="title" required></label>
+          <label>Level<select name="level"><option>undergraduate</option><option>graduate</option><option>professional</option><option>continuing-education</option><option>other</option></select></label>
+          <label>Credits<input name="credits" required></label>
+          <label class="wide-field">Description<textarea name="description"></textarea></label>
+          <label class="wide-field">Prerequisite source text<textarea name="prerequisites"></textarea></label>
+          <label class="wide-field">Corequisite source text<textarea name="corequisites"></textarea></label>
+          <label class="wide-field">Restrictions<textarea name="restrictions"></textarea></label>
+          <label>Repeatable<input name="repeatable"></label>
+          <label class="wide-field">Official source URL<input name="source_url" type="url"></label>
+          <label class="wide-field">Tags (comma separated)<input name="tags"></label>
+        </div>
+        <section class="relationship-editor" aria-labelledby="relationships-heading">
+          <h3 id="relationships-heading">Structured requirements</h3>
+          <p><strong>Prerequisite</strong> means completed in an earlier term. <strong>Corequisite</strong> means completed earlier or taken in the same term. <strong>Recommended</strong> is advisory and never blocks a plan. Put alternatives in the same group with <strong>OR</strong>; use <strong>AND</strong> when every member is required.</p>
+          <div id="edge-list"></div>
+          <button id="add-edge" class="secondary-action" type="button">Add requirement</button>
+        </section>
+        <div class="editor-actions">
+          <button type="submit">Apply course edits</button>
+          <button id="download-json" type="button">Download corrected JSON</button>
+        </div>
+      </form>
+    </section>
+  </main>
+  <footer>Keep the original catalog wording and confirm every correction against an official source.</footer>
+  <script src="assets/editor-core.js"></script>
+  <script src="assets/editor.js"></script>
+</body>
+</html>
