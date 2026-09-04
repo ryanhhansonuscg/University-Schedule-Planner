@@ -44,6 +44,7 @@ REQUIRED_PATHS = (
     "template/university-template/departments/SAMPLE.json",
     "template/university-template/university.json",
     "tools/check_generated.py",
+    "tools/build_standalone.py",
     "universities/README.md",
     "universities/index.json",
 )
@@ -172,6 +173,23 @@ def verify_reproducible_fixture() -> None:
         verify_generated(first_catalog, first_database, fixture / "catalog.json", fixture / "courses.db")
 
 
+def verify_standalone_fixture() -> None:
+    """Build and inspect the file:// distribution used by release QA."""
+    source = ROOT / "template" / "university-template"
+    with tempfile.TemporaryDirectory() as temporary:
+        fixture = Path(temporary) / "fictional-template-university"
+        output = Path(temporary) / "standalone"
+        shutil.copytree(source, fixture)
+        command = (sys.executable, str(ROOT / "tools/build_standalone.py"), str(fixture), str(output))
+        subprocess.run(command, cwd=ROOT, check=True)
+        for page in ("index.html", "planner.html"):
+            text = (output / page).read_text(encoding="utf-8")
+            if "assets/embedded-data.js" not in text:
+                raise RuntimeError(f"Standalone {page} does not load embedded data")
+        if list(output.rglob("*.json")):
+            raise RuntimeError("Standalone output contains an unresolved local JSON dependency")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -204,6 +222,9 @@ def main() -> int:
         print("\n==> Reproducible generated catalogs and SQLite contents", flush=True)
         verify_reproducible_fixture()
         completed.append("Reproducible generated catalogs and SQLite contents")
+        print("\n==> Standalone artifact generation and embedded-data validation", flush=True)
+        verify_standalone_fixture()
+        completed.append("Standalone artifact generation and embedded-data validation")
     except subprocess.CalledProcessError as error:
         print(f"\nFinal QA failed while running: {' '.join(error.cmd)}", file=sys.stderr)
         return error.returncode or 1
