@@ -27,6 +27,8 @@ VERSION_RE = re.compile(r"^[0-9]+(?:\.[0-9]+){1,2}(?:[-.][A-Za-z0-9]+)*$")
 RELEASE_FILES = (
     "LICENSE",
     "README.md",
+    "launch-planner.bat",
+    "launch-planner.command",
     "index.html",
     "planner.html",
     "schedule-import-template.csv",
