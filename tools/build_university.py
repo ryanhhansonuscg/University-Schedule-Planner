@@ -204,6 +204,62 @@ def parse_date(value: str, context: str) -> dt.date:
         raise DataError(f"{context} is not a real date: {value}") from exc
 
 
+def validate_prerequisite_graph(
+    edges: list[dict], course_codes: set[str], edge_files: dict[int, Path], university_dir: Path
+) -> None:
+    """Reject cycles made entirely of internal prerequisite relationships.
+
+    Corequisite (and recommended) edges deliberately do not impose an ordering and
+    are therefore excluded.  Consequently, a mixed-kind cycle is permissible when
+    removing its non-prerequisite edges breaks the cycle; it is invalid only when
+    the prerequisite-only subgraph still contains a cycle.
+    """
+    adjacency: dict[str, list[tuple[str, Path]]] = {code: [] for code in course_codes}
+    for edge in edges:
+        if (
+            edge["kind"] == "prerequisite"
+            and edge["source"] in course_codes
+            and edge["target"] in course_codes
+        ):
+            adjacency[edge["source"]].append(
+                (edge["target"], edge_files[id(edge)])
+            )
+    for neighbors in adjacency.values():
+        neighbors.sort(key=lambda item: item[0])
+
+    state: dict[str, int] = {}
+    node_stack: list[str] = []
+    edge_stack: list[Path] = []
+
+    def visit(node: str) -> None:
+        state[node] = 1
+        node_stack.append(node)
+        for target, filename in adjacency[node]:
+            if state.get(target, 0) == 0:
+                edge_stack.append(filename)
+                visit(target)
+                edge_stack.pop()
+            elif state[target] == 1:
+                start = node_stack.index(target)
+                cycle = node_stack[start:] + [target]
+                files = edge_stack[start:] + [filename]
+                source_files = sorted(
+                    {str(path.relative_to(university_dir)) for path in files}
+                )
+                raise DataError(
+                    "Prerequisite cycle detected: "
+                    + " -> ".join(cycle)
+                    + "; source department files: "
+                    + ", ".join(source_files)
+                )
+        node_stack.pop()
+        state[node] = 2
+
+    for code in sorted(course_codes):
+        if state.get(code, 0) == 0:
+            visit(code)
+
+
 def validate_and_compile(university_dir: Path, *, allow_template_directory: bool = False) -> dict:
     """Validate source data, optionally allowing the canonical template's placeholder path."""
     university_dir = university_dir.resolve()
@@ -340,6 +396,7 @@ def validate_and_compile(university_dir: Path, *, allow_template_directory: bool
     department_codes: set[str] = set()
     course_codes: set[str] = set()
     edge_keys: set[tuple[str, str, str]] = set()
+    edge_files: dict[int, Path] = {}
 
     for path in department_files:
         document = read_json(path)
@@ -403,6 +460,7 @@ def validate_and_compile(university_dir: Path, *, allow_template_directory: bool
                 raise DataError(f"Duplicate edge: {key}")
             edge_keys.add(key)
             edges.append(edge)
+            edge_files[id(edge)] = path
 
     errors.check()
 
@@ -434,6 +492,11 @@ def validate_and_compile(university_dir: Path, *, allow_template_directory: bool
         signatures = {(edge["target"], edge["kind"], edge["logic_operator"]) for edge in members}
         if len(signatures) != 1:
             raise DataError(f"Logic group {name!r} has contradictory target, kind, or operator metadata")
+
+    # Prerequisites impose strict before/after ordering, so their cycles are hard
+    # validation failures. Exceptional catalog prose must be modeled explicitly
+    # (for example, as a corequisite), rather than bypassed with an override.
+    validate_prerequisite_graph(edges, course_codes, edge_files, university_dir)
 
     for course in courses:
         enriched_history = []
