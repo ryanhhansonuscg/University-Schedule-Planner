@@ -47,6 +47,8 @@ REQUIRED_PATHS = (
     "tools/check_generated.py",
     "tools/build_standalone.py",
     "tools/build_release.py",
+    "tools/launcher.py",
+    "tools/quickstart.py",
     "universities/README.md",
     "universities/index.json",
 )

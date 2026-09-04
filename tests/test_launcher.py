@@ -9,7 +9,7 @@ from pathlib import Path
 from unittest import mock
 
 from tools.build_university import DataError
-from tools.quickstart import import_archive, inspect_archive
+from tools.launcher import import_archive, inspect_archive
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -17,7 +17,7 @@ FIXTURE = ROOT / "template" / "university-template"
 SLUG = "fictional-template-university"
 
 
-class QuickstartTests(unittest.TestCase):
+class LauncherImportTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
         self.base = Path(self.temporary.name)
@@ -147,12 +147,38 @@ class QuickstartTests(unittest.TestCase):
         registry_before = (self.repo / "universities/index.json").read_bytes()
         output = self.repo / "dist" / SLUG
         (output / "old.txt").write_text("old")
-        with mock.patch("tools.quickstart.build_standalone", side_effect=DataError("forced")):
+        with mock.patch("tools.launcher.build_standalone", side_effect=DataError("forced")):
             with self.assertRaisesRegex(DataError, "forced"):
                 import_archive(archive, replace=True, repo_root=self.repo)
         self.assertEqual("old", marker.read_text())
         self.assertEqual("old", (output / "old.txt").read_text())
         self.assertEqual(registry_before, (self.repo / "universities/index.json").read_bytes())
+
+
+class LauncherServiceTests(unittest.TestCase):
+    def test_repository_root_does_not_depend_on_current_directory(self):
+        from tools.launcher import repository_root
+
+        with mock.patch("pathlib.Path.cwd", return_value=Path("/unrelated")):
+            self.assertEqual(ROOT, repository_root())
+
+    def test_shutdown_terminates_only_managed_processes(self):
+        from tools.launcher import LauncherService, ManagedProcess
+
+        owned = mock.Mock()
+        owned.pid = 101
+        owned.poll.side_effect = [None, 0, 0]
+        owned.stdout = mock.Mock()
+        unrelated = mock.Mock()
+        service = LauncherService(lambda _event, _value: None, root=ROOT)
+        service.processes.append(ManagedProcess("owned", ("python", "serve.py"), owned))
+
+        service.shutdown()
+
+        owned.terminate.assert_called_once_with()
+        owned.kill.assert_not_called()
+        owned.stdout.close.assert_called_once_with()
+        unrelated.terminate.assert_not_called()
 
 
 if __name__ == "__main__":

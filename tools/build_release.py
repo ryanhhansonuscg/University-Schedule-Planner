@@ -43,6 +43,7 @@ RELEASE_FILES = (
     "template/university-template/university.json",
     "tools/build_standalone.py",
     "tools/build_university.py",
+    "tools/launcher.py",
     "tools/quickstart.py",
     "tools/validate_university.py",
     "universities/README.md",
@@ -118,17 +119,17 @@ def inspect_and_extract(archive_path: Path, destination: Path) -> None:
 
 
 def smoke_test_extracted_release(extracted: Path) -> None:
-    """Exercise the documented quickstart using only files in the release."""
+    """Exercise the documented launcher import using only files in the release."""
     slug = "fictional-template-university"
     template = extracted / "template" / "university-template"
-    fixture_archive = extracted / "quickstart-smoke.zip"
+    fixture_archive = extracted / "launcher-smoke.zip"
     with zipfile.ZipFile(fixture_archive, "w", zipfile.ZIP_DEFLATED) as archive:
         for source in sorted(path for path in template.rglob("*") if path.is_file()):
             relative = source.relative_to(template)
             archive.write(source, (PurePosixPath(slug) / relative.as_posix()).as_posix())
 
     subprocess.run(
-        (sys.executable, "tools/quickstart.py", str(fixture_archive)),
+        (sys.executable, "tools/launcher.py", "--import-archive", str(fixture_archive)),
         cwd=extracted,
         check=True,
         capture_output=True,
@@ -142,7 +143,7 @@ def smoke_test_extracted_release(extracted: Path) -> None:
     )
     missing = [path.relative_to(extracted).as_posix() for path in required if not path.is_file()]
     if missing:
-        raise RuntimeError(f"Extracted release quickstart did not create: {', '.join(missing)}")
+        raise RuntimeError(f"Extracted release launcher import did not create: {', '.join(missing)}")
 
 
 def main() -> int:
@@ -167,7 +168,7 @@ def main() -> int:
     checksum_path.write_text(f"{digest}  {archive_path.name}\n", encoding="ascii")
     print(f"Release: {archive_path}")
     print(f"SHA-256: {checksum_path}")
-    print("Archive manifest, safe extraction, and extracted quickstart smoke test passed.")
+    print("Archive manifest, safe extraction, and extracted launcher import smoke test passed.")
     return 0
 
 
