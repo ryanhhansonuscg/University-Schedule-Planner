@@ -27,7 +27,7 @@ Each calendar requires:
 - historical terms needed by course offering records;
 - the current term and enough future term records to cover four academic periods (four distinct `academic_year` values), including neutral placeholders when dates have not been published;
 
-Each term requires a globally unique `code`, display `name`, `academic_year` in `YYYY-YYYY` form, `term_type`, numeric sort `sequence`, `dates_status`, `start_date`, `end_date`, and a `status` of `historical`, `current`, or `future`. Set `planning_enabled` to `true` for terms users may select.
+Each term requires a globally unique `code`, display `name`, `academic_year` in `YYYY-YYYY` form, `term_type`, numeric sort `sequence`, `dates_status`, `start_date`, `end_date`, a `status` of `historical`, `current`, or `future`, and a boolean `planning_enabled`. This field is authored source data: the compiler preserves its value rather than deriving it from `status`. Historical terms must set it to `false`; current and future terms may also explicitly set it to `false` when users should not be able to select them.
 
 `dates_status` must be one of:
 

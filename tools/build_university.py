@@ -268,7 +268,10 @@ def validate_and_compile(university_dir: Path, *, allow_template_directory: bool
         for term in calendar["terms"]:
             require(
                 term,
-                ("code", "name", "academic_year", "term_type", "sequence", "dates_status", "status"),
+                (
+                    "code", "name", "academic_year", "term_type", "sequence",
+                    "dates_status", "status", "planning_enabled",
+                ),
                 f"term in {calendar['id']}",
             )
             if term["code"] in term_by_code:
@@ -300,9 +303,10 @@ def validate_and_compile(university_dir: Path, *, allow_template_directory: bool
                 raise DataError(f"term {term['code']} with unpublished dates_status must set both dates to null")
             if term["status"] not in TERM_STATUSES:
                 raise DataError(f"term {term['code']} has unknown status {term['status']!r}")
-            if "planning_enabled" in term and not isinstance(term["planning_enabled"], bool):
+            if not isinstance(term["planning_enabled"], bool):
                 raise DataError(f"term {term['code']} planning_enabled must be a boolean")
-            term["planning_enabled"] = term["status"] in {"current", "future"}
+            if term["status"] == "historical" and term["planning_enabled"]:
+                raise DataError(f"historical term {term['code']} cannot be planning-enabled")
             term_by_code[term["code"]] = {**term, "calendar_id": calendar["id"]}
         by_year: dict[str, list[int]] = {}
         for item in calendar["terms"]:

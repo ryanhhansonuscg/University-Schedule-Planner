@@ -130,6 +130,25 @@ class BuildUniversityTests(unittest.TestCase):
         self.assert_invalid("calendars.json", lambda d: d["academic_calendars"][0].update(is_primary=1), "is_primary must be boolean")
         self.reset()
         self.assert_invalid("calendars.json", lambda d: d["academic_calendars"][0]["terms"][0].update(planning_enabled=1), "planning_enabled must be a boolean")
+    def test_planning_enabled_is_required(self):
+        self.assert_invalid(
+            "calendars.json",
+            lambda d: d["academic_calendars"][0]["terms"][-1].pop("planning_enabled"),
+            "missing: planning_enabled",
+        )
+    def test_historical_term_cannot_be_planning_enabled(self):
+        self.assert_invalid(
+            "calendars.json",
+            lambda d: d["academic_calendars"][0]["terms"][0].update(planning_enabled=True),
+            "historical term .* cannot be planning-enabled",
+        )
+    def test_disabled_future_term_is_preserved(self):
+        calendars = self.load("calendars.json")
+        calendars["academic_calendars"][0]["terms"][-1]["planning_enabled"] = False
+        self.save("calendars.json", calendars)
+        term = validate_and_compile(self.directory)["academic_calendars"][0]["terms"][-1]
+        self.assertEqual("future", term["status"])
+        self.assertFalse(term["planning_enabled"])
     def test_http_source_urls_and_multiple_error_paths(self):
         doc=self.load("departments/SAMPLE.json"); doc["department"]["source_url"]="ftp://bad"; doc["courses"][0]["source_url"]="not-a-url"; self.save("departments/SAMPLE.json",doc)
         with self.assertRaises(DataError) as raised: validate_and_compile(self.directory)
@@ -175,10 +194,7 @@ class BuildUniversityTests(unittest.TestCase):
         doc["edges"][0]["source_in_database"] = False
         self.save("departments/SAMPLE.json", doc)
         self.assertTrue(validate_and_compile(self.directory)["edges"][0]["source_in_database"])
-    def test_all_enriched_fields_are_recomputed(self):
-        calendars = self.load("calendars.json")
-        calendars["academic_calendars"][0]["terms"][-1]["planning_enabled"] = False
-        self.save("calendars.json", calendars)
+    def test_enriched_course_fields_are_recomputed(self):
         departments = self.load("departments/SAMPLE.json")
         departments["courses"][0]["tags"] = ["z", "a", "z"]
         departments["courses"][0]["offering_history"][0].update(
@@ -186,7 +202,6 @@ class BuildUniversityTests(unittest.TestCase):
         )
         self.save("departments/SAMPLE.json", departments)
         catalog = validate_and_compile(self.directory)
-        self.assertTrue(catalog["academic_calendars"][0]["terms"][-1]["planning_enabled"])
         self.assertEqual(["a", "z"], catalog["courses"][0]["tags"])
         offering = catalog["courses"][0]["offering_history"][0]
         self.assertNotEqual("fabricated", offering["term_name"])
