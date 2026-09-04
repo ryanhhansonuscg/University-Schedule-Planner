@@ -96,6 +96,13 @@ select:focus, input:focus, button:focus-visible, a:focus-visible { outline: 3px 
 .details dl { display: grid; grid-template-columns: 118px 1fr; gap: 8px 12px; margin-bottom: 0; }
 .details dt { color: var(--muted); }
 .details dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.offering-history { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.offering-record { display: grid; grid-template-columns: minmax(9rem, 1fr) auto auto; gap: 8px; align-items: baseline; padding: 7px 9px; border-left: 4px solid var(--brand-primary); border-radius: 6px; background: var(--accent-soft); }
+.offering-status { text-transform: capitalize; }
+.offering-timing { color: var(--muted); text-transform: capitalize; }
+.offering-cancelled { border-left-color: var(--danger); background: #fff0f0; background: color-mix(in srgb, var(--danger) 9%, var(--surface)); }
+.offering-cancelled .offering-status { color: var(--danger); }
+.offering-history-empty { margin: 0; color: var(--muted); }
 .tags { display: flex; flex-wrap: wrap; gap: 5px; }
 .tag { padding: 3px 7px; border-radius: 999px; background: var(--surface-2); color: var(--muted); font-size: .75rem; }
 
@@ -163,4 +170,6 @@ footer { padding: 22px 0 38px; font-size: .8rem; }
   .graph-node { width: 132px; }
   .details dl { grid-template-columns: 1fr; gap: 3px; }
   .details dd { margin-bottom: 8px; }
+  .offering-record { grid-template-columns: 1fr auto; }
+  .offering-timing { grid-column: 1 / -1; }
 }
