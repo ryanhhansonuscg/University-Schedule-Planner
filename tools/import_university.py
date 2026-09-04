@@ -143,10 +143,11 @@ def _write_json_atomic(path:Path,value:dict,scratch:Path)->None:
     temporary=scratch/"index.json.new"; temporary.write_text(json.dumps(value,indent=2,ensure_ascii=False)+"\n",encoding="utf-8"); os.replace(temporary,path)
 
 def _transaction(source:Path, source_origin:Path, source_files:tuple[str,...], *, replace:bool, repo_root:Path,
-                 manifest_callback:Callable[[ImportManifest],None]|None=None)->Path:
+                 manifest_callback:Callable[[ImportManifest],None]|None=None, worker_count:int|None=None,
+                 cancel_event=None, progress=None)->Path:
     universities=repo_root/"universities"; registry_path=universities/"index.json"; dist=repo_root/"dist"
     universities.mkdir(parents=True,exist_ok=True); registry=validate_registry(registry_path)
-    catalog=validate_and_compile(source,check_directory_name=False); university=catalog["university"]; slug=university["slug"]
+    catalog=validate_and_compile(source,check_directory_name=False,worker_count=worker_count,cancel_event=cancel_event,progress=progress); university=catalog["university"]; slug=university["slug"]
     destination=universities/slug; output=dist/slug
     if (destination.exists() or any(e.get("slug")==slug for e in registry["universities"])) and not replace:
         raise DataError(f"University slug {slug!r} is already installed; explicit replacement confirmation is required (or use --replace)")
@@ -159,7 +160,7 @@ def _transaction(source:Path, source_origin:Path, source_files:tuple[str,...], *
     if manifest_callback: manifest_callback(manifest)
     scratch=source.parent; old_dataset=scratch/"old-dataset"; old_output=scratch/"old-output"; backup=registry_path.read_bytes(); installed=output_installed=False
     try:
-        build(source); staged_output=scratch/"standalone"; build_standalone(source,staged_output)
+        build(source,worker_count=worker_count,cancel_event=cancel_event,progress=progress); staged_output=scratch/"standalone"; build_standalone(source,staged_output)
         if destination.exists(): os.replace(destination,old_dataset)
         os.replace(source,destination); installed=True; output.parent.mkdir(parents=True,exist_ok=True)
         if output.exists(): os.replace(output,old_output)
@@ -172,22 +173,22 @@ def _transaction(source:Path, source_origin:Path, source_files:tuple[str,...], *
         registry_path.write_bytes(backup); raise
     return output/"index.html"
 
-def import_archive(archive:Path,*,replace:bool=False,repo_root:Path=ROOT,max_files:int=MAX_FILES,max_expanded_bytes:int=MAX_EXPANDED_BYTES,manifest_callback=None)->Path:
+def import_archive(archive:Path,*,replace:bool=False,repo_root:Path=ROOT,max_files:int=MAX_FILES,max_expanded_bytes:int=MAX_EXPANDED_BYTES,manifest_callback=None,worker_count:int|None=None,cancel_event=None,progress=None)->Path:
     archive=archive.resolve(); repo_root=repo_root.resolve(); root,members=inspect_archive(archive,max_files=max_files,max_expanded_bytes=max_expanded_bytes)
     files=tuple(sorted(PurePosixPath(*PurePosixPath(m.filename.replace("\\","/")).parts[1:]).as_posix() for m in members if not m.is_dir()))
     with tempfile.TemporaryDirectory(prefix=".launcher-import-",dir=repo_root) as name:
         scratch=Path(name); extracted=scratch/"extracted"; extracted.mkdir(); _extract(archive,extracted,members,max_expanded_bytes); source=extracted/root
         slug=validate_and_compile(source,check_directory_name=False)["university"]["slug"]
         if root!=slug: raise DataError(f"Archive wrapper {root!r} does not match normalized university slug {slug!r}")
-        return _transaction(source,archive,files,replace=replace,repo_root=repo_root,manifest_callback=manifest_callback)
+        return _transaction(source,archive,files,replace=replace,repo_root=repo_root,manifest_callback=manifest_callback,worker_count=worker_count,cancel_event=cancel_event,progress=progress)
 
-def import_directory(directory:Path,*,replace:bool=False,repo_root:Path=ROOT,max_files:int=MAX_FILES,max_expanded_bytes:int=MAX_EXPANDED_BYTES,manifest_callback=None)->Path:
+def import_directory(directory:Path,*,replace:bool=False,repo_root:Path=ROOT,max_files:int=MAX_FILES,max_expanded_bytes:int=MAX_EXPANDED_BYTES,manifest_callback=None,worker_count:int|None=None,cancel_event=None,progress=None)->Path:
     root,files=inspect_directory(directory,max_files=max_files,max_expanded_bytes=max_expanded_bytes); repo_root=repo_root.resolve()
     with tempfile.TemporaryDirectory(prefix=".launcher-import-",dir=repo_root) as name:
         staged=Path(name)/"source"; staged.mkdir(); _copy_directory(root,staged,files,max_expanded_bytes)
         slug = validate_and_compile(staged, check_directory_name=False)["university"]["slug"]
         named = staged.with_name(slug); os.replace(staged, named)
-        return _transaction(named,root,files,replace=replace,repo_root=repo_root,manifest_callback=manifest_callback)
+        return _transaction(named,root,files,replace=replace,repo_root=repo_root,manifest_callback=manifest_callback,worker_count=worker_count,cancel_event=cancel_event,progress=progress)
 
 def inspect_source(path: Path) -> SourceInfo:
     """Inspect and fully validate a selectable source without installing it."""

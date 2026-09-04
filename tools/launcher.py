@@ -22,11 +22,11 @@ from pathlib import Path
 from typing import Callable, Iterable
 
 if __package__:
-    from tools.build_university import DataError
+    from tools.build_university import DataError, default_worker_count
     from tools.import_university import (ImportManifest, SourceInfo, import_archive,
         import_directory, inspect_archive, inspect_source, matching_sources, differing_source_files, choose_source, preview_manifest)
 else:
-    from build_university import DataError
+    from build_university import DataError, default_worker_count
     from import_university import (ImportManifest, SourceInfo, import_archive,
         import_directory, inspect_archive, inspect_source, matching_sources, differing_source_files, choose_source, preview_manifest)
 
@@ -98,11 +98,40 @@ def load_interpreter_override(path: Path | None = None) -> Path | None:
 def save_interpreter_override(executable: Path, path: Path | None = None) -> None:
     target = path or config_path()
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps({"python": str(executable.resolve())}, indent=2) + "\n", encoding="utf-8")
+    settings = load_settings(target)
+    settings["python"] = str(executable.resolve())
+    target.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+
+
+def load_settings(path: Path | None = None) -> dict[str, object]:
+    try:
+        value = json.loads((path or config_path()).read_text(encoding="utf-8"))
+        return value if isinstance(value, dict) else {}
+    except (OSError, ValueError, TypeError):
+        return {}
+
+
+def configured_worker_count(path: Path | None = None) -> int:
+    value = load_settings(path).get("workers", default_worker_count())
+    return value if isinstance(value, int) and not isinstance(value, bool) and value >= 0 else default_worker_count()
+
+
+def save_worker_count(value: int, path: Path | None = None) -> None:
+    target = path or config_path()
+    target.parent.mkdir(parents=True, exist_ok=True)
+    settings = load_settings(target)
+    settings["workers"] = value
+    target.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
 
 
 def reset_interpreter_override(path: Path | None = None) -> None:
-    (path or config_path()).unlink(missing_ok=True)
+    target = path or config_path()
+    settings = load_settings(target)
+    settings.pop("python", None)
+    if settings:
+        target.write_text(json.dumps(settings, indent=2) + "\n", encoding="utf-8")
+    else:
+        target.unlink(missing_ok=True)
 
 
 def _conda_candidates(prefix: Path) -> Iterable[Path]:
@@ -263,6 +292,8 @@ class LauncherService:
         self._lock = threading.Lock()
         self.url = ""
         self.executable = executable or Path(sys.executable).resolve()
+        self.worker_count = configured_worker_count()
+        self.import_cancel = threading.Event()
 
     def _start_worker(self, target: Callable[..., None], *args: object) -> bool:
         if self.stop_event.is_set():
@@ -390,12 +421,38 @@ class LauncherService:
             readiness.unlink(missing_ok=True)
 
     def import_in_background(self, source: Path, replace: bool = False) -> bool:
+        self.import_cancel.clear()
         return self._start_worker(self._import, source, replace)
+
+    def inspect_in_background(self, source: Path, alternative: Path | None = None) -> bool:
+        """Inspect selectable inputs without blocking Tk's event loop."""
+        return self._start_worker(self._inspect, source, alternative)
+
+    def _inspect(self, source: Path, alternative: Path | None) -> None:
+        self.notify("status", f"Validating {source.name}…")
+        info = inspect_source(source)
+        if alternative is None and info.valid and not source.is_dir():
+            alternative = source.parent / info.slug
+        if alternative is not None and alternative.is_dir():
+            other = inspect_source(alternative)
+            if info.valid and other.valid and info.slug == other.slug:
+                differing = differing_source_files(info, other)
+                self.notify("source_conflict", (info, other, differing))
+                return
+        self.notify("source_ready", info)
+
+    def cancel_import(self) -> None:
+        self.import_cancel.set()
+        self.notify("status", "Cancelling import…")
 
     def _import(self, source: Path, replace: bool) -> None:
         self.notify("status", f"Importing {source.name}…")
         importer = import_directory if source.is_dir() else import_archive
-        output = importer(source, replace=replace, repo_root=self.root)
+        def progress(phase: str, completed: int, total: int) -> None:
+            self.notify("progress", (phase, completed, total))
+        output = importer(source, replace=replace, repo_root=self.root,
+                          worker_count=self.worker_count,
+                          cancel_event=self.import_cancel, progress=progress)
         if not self.stop_event.is_set():
             self.notify("status", f"Import complete: {output}")
 
@@ -463,6 +520,8 @@ class LauncherWindow:
         ttk.Label(frame, text=APP_NAME, font=("TkDefaultFont", 16, "bold")).grid(row=0, column=0, sticky="w")
         self.status = tk.StringVar(value="Starting local planner server…")
         ttk.Label(frame, textvariable=self.status).grid(row=1, column=0, sticky="ew", pady=(6, 10))
+        self.progress = ttk.Progressbar(frame, mode="determinate", maximum=1)
+        self.progress.grid(row=5, column=0, sticky="ew", pady=(8, 0))
         columns = ("name", "pid", "state", "command", "error")
         self.table = ttk.Treeview(frame, columns=columns, show="headings", height=8)
         for column, heading, width in zip(columns, ("Process", "PID", "State", "Launch command", "Recent startup error"), (120, 70, 100, 280, 220)):
@@ -489,6 +548,8 @@ class LauncherWindow:
         self.copy_button = ttk.Button(buttons, text="Copy URL", command=self._copy, state="disabled")
         self.copy_button.grid(row=0, column=3, padx=4)
         ttk.Button(buttons, text="Python Settings…", command=self._python_settings).grid(row=0, column=4, padx=4)
+        self.cancel_button = ttk.Button(buttons, text="Cancel Import", command=self.service.cancel_import, state="disabled")
+        self.cancel_button.grid(row=0, column=5, padx=4)
 
         self.root.protocol("WM_DELETE_WINDOW", self._close)
         self.root.after(40, self._drain_events)
@@ -507,6 +568,17 @@ class LauncherWindow:
             listing.insert("end", candidate.display)
         message = self.tk.StringVar(value=f"Selected: {self.service.executable}")
         self.ttk.Label(frame, textvariable=message, wraplength=680).pack(anchor="w")
+        worker_row = self.ttk.Frame(frame)
+        worker_row.pack(fill="x", pady=6)
+        self.ttk.Label(worker_row, text="Department reader workers (0 disables concurrency):").pack(side="left")
+        workers = self.tk.IntVar(value=self.service.worker_count)
+        self.ttk.Spinbox(worker_row, from_=0, to=64, textvariable=workers, width=5).pack(side="left", padx=6)
+        def apply_workers() -> None:
+            value = max(0, workers.get())
+            self.service.worker_count = value
+            save_worker_count(value)
+            message.set(f"Department reader workers set to {value}." if value else "Concurrency disabled for diagnostics.")
+        self.ttk.Button(worker_row, text="Apply", command=apply_workers).pack(side="left")
 
         def use(path: Path, save: bool = True) -> None:
             candidate = probe_interpreter((str(path),), "custom selection")
@@ -567,8 +639,26 @@ class LauncherWindow:
                     self.copy_button.configure(state="normal")
                 elif event == "status":
                     self.status.set(str(value))
+                    if str(value).startswith("Import complete"):
+                        self.cancel_button.configure(state="disabled")
+                        self.import_button.configure(state="normal")
+                        self.folder_button.configure(state="normal")
+                elif event == "progress":
+                    phase, completed, total = value
+                    self.progress.configure(maximum=max(1, total), value=completed)
+                    self.status.set(f"Import: {phase} ({completed}/{total})")
+                elif event == "source_ready":
+                    self._confirm_import_info(value)
+                elif event == "source_conflict":
+                    left, right, differing = value
+                    source = self._resolve_conflict_info(left, right, differing)
+                    if source is not None:
+                        self._confirm_import_info(left if source == left.path else right)
                 elif event == "error":
                     self.status.set(f"Error: {value}")
+                    self.cancel_button.configure(state="disabled")
+                    self.import_button.configure(state="normal")
+                    self.folder_button.configure(state="normal")
         except queue.Empty:
             pass
         if not self.closing:
@@ -591,38 +681,31 @@ class LauncherWindow:
         filename = filedialog.askopenfilename(title="Select university ZIP", filetypes=(("ZIP archives", "*.zip"), ("All files", "*")))
         if filename:
             archive = Path(filename)
-            info = inspect_source(archive)
-            candidate = archive.parent / info.slug
-            source = archive
-            if info.valid and candidate.is_dir() and matching_sources(archive, candidate):
-                source = self._resolve_conflict(archive, candidate)
-            if source:
-                self._confirm_import(source)
+            # A likely extracted peer is found by archive stem; full source
+            # inspection and validation are always delegated to a worker.
+            self.service.inspect_in_background(archive)
 
     def _choose_directory(self) -> None:
         from tkinter import filedialog
         filename = filedialog.askdirectory(title="Select extracted university folder")
         if filename:
-            self._confirm_import(Path(filename))
+            self.service.inspect_in_background(Path(filename))
 
-    def _resolve_conflict(self, archive: Path, directory: Path) -> Path | None:
+    def _resolve_conflict_info(self, left: SourceInfo, right: SourceInfo,
+                               differing: tuple[str, ...]) -> Path | None:
         from tkinter import messagebox
-        left, right = matching_sources(archive, directory)  # type: ignore[misc]
-        differing = differing_source_files(left, right)
         def describe(item: SourceInfo) -> str:
             return (f"{item.kind}: {item.path}\nModified: {time.ctime(item.modified)}; "
                     f"{len(item.files)} files; validation: {'valid' if item.valid else item.error}")
-        detail = (f"Both sources contain university {left.slug!r}. The extracted folder may "
-                  "contain newer manual edits. They will not be merged.\n\n" + describe(left) +
-                  "\n\n" + describe(right) + "\n\nDiffering source files: " +
+        detail = (f"Both sources contain university {left.slug!r}. They will not be merged.\n\n" +
+                  describe(left) + "\n\n" + describe(right) + "\n\nDiffering source files: " +
                   (", ".join(differing) or "none") +
                   "\n\nYes = Use ZIP; No = Use extracted folder; Cancel = Cancel")
         answer = messagebox.askyesnocancel("Choose university source", detail)
-        return choose_source(archive, directory, "zip" if answer is True else "directory" if answer is False else "cancel")
+        return choose_source(left.path, right.path, "zip" if answer is True else "directory" if answer is False else "cancel")
 
-    def _confirm_import(self, source: Path) -> None:
+    def _confirm_import_info(self, info: SourceInfo) -> None:
         from tkinter import messagebox
-        info = inspect_source(source)
         if not info.valid:
             messagebox.showerror("Invalid university source", info.error); return
         manifest = preview_manifest(info)
@@ -633,7 +716,10 @@ class LauncherWindow:
         replace = installed.exists()
         if replace and not messagebox.askyesno("Replace installed dataset?", f"{info.slug!r} is installed. Replace it and its generated output?"):
             return
-        self.service.import_in_background(source, replace=replace)
+        self.service.import_in_background(info.path, replace=replace)
+        self.import_button.configure(state="disabled")
+        self.folder_button.configure(state="disabled")
+        self.cancel_button.configure(state="normal")
 
     def _open(self) -> None:
         if self.url.get():

@@ -10,7 +10,10 @@ import os
 import re
 import sqlite3
 import sys
+import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Callable
 from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +34,26 @@ SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DEPARTMENT_RE = re.compile(r"^[A-Z][A-Z0-9]{1,11}$")
 COURSE_NUMBER_RE = re.compile(r"^[0-9]{1,4}[A-Z]?$")
 CREDITS_RE = re.compile(r"^(?:0|[1-9]\d*)(?:\.\d+)?(?:-(?:0|[1-9]\d*)(?:\.\d+)?)?$")
+
+
+def default_worker_count() -> int:
+    """Return a deliberately conservative bound for JSON input work."""
+    return max(1, min(4, os.cpu_count() or 1))
+
+
+def acceleration_report() -> dict[str, object]:
+    """Describe acceleration without importing an optional GPU framework."""
+    return {
+        "backend": "cpu",
+        "gpu_available": False,
+        "gpu_beneficial": False,
+        "reason": "JSON parsing and ordered SQLite writes are CPU/I/O work; no benchmarked GPU backend is implemented.",
+    }
+
+
+def _cancelled(cancel_event: threading.Event | None) -> None:
+    if cancel_event is not None and cancel_event.is_set():
+        raise DataError("Build cancelled")
 
 
 class DataError(ValueError):
@@ -276,9 +299,16 @@ def validate_and_compile(
     *,
     allow_template_directory: bool = False,
     check_directory_name: bool = True,
+    worker_count: int | None = None,
+    cancel_event: threading.Event | None = None,
+    progress: Callable[[str, int, int], None] | None = None,
 ) -> dict:
     """Validate source data, with configurable checks for its containing directory."""
     university_dir = university_dir.resolve()
+    workers = default_worker_count() if worker_count is None else worker_count
+    if workers < 0:
+        raise DataError("worker_count must be zero or greater")
+    _cancelled(cancel_event)
     university = read_json(university_dir / "university.json")
     calendar_doc = read_json(university_dir / "calendars.json")
     errors = ErrorCollector()
@@ -410,6 +440,37 @@ def validate_and_compile(
     if not department_files:
         raise DataError(f"No department JSON files found in {department_dir}")
 
+    if progress:
+        progress("departments", 0, len(department_files))
+    # Only independent, read-only file decoding is concurrent. Executor.map and
+    # the sorted input retain path order regardless of completion order. All
+    # cross-file validation and mutation below remain on this controlling thread.
+    if workers in (0, 1) or len(department_files) == 1:
+        department_documents = []
+        for index, path in enumerate(department_files, 1):
+            _cancelled(cancel_event)
+            department_documents.append(read_json(path))
+            if progress:
+                progress("departments", index, len(department_files))
+    else:
+        with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="department-reader") as executor:
+            futures = {executor.submit(read_json, path): index for index, path in enumerate(department_files)}
+            ordered_documents: list[dict | None] = [None] * len(department_files)
+            failures: dict[int, Exception] = {}
+            for completed, future in enumerate(as_completed(futures), 1):
+                index = futures[future]
+                try:
+                    ordered_documents[index] = future.result()
+                except Exception as exc:
+                    failures[index] = exc
+                _cancelled(cancel_event)
+                if progress:
+                    progress("departments", completed, len(department_files))
+            if failures:
+                raise failures[min(failures)]
+            department_documents = [document for document in ordered_documents if document is not None]
+        _cancelled(cancel_event)
+
     departments: list[dict] = []
     courses: list[dict] = []
     edges: list[dict] = []
@@ -418,8 +479,8 @@ def validate_and_compile(
     edge_keys: set[tuple[str, str, str]] = set()
     edge_files: dict[int, Path] = {}
 
-    for path in department_files:
-        document = read_json(path)
+    for path, document in zip(department_files, department_documents):
+        _cancelled(cancel_event)
         version = validate_integer(document.get("schema_version"), errors, path, "$.schema_version")
         if version != DATA_SCHEMA_VERSION:
             errors.add(path, "$.schema_version", f"unsupported schema version {version}; expected {DATA_SCHEMA_VERSION}")
@@ -624,24 +685,42 @@ def build(
     validate_only: bool = False,
     *,
     allow_template_directory: bool = False,
+    worker_count: int | None = None,
+    cancel_event: threading.Event | None = None,
+    progress: Callable[[str, int, int], None] | None = None,
 ) -> dict:
     university_dir = university_dir.resolve()
     catalog = validate_and_compile(
-        university_dir, allow_template_directory=allow_template_directory
+        university_dir, allow_template_directory=allow_template_directory,
+        worker_count=worker_count, cancel_event=cancel_event, progress=progress,
     )
+    _cancelled(cancel_event)
     if not validate_only:
+        if progress:
+            progress("commit", 0, 1)
+        # This ordered commit phase is intentionally single-threaded: neither a
+        # SQLite connection nor destination files are shared with reader workers.
         (university_dir / "catalog.json").write_text(json.dumps(catalog, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
         write_database(university_dir / "courses.db", catalog)
+        if progress:
+            progress("commit", 1, 1)
     return catalog
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("university_dir", type=Path, help="Folder containing university.json, calendars.json, and departments/")
+    parser.add_argument("university_dir", type=Path, nargs="?", help="Folder containing university.json, calendars.json, and departments/")
     parser.add_argument("--validate-only", action="store_true", help="Validate without writing catalog.json or courses.db")
+    parser.add_argument("--workers", type=int, default=None, help="department reader workers (0 disables concurrency)")
+    parser.add_argument("--acceleration-report", action="store_true", help="report compute acceleration capability and exit")
     args = parser.parse_args()
+    if args.acceleration_report:
+        print(json.dumps(acceleration_report(), indent=2))
+        return 0
+    if args.university_dir is None:
+        parser.error("university_dir is required unless --acceleration-report is used")
     try:
-        catalog = build(args.university_dir, args.validate_only)
+        catalog = build(args.university_dir, args.validate_only, worker_count=args.workers)
     except DataError as exc:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
