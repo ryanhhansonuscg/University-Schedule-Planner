@@ -31,6 +31,13 @@ test('fallback text palette meets WCAG AA contrast', () => {
   assert.ok(contrast('#ffffff', '#1d6d45') >= 4.5);
 });
 
+test('focus rings contrast with light and dark surfaces', () => {
+  assert.ok(contrast('#005fcc', '#ffffff') >= 3);
+  assert.ok(contrast('#005fcc', '#f7f7f3') >= 3);
+  assert.ok(contrast('#8ecaff', '#191f1c') >= 3);
+  assert.ok(contrast('#8ecaff', '#111513') >= 3);
+});
+
 test('file import focus remains visible in normal and forced colors', () => {
   assert.match(css, /\.file-action:focus-within\s*\{[^}]*outline:/);
   assert.match(css, /@media \(forced-colors: active\)[\s\S]*\.file-action:focus-within[^}]*outline:\s*3px solid Highlight/);
