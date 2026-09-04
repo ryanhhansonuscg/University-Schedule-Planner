@@ -4,7 +4,12 @@ import unittest
 import zipfile
 from pathlib import Path
 
-from tools.build_release import RELEASE_FILES, create_archive, inspect_and_extract
+from tools.build_release import (
+    RELEASE_FILES,
+    create_archive,
+    inspect_and_extract,
+    smoke_test_extracted_release,
+)
 
 
 class ReleaseBuilderTests(unittest.TestCase):
@@ -19,6 +24,20 @@ class ReleaseBuilderTests(unittest.TestCase):
                 self.assertEqual(set(archive.namelist()), set(RELEASE_FILES))
                 self.assertIn("LICENSE", archive.namelist())
             inspect_and_extract(first, root / "extracted")
+
+    def test_extracted_release_completes_documented_quickstart(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            archive = root / "release.zip"
+            extracted = root / "extracted"
+            create_archive(archive)
+            inspect_and_extract(archive, extracted)
+            smoke_test_extracted_release(extracted)
+
+            standalone = extracted / "dist" / "fictional-template-university"
+            self.assertTrue((standalone / "index.html").is_file())
+            self.assertTrue((standalone / "planner.html").is_file())
+            self.assertTrue((standalone / "assets" / "embedded-data.js").is_file())
 
     def test_inspection_rejects_traversal(self):
         with tempfile.TemporaryDirectory() as temporary:

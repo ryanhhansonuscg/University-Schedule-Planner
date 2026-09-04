@@ -202,14 +202,17 @@ def import_archive(
         installed = False
         output_installed = False
         try:
+            # Build while the import is still staged outside universities/. A
+            # production directory is required to match the registry, which is
+            # intentionally not updated until every artifact is ready.
+            build(source)
+            staged_output = scratch / "standalone"
+            build_standalone(source, staged_output)
+
             if destination.exists():
                 os.replace(destination, old_dataset)
             os.replace(source, destination)
             installed = True
-            build(destination)
-
-            staged_output = scratch / "standalone"
-            build_standalone(destination, staged_output)
             output.parent.mkdir(parents=True, exist_ok=True)
             if output.exists():
                 os.replace(output, old_output)
