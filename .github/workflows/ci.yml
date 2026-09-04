@@ -21,24 +21,29 @@ jobs:
           python -m compileall -q tools tests
           npm run check
       - name: Validate template fixture
-        run: python tools/validate_university.py template/university-template
+        run: |
+          tmp=$(mktemp -d)
+          cp -R template/university-template "$tmp/fictional-template-university"
+          python tools/validate_university.py "$tmp/fictional-template-university"
       - name: Reproducible build and SQLite integrity
         run: |
           tmp=$(mktemp -d)
-          cp -R template/university-template "$tmp/fixture"
-          python tools/build_university.py "$tmp/fixture"
-          cp "$tmp/fixture/catalog.json" "$tmp/first.json"
-          cp "$tmp/fixture/courses.db" "$tmp/first.db"
-          python tools/build_university.py "$tmp/fixture"
+          cp -R template/university-template "$tmp/fictional-template-university"
+          python tools/build_university.py "$tmp/fictional-template-university"
+          cp "$tmp/fictional-template-university/catalog.json" "$tmp/first.json"
+          cp "$tmp/fictional-template-university/courses.db" "$tmp/first.db"
+          python tools/build_university.py "$tmp/fictional-template-university"
           python - "$tmp" <<'PY'
           import json, sqlite3, sys
           from pathlib import Path
-          p=Path(sys.argv[1]); a=json.loads((p/'first.json').read_text()); b=json.loads((p/'fixture/catalog.json').read_text())
+          p=Path(sys.argv[1]); fixture=p/'fictional-template-university'; a=json.loads((p/'first.json').read_text()); b=json.loads((fixture/'catalog.json').read_text())
           a.pop('generated_at'); b.pop('generated_at'); assert a == b
-          assert (p/'first.db').read_bytes() == (p/'fixture/courses.db').read_bytes()
-          with sqlite3.connect(p/'fixture/courses.db') as db:
+          assert (p/'first.db').read_bytes() == (fixture/'courses.db').read_bytes()
+          with sqlite3.connect(fixture/'courses.db') as db:
               assert db.execute('PRAGMA integrity_check').fetchone()[0] == 'ok'
               assert not db.execute('PRAGMA foreign_key_check').fetchall()
           PY
       - name: Accessibility smoke checks
         run: node --test tests/browser-smoke.test.js
+      - name: Final repository QA
+        run: python tools/final_qa.py

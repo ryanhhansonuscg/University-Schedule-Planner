@@ -101,33 +101,37 @@ python -m unittest discover -s tests -v
 npm test
 python -m compileall -q tools tests
 npm run check
-python tools/validate_university.py template/university-template
+tmp=$(mktemp -d) && cp -R template/university-template "$tmp/fictional-template-university"
+python tools/validate_university.py "$tmp/fictional-template-university"
 python tools/check_prohibited_terms.py
 node --test tests/browser-smoke.test.js
+python tools/final_qa.py
 ```
 
 The Python suite copies `template/university-template/` into a temporary directory before invoking any writing build. To reproduce CI's generated-artifact and SQLite checks locally:
 
 ```bash
 tmp=$(mktemp -d)
-cp -R template/university-template "$tmp/fixture"
-python tools/build_university.py "$tmp/fixture"
-cp "$tmp/fixture/catalog.json" "$tmp/first.json"
-cp "$tmp/fixture/courses.db" "$tmp/first.db"
-python tools/build_university.py "$tmp/fixture"
+cp -R template/university-template "$tmp/fictional-template-university"
+python tools/build_university.py "$tmp/fictional-template-university"
+cp "$tmp/fictional-template-university/catalog.json" "$tmp/first.json"
+cp "$tmp/fictional-template-university/courses.db" "$tmp/first.db"
+python tools/build_university.py "$tmp/fictional-template-university"
 python - "$tmp" <<'PY'
 import json, sqlite3, sys
 from pathlib import Path
-p = Path(sys.argv[1])
+p = Path(sys.argv[1]); fixture = p / "fictional-template-university"
 a = json.loads((p / "first.json").read_text())
-b = json.loads((p / "fixture/catalog.json").read_text())
+b = json.loads((fixture / "catalog.json").read_text())
 a.pop("generated_at"); b.pop("generated_at")
 assert a == b
-assert (p / "first.db").read_bytes() == (p / "fixture/courses.db").read_bytes()
-with sqlite3.connect(p / "fixture/courses.db") as db:
+assert (p / "first.db").read_bytes() == (fixture / "courses.db").read_bytes()
+with sqlite3.connect(fixture / "courses.db") as db:
     assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
     assert not db.execute("PRAGMA foreign_key_check").fetchall()
 PY
 ```
 
 The browser smoke checks exercise the pages' navigation/loading contracts plus calendar switching, Enter-key scheduling, local-storage serialization, CSV round-tripping, catalog failure handling, and accessible landmarks without adding a browser automation dependency.
+
+`tools/final_qa.py` is the final release gate. It detects unresolved merge markers, missing required files and local HTML assets, malformed tracked JSON, test or syntax failures, institution-specific content, and non-reproducible template artifacts. Run it after merging parallel work to ensure no conflict residue or required element was lost.
