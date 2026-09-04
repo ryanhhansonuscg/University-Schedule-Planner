@@ -25,7 +25,7 @@ class ReleaseBuilderTests(unittest.TestCase):
                 self.assertIn("LICENSE", archive.namelist())
             inspect_and_extract(first, root / "extracted")
 
-    def test_extracted_release_completes_documented_quickstart(self):
+    def test_extracted_release_completes_documented_launcher_import(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             archive = root / "release.zip"

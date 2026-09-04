@@ -4,7 +4,7 @@ A static, multi-university course explorer and four-year schedule planner. Every
 
 No real institution data is shipped by default. The registry intentionally starts empty, while `template/university-template` contains a small, explicitly fictional development fixture that demonstrates the data format.
 
-## Quickstart (V1, no server required)
+## University Schedule Planner Launcher (V1)
 
 Use **Python 3.12** (the supported Python feature release for V1). Download its
 official 64-bit installer from the Python.org [Python 3.12.10 release
@@ -12,7 +12,7 @@ page](https://www.python.org/downloads/release/python-31210/): choose **Windows
 installer (64-bit)** on Windows or **macOS 64-bit universal2 installer** on macOS.
 Python 3.12.10 is specified because it is the final Python 3.12 release for which
 Python.org provides the Windows and macOS binary installers needed by this
-quickstart; do not substitute a Microsoft Store or third-party package.
+launcher; do not substitute a Microsoft Store or third-party package.
 
 ### 1. Download and extract V1
 
@@ -69,44 +69,37 @@ in the directions, and return a ZIP containing one completed university folder.
 Review its reported inaccessible pages and ambiguities before accepting the ZIP.
 Never provide credentials or ask it to bypass access controls.
 
-### 4. Import, validate, and build the standalone planner
+### 4. Launch, import, and open the planner
 
-Save the returned ZIP anywhere convenient. Do not extract it yourself: the
-quickstart command checks every archive entry, extracts to temporary storage,
-validates and compiles the dataset, updates the registry, and builds the
-standalone site as one rollback-safe operation.
-
-From the extracted V1 project folder, run:
+Save the returned ZIP anywhere convenient. Do not extract it yourself. Start the
+**University Schedule Planner Launcher** from the extracted V1 project folder:
 
 **Windows (PowerShell or Command Prompt):**
 
 ```powershell
-py -3 tools\quickstart.py C:\path\to\university.zip
+py -3 tools\launcher.py
 ```
 
 **macOS (Terminal):**
 
 ```bash
-python3 tools/quickstart.py /path/to/university.zip
+python3 tools/launcher.py
 ```
 
-The ZIP must contain exactly one top-level folder named for its university slug,
-with `university.json`, `calendars.json`, and `departments/*.json` beneath it.
-Success prints the exact absolute `index.html` path to open.
+The launcher finds the project folder regardless of the terminal's current
+working directory. Choose **Import University ZIP…** to validate, compile, and
+install the dataset as one rollback-safe operation. The ZIP must contain exactly
+one top-level folder named for its university slug, with `university.json`,
+`calendars.json`, and `departments/*.json` beneath it.
 
-```text
-Success. Open this file in your browser:
-<absolute-project-path>/dist/<university-slug>/index.html
-```
+The launcher starts the bundled local server in the background, shows its PID,
+state, command, and any startup error, and reports ready only after its HTTP
+endpoint responds. Use **Open Planner** to open the displayed selectable URL or
+**Copy URL** to copy it. Closing the launcher stops only the server processes it
+started.
 
-Open `dist/<university-slug>/index.html` in File Explorer or Finder to launch
-the course explorer; `planner.html` in the same folder is the schedule planner.
-These generated pages work directly from disk: **no local web server is
-required**.
-
-If that slug is already installed, the command refuses to change anything. Only
-when you intentionally want to replace its dataset, registry entry, and
-standalone output, rerun the same command with `--replace`.
+The old `tools/quickstart.py <zip>` command remains temporarily as a compatibility
+wrapper for scripted archive imports. New workflows should use the launcher.
 
 ### Troubleshooting and review warnings
 
@@ -137,10 +130,10 @@ standalone output, rerun the same command with `--replace`.
 The browser must load JSON over HTTP; opening `index.html` directly from disk will not work.
 
 ```bash
-python tools/serve.py
+python tools/launcher.py
 ```
 
-Then open <http://127.0.0.1:8000>. The project has no package manager, build framework, or third-party runtime dependency. Python 3 is only needed for data validation/building and the optional local server.
+Then select **Open Planner** after the launcher reports readiness. The project has no package manager, build framework, or third-party runtime dependency. Python 3 is only needed for data validation/building and the optional local server.
 
 ## Repository layout
 
@@ -283,7 +276,7 @@ Before release, serve the site locally and check both pages with a populated uni
 
 End-user releases support **64-bit Windows 10 and Windows 11** and **macOS
 Monterey 12 or newer**. They require the official Python 3.12 installation
-described in the quickstart and a current version of Safari, Chrome, Edge, or
+described in the launcher instructions and a current version of Safari, Chrome, Edge, or
 Firefox. The planner itself runs from extracted local files; neither platform
 needs an HTTP server.
 
@@ -304,13 +297,13 @@ university-schedule-planner-v<version>.zip.sha256
 ```
 
 Packaging uses an explicit end-user allowlist. It includes the local-file web
-application, required assets, CSV template, quickstart ZIP importer, build and
+application, required assets, CSV template, launcher and compatibility ZIP importer, build and
 validation helpers, LLM scraping directions, and fictional university template.
 It excludes tests, package-manager and CI configuration, caches, temporary
 files, contributor-only tools, generated distributions, and every real
 university source-data directory. Before reporting success, the command checks
 the ZIP's exact manifest and file contents, rejects unsafe archive paths and
-links, extracts it into a temporary directory, and completes a quickstart import
+links, extracts it into a temporary directory, and completes a launcher import
 using only the packaged files. Upload both generated files to the matching
 release; users can compare the ZIP's SHA-256 digest with the single line in the
 `.sha256` file.
@@ -318,7 +311,7 @@ release; users can compare the ZIP's SHA-256 digest with the single line in the
 ### Clean-machine manual release checklist
 
 Perform this checklist on clean installations of every supported operating
-system. Do not run `tools/serve.py` or start any other HTTP server during it.
+system. Do not run `tools/serve.py`, the launcher, or any other HTTP server before beginning it.
 
 - [ ] Download the ZIP and checksum, verify the SHA-256 digest with
   `Get-FileHash <zip> -Algorithm SHA256` on Windows or `shasum -a 256 <zip>` on
@@ -326,8 +319,8 @@ system. Do not run `tools/serve.py` or start any other HTTP server during it.
 - [ ] Confirm the extracted folder directly contains `README.md`, `index.html`,
   `planner.html`, `assets/`, `template/`, `tools/`, and `universities/`.
 - [ ] Obtain a reviewed university ZIP with the documented single-folder layout
-  and import it using `py -3 tools\quickstart.py <zip>` (Windows) or
-  `python3 tools/quickstart.py <zip>` (macOS).
+  and import it using **Import University ZIP…** in `py -3 tools\launcher.py`
+  (Windows) or `python3 tools/launcher.py` (macOS).
 - [ ] Double-click the generated `dist/<slug>/index.html` and confirm the
   standalone course explorer launches from a `file://` URL without an HTTP
   server or browser console loading errors.
