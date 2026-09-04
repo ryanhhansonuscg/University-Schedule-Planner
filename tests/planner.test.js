@@ -224,6 +224,15 @@ test('oversized and unreadable imports leave the plan unchanged', async () => {
   assert.equal(JSON.parse(app.values.get('college-schedule-plan:test-u')).calendars.semester, undefined);
 });
 
+test('row-limit preflight rejects imports before core parsing and leaves the plan unchanged', async () => {
+  const app = await setup();
+  const rows = Array.from({ length: 10001 }, () => 'S27,CS101').join('\n');
+  app.elements['import-schedule'].files = [{ size: rows.length, text: async () => `Term Code,Course #\n${rows}` }];
+  await app.elements['import-schedule'].dispatch('change');
+  assert.match(app.elements['planner-message'].textContent, /too many rows/);
+  assert.equal(JSON.parse(app.values.get('college-schedule-plan:test-u')).calendars.semester, undefined);
+});
+
 test('denied reads show an accessible persistent warning and start empty', async () => {
   const app = await setup(null, { getItem() { const error = new Error('denied'); error.name = 'SecurityError'; throw error; }, setItem() { throw new Error('denied'); }, removeItem() {} });
   assert.equal(app.elements['storage-warning'].hidden, false);

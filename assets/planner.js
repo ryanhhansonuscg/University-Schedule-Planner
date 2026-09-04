@@ -412,17 +412,24 @@
     if (Number.isFinite(file.size) && file.size > maxFileSize) { reportImportError('The CSV is too large. Choose a file no larger than 1 MB.'); return; }
     let text;
     try { text = await file.text(); } catch { reportImportError('The CSV could not be read. Choose another file and try again.'); return; }
+    if (PlannerCore.csvRowCount(text, maxRows + 1) > maxRows + 1) {
+      reportImportError(`The CSV has too many rows. The limit is ${maxRows.toLocaleString()} schedule rows.`);
+      return;
+    }
     let result;
     try { result = PlannerCore.importRows(text, activeCalendar()?.terms || [], courses, activeCalendarId, plan); }
     catch { reportImportError('The CSV could not be parsed. Check its formatting and try again.'); return; }
-    if (result.rowCount > maxRows) { reportImportError(`The CSV has too many rows. The limit is ${maxRows.toLocaleString()}.`); return; }
+    if (result.rowCount > maxRows) { reportImportError(`The CSV has too many rows. The limit is ${maxRows.toLocaleString()} schedule rows.`); return; }
     if (result.error) { reportImportError(result.error); return; }
-    const headerErrors = result.errors.filter(error => error.row === 1);
+    const headerErrors = result.errors.filter(error => error.row === (result.headerRow || 1));
     if (headerErrors.length) { reportImportError(`The CSV header is invalid: ${headerErrors.map(error => `${error.message} (row ${error.row}, column ${error.column})`).join(' ')}`); return; }
     const rejected = result.failures;
-    const failureSummary = rejected.map(item => `row ${item.row}: ${item.category}`).join('; ');
-    if (!result.additions.length) { reportImportError(`No courses were imported.${rejected.length ? ` Rejected ${failureSummary}.` : ''}`); return; }
-    if (rejected.length && !window.confirm(`Import ${result.additions.length} valid course${result.additions.length === 1 ? '' : 's'} and reject ${rejected.length} row${rejected.length === 1 ? '' : 's'}? ${failureSummary}`)) {
+    const duplicates = rejected.filter(item => item.category === 'duplicate schedule entry');
+    const skipped = rejected.filter(item => item.category !== 'duplicate schedule entry');
+    const failureSummary = rejected.map(item => `row ${item.row}: ${item.category} (column ${item.column}; ${item.message})`).join('; ');
+    const resultSummary = `${result.additions.length} valid addition${result.additions.length === 1 ? '' : 's'}, ${duplicates.length} duplicate${duplicates.length === 1 ? '' : 's'}, and ${skipped.length} skipped row${skipped.length === 1 ? '' : 's'}`;
+    if (!result.additions.length) { reportImportError(`No courses were imported: ${resultSummary}.${rejected.length ? ` ${failureSummary}.` : ''}`); return; }
+    if (rejected.length && !window.confirm(`Import ${resultSummary}? ${failureSummary}`)) {
       plannerMessage.textContent = 'Import cancelled; the schedule was not changed.'; return;
     }
     const nextPlan = cleanPlan(plan);
@@ -430,7 +437,7 @@
     plan = nextPlan;
     savePlan();
     renderPlan();
-    plannerMessage.textContent = `${result.additions.length} course${result.additions.length === 1 ? '' : 's'} imported into ${activeCalendar()?.name || 'the schedule'}.${rejected.length ? ` Rejected ${failureSummary}.` : ''}`;
+    plannerMessage.textContent = `${result.additions.length} course${result.additions.length === 1 ? '' : 's'} imported into ${activeCalendar()?.name || 'the schedule'} (${resultSummary}).${rejected.length ? ` Rejected ${failureSummary}.` : ''}`;
   }
 
   plannerCalendar.addEventListener('change', () => {

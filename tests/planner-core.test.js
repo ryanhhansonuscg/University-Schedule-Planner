@@ -154,6 +154,7 @@ test('CSV parser handles BOM, line endings, quoted newlines, commas, and escaped
   assert.deepEqual(parsed.errors,[]);
   assert.deepEqual(parsed.rows,[['Name','Note'],['Ada','line 1\r\nline 2, and "quoted"']]);
   assert.deepEqual(core.parseCsv('A,B\n1,2\n').rows,[['A','B'],['1','2']]);
+  assert.equal(core.csvRowCount('A,B\n"one\ntwo",3\n'),2);
 });
 test('CSV parser reports malformed quotes, headers, and widths with locations',()=>{
   const parsed=core.parseCsv('Term,,TERM\n"Fall"oops,CS101\nshort\n"open');
@@ -166,6 +167,14 @@ test('imports categorize ambiguous labels and all other row failures',()=>{
   const csv='Calendar ID,Term Code,Term,Course #,Course Name\nother,F1,,CS101,\ncal,BAD,,CS101,\ncal,,Fall 2026,CS101,\ncal,F1,,BAD,\ncal,F1,,,Algorithms\ncal,F1,,CS101,\ncal,F1,,,\n';
   const result=core.importRows(csv,importTerms,importCourses,'cal',{F1:['CS101']});
   assert.deepEqual(result.failures.map(f=>f.category),['wrong calendar','unknown term','ambiguous term name','unknown course','ambiguous course title','duplicate schedule entry','malformed row']);
+  assert.ok(result.failures.every(f=>Number.isInteger(f.row)&&Number.isInteger(f.column)&&f.type));
+  assert.equal(result.failures.at(-1).type,'missing-required-cell');
+});
+test('import locations retain physical rows after quoted newlines',()=>{
+  const result=core.importRows('Term Code,Course Name\nF1,"Unknown\nCourse"\nF1,Algorithms',terms,courses,'cal');
+  assert.equal(result.failures[0].row,2);
+  assert.equal(result.additions[0].courseCode,'CS201');
+  assert.equal(core.parseCsv('A,B\n"open').errors[0].column,1);
 });
 test('imports reject header-only files and prefer stable identifiers',()=>{
   assert.match(core.importRows('Term Code,Course #\n',terms,courses,'cal').error,/only headers/);
