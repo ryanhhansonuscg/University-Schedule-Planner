@@ -1,6 +1,7 @@
 # University Schedule Planner
 
-Use the launcher to collect, import, and explore university schedule data.
+Use the **University Schedule Planner Launcher** to collect, import, and explore
+university schedule data.
 
 1. Open the extracted project folder, then double-click `launch-planner.bat` on
    Windows or `launch-planner.command` on macOS.
@@ -12,13 +13,13 @@ Use the launcher to collect, import, and explore university schedule data.
    copied from this README.
 4. Review the LLM's validation report, especially every inaccessible page and
    ambiguity. Resolve any concern before accepting the result.
-5. In the launcher, choose **Import University ZIP…** for the returned ZIP, or
+5. In the **University Schedule Planner Launcher**, choose **Import University ZIP…** for the returned ZIP, or
    choose the folder import option for one completed university folder. After the
    import succeeds, select **Open Planner**.
 
 ## Import performance and acceleration
 
-The launcher keeps server health checks and import/build work off the Tk event
+The **University Schedule Planner Launcher** keeps server health checks and import/build work off the Tk event
 thread, reports department-reading and commit progress, and lets an in-progress
 import be cancelled. Department JSON files may be decoded with bounded worker
 concurrency; the conservative default is the smaller of four and the available
@@ -35,3 +36,25 @@ capability report. A GPU backend should only be added for a measured future
 workload with an optional implementation, deterministic CPU fallback, cancellation
 semantics, and benchmarks showing that initialization and transfer costs are
 recovered; GPU availability alone is not evidence that imports will be faster.
+
+## Clean-machine release checklist
+
+1. Download the versioned release ZIP and verify its published SHA-256 checksum.
+2. Extract the ZIP into a new folder; do not run it from inside the ZIP viewer.
+3. Confirm Python 3.10 or newer includes tkinter, then double-click the platform
+   bootstrap to open the **University Schedule Planner Launcher**.
+4. Import both a university ZIP and, when needed, its extracted university folder.
+   The command-line importer remains available as an automation and accessibility
+   fallback: `python tools/launcher.py --import-archive SOURCE [--replace]`.
+5. Select **Open Planner**, wait for the managed local server to become ready, and
+   confirm the planner opens. Close the **University Schedule Planner Launcher**
+   and confirm its managed server process exits.
+
+## Release contents and verification
+
+University Schedule Planner releases include the **University Schedule Planner
+Launcher**, reusable import service, managed loopback server, Windows and macOS
+bootstrap scripts, and all non-generated planner UI resources. Release QA verifies
+the exact allowlisted manifest and safe extraction, imports from both ZIP and
+folder sources in an isolated extracted copy, checks generated registry and site
+artifacts, and exercises server readiness, health, and shutdown.
