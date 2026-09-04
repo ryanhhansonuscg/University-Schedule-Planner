@@ -122,7 +122,7 @@
   }
 
   function planningTerms() {
-    return PlannerCore.planningTerms(data.academic_calendars, plannerCalendar.value);
+    return PlannerCore.planningTerms(data.academic_calendars, plannerCalendar.value).terms;
   }
 
   function configurePlanner() {
@@ -144,7 +144,8 @@
   }
 
   function refreshPlannerCalendar() {
-    const terms = planningTerms();
+    const planning = PlannerCore.planningTerms(data.academic_calendars, plannerCalendar.value);
+    const { terms, horizon } = planning;
     plannerTerm.replaceChildren(...terms.map(term => new Option(`${term.name} · ${term.start_date == null ? 'Dates not yet published' : dateLabel(term.start_date)}`, term.code)));
     const calendar = activeCalendar();
     if (!calendar) {
@@ -152,8 +153,9 @@
     } else {
       const academicYears = [...new Set(terms.map(term => term.academic_year).filter(Boolean))];
       const coverage = academicYears.length ? `academic years ${academicYears[0]}–${academicYears.at(-1)}` : 'no currently plannable academic periods';
-      const shortfall = academicYears.length < 4 ? ' The calendar does not cover the full four-academic-period horizon.' : '';
-      calendarCoverage.textContent = `${data.university.academic_calendar_system} institution · ${calendar.name} covers ${coverage}.${shortfall} Terms without dates are planning placeholders, not confirmed schedules. Logical alternatives in prerequisite text should be confirmed with an adviser.`;
+      const shortfall = horizon.endpointCovered ? '' : ' The calendar does not cover the full four-year horizon.';
+      const qualification = horizon.dependsOnUnpublishedDates ? ' Full-horizon coverage depends on terms whose dates are not yet published.' : '';
+      calendarCoverage.textContent = `${data.university.academic_calendar_system} institution · ${calendar.name} covers ${coverage}.${shortfall}${qualification} Terms without dates are planning placeholders, not confirmed schedules. Logical alternatives in prerequisite text should be confirmed with an adviser.`;
     }
     renderPlan();
   }
