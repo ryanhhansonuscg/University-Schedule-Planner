@@ -350,8 +350,13 @@
   query.addEventListener('input', refresh);
   function watchGraphSize() {
     if (typeof window.ResizeObserver === 'function') {
-      new window.ResizeObserver(renderGraph).observe(graph);
-      return;
+      try {
+        new window.ResizeObserver(renderGraph).observe(graph);
+        return;
+      } catch {
+        // Some browsers expose ResizeObserver even when it cannot be
+        // constructed. Fall back without preventing explorer initialization.
+      }
     }
 
     let resizeTimer;
@@ -361,9 +366,9 @@
     });
   }
 
+  watchGraphSize();
   document.getElementById('load-status').hidden = true;
   document.getElementById('explorer').hidden = false;
   document.getElementById('app').setAttribute('aria-busy', 'false');
   refresh();
-  watchGraphSize();
 })();
