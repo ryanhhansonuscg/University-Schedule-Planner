@@ -94,6 +94,54 @@ async function renderRequirements(edges) {
   return { ...app, externalNodes };
 }
 
+function offeringDetails(app) {
+  const definitionList = app.elements.details.children[3];
+  const offeringLabelIndex = definitionList.children.findIndex(child => child.textContent === 'Offerings');
+  return definitionList.children[offeringLabelIndex + 1].children[0];
+}
+
+test('browser smoke: offering history identifies held, scheduled, and cancelled term records', async () => {
+  const data = catalog();
+  data.courses[0].offering_history = [
+    { term_name: 'Fall 2025', term_status: 'historical', offering_status: 'held', source_url: 'https://example.edu/fall-2025' },
+    { term_name: 'Fall 2026', term_status: 'current', offering_status: 'scheduled', source_url: 'https://example.edu/fall-2026' },
+    { term_name: 'Spring 2027', term_status: 'future', offering_status: 'cancelled', source_url: 'https://example.edu/spring-2027' },
+  ];
+  const history = offeringDetails(await initialize(true, data));
+
+  assert.equal(history.tagName, 'UL');
+  assert.equal(history.children.length, 3);
+  const expected = [
+    ['offering-record offering-held', 'Fall 2025', 'held', 'historical'],
+    ['offering-record offering-scheduled', 'Fall 2026', 'scheduled', 'current'],
+    ['offering-record offering-cancelled', 'Spring 2027', 'cancelled', 'future'],
+  ];
+  history.children.forEach((record, index) => {
+    assert.equal(record.tagName, 'LI');
+    assert.equal(record.className, expected[index][0]);
+    assert.equal(record.children[0].tagName, 'A');
+    assert.equal(record.children[0].textContent, expected[index][1]);
+    assert.equal(record.children[1].textContent, expected[index][2]);
+    assert.equal(record.children[2].textContent, expected[index][3]);
+  });
+  assert.equal(history.children[2].children[0].href, 'https://example.edu/spring-2027');
+});
+
+test('browser smoke: offering history supports missing sources and no-history state', async () => {
+  const missingSource = catalog();
+  missingSource.courses[0].offering_history = [
+    { term_name: 'Summer 2026', term_status: 'current', offering_status: 'scheduled' },
+  ];
+  const history = offeringDetails(await initialize(true, missingSource));
+  assert.equal(history.children[0].children[0].tagName, 'SPAN');
+  assert.equal(history.children[0].children[0].textContent, 'Summer 2026');
+
+  const empty = offeringDetails(await initialize(true));
+  assert.equal(empty.tagName, 'P');
+  assert.equal(empty.className, 'offering-history-empty');
+  assert.equal(empty.textContent, 'No offering history recorded');
+});
+
 test('browser smoke: external prerequisite is visible but not selectable', async () => {
   const app = await renderRequirements([
     { source: 'PLACEMENT', target: 'CS300', kind: 'prerequisite', source_in_database: false },

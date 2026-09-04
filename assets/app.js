@@ -261,20 +261,40 @@
     });
     addDetailRow(definitionList, 'Restrictions', course.restrictions || 'None listed');
 
-    const history = document.createElement('span');
+    let history;
     if (!(course.offering_history || []).length) {
+      history = document.createElement('p');
+      history.className = 'offering-history-empty';
       history.textContent = 'No offering history recorded';
     } else {
-      course.offering_history.forEach((offering, index) => {
-        if (index) history.append(', ');
+      history = document.createElement('ul');
+      history.className = 'offering-history';
+      course.offering_history.forEach(offering => {
+        const item = document.createElement('li');
+        const offeringStatus = offering.offering_status || 'status not recorded';
+        const termStatus = offering.term_status || 'term timing not recorded';
+        item.className = `offering-record offering-${offering.offering_status || 'unknown'}`;
+
+        let term;
         if (offering.source_url) {
-          const link = document.createElement('a');
-          link.href = offering.source_url;
-          link.target = '_blank';
-          link.rel = 'noreferrer';
-          link.textContent = offering.term_name || offering.term_code;
-          history.appendChild(link);
-        } else history.append(offering.term_name || offering.term_code);
+          term = document.createElement('a');
+          term.href = offering.source_url;
+          term.target = '_blank';
+          term.rel = 'noreferrer';
+        } else {
+          term = document.createElement('span');
+        }
+        term.className = 'offering-term';
+        term.textContent = offering.term_name || offering.term_code || 'Unnamed term';
+
+        const status = document.createElement('strong');
+        status.className = 'offering-status';
+        status.textContent = offeringStatus;
+        const timing = document.createElement('span');
+        timing.className = 'offering-timing';
+        timing.textContent = termStatus;
+        item.append(term, status, timing);
+        history.appendChild(item);
       });
     }
     addDetailRow(definitionList, 'Offerings', history);
