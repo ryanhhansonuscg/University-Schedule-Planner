@@ -28,6 +28,13 @@
   const graphNodes = graph.querySelector('.graph-nodes');
   const edgeLayer = graph.querySelector('svg g');
   const details = document.getElementById('details');
+  const status = document.getElementById('explorer-status');
+  const summaryLists = {
+    selected: document.getElementById('summary-selected'),
+    prerequisite: document.getElementById('summary-prerequisites'),
+    corequisite: document.getElementById('summary-corequisites'),
+    dependent: document.getElementById('summary-dependents'),
+  };
   let selectedCode = '';
 
   const university = data.university || {};
@@ -80,6 +87,52 @@
     }));
   }
 
+  function courseLabel(course) {
+    return `${course.code} · ${course.title}`;
+  }
+
+  function directRelationships(code) {
+    const incomingEdges = incoming.get(code) || [];
+    const outgoingEdges = outgoing.get(code) || [];
+    return {
+      prerequisite: incomingEdges.filter(edge => edge.kind === 'prerequisite').map(edge => edge.source),
+      corequisite: [
+        ...incomingEdges.filter(edge => edge.kind === 'corequisite').map(edge => edge.source),
+        ...outgoingEdges.filter(edge => edge.kind === 'corequisite').map(edge => edge.target),
+      ],
+      dependent: outgoingEdges.filter(edge => edge.kind === 'prerequisite').map(edge => edge.target),
+    };
+  }
+
+  function renderRelationshipSummary() {
+    Object.values(summaryLists).forEach(listElement => listElement.replaceChildren());
+    const selected = courseByCode.get(selectedCode);
+    const relationships = selected ? directRelationships(selectedCode) : { prerequisite: [], corequisite: [], dependent: [] };
+    const values = { selected: selected ? [selectedCode] : [], ...relationships };
+    Object.entries(values).forEach(([kind, codes]) => {
+      const items = [...new Set(codes)].sort().map(code => {
+        const item = document.createElement('li');
+        item.textContent = courseByCode.has(code) ? courseLabel(courseByCode.get(code)) : code;
+        return item;
+      });
+      if (!items.length) {
+        const item = document.createElement('li');
+        item.textContent = kind === 'selected' ? 'No course selected' : 'None listed';
+        items.push(item);
+      }
+      summaryLists[kind].replaceChildren(...items);
+    });
+  }
+
+  function graphRelationship(code, layers) {
+    if (code === selectedCode) return 'selected course';
+    const directIncoming = (incoming.get(selectedCode) || []).find(edge => edge.source === code);
+    if (directIncoming) return directIncoming.kind === 'corequisite' ? 'corequisite' : 'prerequisite';
+    const directOutgoing = (outgoing.get(selectedCode) || []).find(edge => edge.target === code);
+    if (directOutgoing) return directOutgoing.kind === 'corequisite' ? 'corequisite' : 'dependent';
+    return layers.get(code) < layers.get(selectedCode) ? 'indirect prerequisite' : 'indirect dependent';
+  }
+
   function neighborhood(code) {
     if (!code) return new Map();
     const layers = new Map([[code, 0]]);
@@ -112,6 +165,7 @@
 
   function renderGraph() {
     const layers = neighborhood(selectedCode);
+    renderRelationshipSummary();
     graphNodes.replaceChildren();
     edgeLayer.replaceChildren();
     if (!layers.size) {
@@ -145,6 +199,7 @@
       const button = document.createElement('button');
       button.type = 'button';
       button.className = `graph-node${code === selectedCode ? ' selected' : ''}`;
+      button.setAttribute('aria-label', `${courseLabel(course)}, ${graphRelationship(code, layers)} of ${selectedCode}`);
       button.style.left = `${positions.get(code).x}px`;
       button.style.top = `${positions.get(code).y}px`;
       appendCourseLabel(button, course);
@@ -238,6 +293,8 @@
     renderList();
     renderGraph();
     renderDetails();
+    const matches = filteredCourses();
+    status.textContent = `${courseLabel(courseByCode.get(code))} selected. ${matches.length} course${matches.length === 1 ? '' : 's'} in results.`;
   }
 
   function refresh() {
@@ -253,6 +310,8 @@
     renderList();
     renderGraph();
     renderDetails();
+    const selected = courseByCode.get(selectedCode);
+    status.textContent = `${matches.length} course${matches.length === 1 ? '' : 's'} in results.${selected ? ` ${courseLabel(selected)} selected.` : ''}`;
   }
 
   [department, level, tag].forEach(control => control.addEventListener('change', refresh));

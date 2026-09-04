@@ -35,15 +35,15 @@
           <h2 id="planner-heading">Proposed schedule</h2>
         </div>
         <label>Academic calendar
-          <select id="planner-calendar"></select>
+          <select id="planner-calendar" aria-describedby="calendar-coverage planner-advisory"></select>
         </label>
       </div>
       <div class="planner-controls">
         <label>Completed courses
-          <input id="completed-courses" type="text" placeholder="MATH101, CHEM101">
+          <input id="completed-courses" type="text" placeholder="MATH101, CHEM101" aria-describedby="planner-advisory planner-persistence">
         </label>
         <label>Course name or number
-          <input id="planner-course-search" list="course-options" type="text" placeholder="Type a course code or name" autocomplete="off">
+          <input id="planner-course-search" list="course-options" type="text" placeholder="Type a course code or name" autocomplete="off" aria-describedby="planner-advisory">
           <datalist id="course-options"></datalist>
         </label>
         <label>Term
@@ -53,13 +53,18 @@
       </div>
       <div class="schedule-toolbar" aria-label="Schedule import and export">
         <label class="file-action">Import schedule (.csv)
-          <input id="import-schedule" type="file" accept=".csv,text/csv">
+          <input id="import-schedule" type="file" accept=".csv,text/csv" aria-describedby="import-requirements planner-persistence planner-message">
         </label>
         <button id="export-schedule" class="secondary-action" type="button" disabled>Export spreadsheet (.csv)</button>
         <button id="clear-schedule" class="quiet-action" type="button" disabled>Clear schedule</button>
       </div>
-      <p id="planner-message" class="planner-message" role="status" aria-live="polite"></p>
+      <p id="planner-message" class="planner-message" role="status" aria-live="polite" tabindex="-1"></p>
       <p id="calendar-coverage" class="calendar-coverage"></p>
+      <div class="planner-guidance">
+        <p id="planner-advisory"><strong>Advisory prerequisite check:</strong> automated checks do not interpret every catalog rule or logical alternative. Confirm requirements with an adviser.</p>
+        <p id="import-requirements"><strong>Import requirements:</strong> CSV files must be 1 MB or smaller and include a Term Code or Term column plus a Course # or Course Name column.</p>
+        <p id="planner-persistence"><strong>Persistence warning:</strong> schedules and completed courses are stored only in this browser. Import merges into the active calendar; clearing browser data removes saved work.</p>
+      </div>
       <div id="plan-grid" class="plan-grid"></div>
       <section class="issues" aria-labelledby="issues-heading">
         <div class="section-heading"><h2 id="issues-heading">Schedule check</h2><span id="issue-count"></span></div>

@@ -103,7 +103,7 @@ python -m compileall -q tools tests
 npm run check
 python tools/validate_university.py --template template/university-template
 python tools/check_prohibited_terms.py
-node --test tests/browser-smoke.test.js
+node --test tests/semantic-markup-smoke.test.js
 python tools/final_qa.py
 ```
 
@@ -124,6 +124,17 @@ python tools/check_generated.py \
 
 Use the exact epoch `1767225600` (`2026-01-01T00:00:00+00:00`) for both builds, as CI and `tools/final_qa.py` do. The verifier compares the complete catalogs (including `generated_at`), SQLite schemas, and deterministically ordered rows from every table; it also runs SQLite integrity and foreign-key checks. Raw database bytes are checked as an additional diagnostic, not as the sole content comparison.
 
-The browser smoke checks exercise the pages' navigation/loading contracts plus calendar switching, Enter-key scheduling, local-storage serialization, CSV round-tripping, catalog failure handling, and accessible landmarks without adding a browser automation dependency.
+The semantic markup smoke checks inspect source markup and JavaScript contracts for navigation, loading, calendar switching, Enter-key scheduling, local-storage serialization, CSV round-tripping, catalog failure handling, and accessible landmarks. They are not browser-based accessibility audits.
+
+### Manual accessibility checks
+
+Before release, check both pages with representative catalog data:
+
+- Use only the keyboard to reach every control and link, select courses and graph nodes, add/remove planned courses, and import a CSV. Confirm focus is visible and follows a logical order.
+- Test browser zoom at 200% and 400% at a 1280 CSS-pixel viewport; verify content reflows without two-dimensional page scrolling or clipped controls and text.
+- Enable the operating system's forced-colors/high-contrast mode; verify focus, selected courses, graph relationships, warnings, and buttons remain distinguishable without relying on color alone.
+- Test both light and dark color schemes; verify text, controls, focus indicators, badges, and graph lines remain readable.
+- With a screen reader, navigate the relationship-summary headings and lists, confirm each graph button announces its course and relationship, and verify concise selection/result updates without the graph being repeatedly announced.
+- In the planner, confirm described-by guidance is announced for the calendar, prerequisite-related fields, and import control; trigger an invalid import and verify its actionable error is associated with the file input and can be focused.
 
 `tools/final_qa.py` is the final release gate. It detects unresolved merge markers, missing required files and local HTML assets, malformed tracked JSON, test or syntax failures, institution-specific content, and non-reproducible template artifacts. Run it after merging parallel work to ensure no conflict residue or required element was lost.
