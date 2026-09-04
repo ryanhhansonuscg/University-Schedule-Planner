@@ -71,37 +71,42 @@ Never provide credentials or ask it to bypass access controls.
 
 ### 4. Import, validate, and build the standalone planner
 
-Place the returned ZIP in the extracted V1 project's `universities` folder and
-extract it there. The required layout is
-`universities/<university-slug>/university.json`, alongside `calendars.json` and
-`departments/`—not a ZIP file and not an extra nested directory. Replace
-`<university-slug>` below with that folder's actual name.
+Save the returned ZIP anywhere convenient. Do not extract it yourself: the
+quickstart command checks every archive entry, extracts to temporary storage,
+validates and compiles the dataset, updates the registry, and builds the
+standalone site as one rollback-safe operation.
 
 From the extracted V1 project folder, run:
 
 **Windows (PowerShell or Command Prompt):**
 
 ```powershell
-py -3 tools\build_standalone.py universities\<university-slug> dist\<university-slug>
+py -3 tools\quickstart.py C:\path\to\university.zip
 ```
 
 **macOS (Terminal):**
 
 ```bash
-python3 tools/build_standalone.py universities/<university-slug> dist/<university-slug>
+python3 tools/quickstart.py /path/to/university.zip
 ```
 
-This command validates and compiles the imported data before creating the
-standalone app. Success ends with a message in this form:
+The ZIP must contain exactly one top-level folder named for its university slug,
+with `university.json`, `calendars.json`, and `departments/*.json` beneath it.
+Success prints the exact absolute `index.html` path to open.
 
 ```text
-Built standalone <University Name> in dist/<university-slug>: <number> courses
+Success. Open this file in your browser:
+<absolute-project-path>/dist/<university-slug>/index.html
 ```
 
 Open `dist/<university-slug>/index.html` in File Explorer or Finder to launch
 the course explorer; `planner.html` in the same folder is the schedule planner.
 These generated pages work directly from disk: **no local web server is
 required**.
+
+If that slug is already installed, the command refuses to change anything. Only
+when you intentionally want to replace its dataset, registry entry, and
+standalone output, rerun the same command with `--replace`.
 
 ### Troubleshooting and review warnings
 
@@ -114,9 +119,9 @@ required**.
   the extracted project folder—the one that directly contains `tools`—and do
   not run the command from Downloads, from `universities`, or from inside the
   ZIP viewer.
-- **Missing `university.json` or a path/file-not-found error:** extract both
-  ZIPs fully and remove any extra wrapper folder so the layout exactly matches
-  `universities/<university-slug>/university.json`.
+- **Malformed university layout:** ask the LLM to recreate the ZIP with exactly
+  one slug-named wrapper folder containing `university.json`, `calendars.json`,
+  and `departments/*.json`; do not manually extract files into `universities/`.
 - **`ERROR:` validation output:** do not ignore it or edit generated files.
   Give the exact error to the LLM, correct the source JSON, and rerun the build
   until the success message appears.
