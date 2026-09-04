@@ -21,10 +21,7 @@ jobs:
           python -m compileall -q tools tests
           npm run check
       - name: Validate template fixture
-        run: |
-          tmp=$(mktemp -d)
-          cp -R template/university-template "$tmp/fictional-template-university"
-          python tools/validate_university.py "$tmp/fictional-template-university"
+        run: python tools/validate_university.py --template template/university-template
       - name: Reproducible build and SQLite integrity
         run: |
           tmp=$(mktemp -d)

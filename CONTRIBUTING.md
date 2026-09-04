@@ -10,6 +10,7 @@ Thanks for improving College Schedule Planner. Data changes should be reviewable
 - Preserve the university's exact prerequisite/corequisite wording.
 - Do not infer a course offering from an undated rotation claim.
 - Run `python tools/validate_university.py universities/<slug>`.
+- When editing the source template, run `python tools/validate_university.py --template template/university-template`; `--template` does not relax slug checks for copies or production universities.
 - Run `python tools/build_university.py universities/<slug>` and commit the regenerated `catalog.json` and `courses.db`.
 - Test the course explorer, planner, CSV import, and CSV export.
 - Describe missing or ambiguous data in the university README.

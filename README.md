@@ -101,8 +101,7 @@ python -m unittest discover -s tests -v
 npm test
 python -m compileall -q tools tests
 npm run check
-tmp=$(mktemp -d) && cp -R template/university-template "$tmp/fictional-template-university"
-python tools/validate_university.py "$tmp/fictional-template-university"
+python tools/validate_university.py --template template/university-template
 python tools/check_prohibited_terms.py
 node --test tests/browser-smoke.test.js
 python tools/final_qa.py

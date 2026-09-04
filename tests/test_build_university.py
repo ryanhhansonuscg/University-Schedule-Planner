@@ -67,6 +67,29 @@ class BuildUniversityTests(unittest.TestCase):
     def test_directory_slug_must_match(self):
         doc=self.load("university.json"); doc["slug"]="another-slug"; self.save("university.json",doc)
         with self.assertRaisesRegex(DataError, "does not match slug"): validate_and_compile(self.directory)
+    def test_canonical_source_template_requires_explicit_permission(self):
+        with self.assertRaisesRegex(DataError, "does not match slug"):
+            validate_and_compile(FIXTURE)
+        catalog = validate_and_compile(FIXTURE, allow_template_directory=True)
+        self.assertEqual("fictional-template-university", catalog["university"]["slug"])
+    def test_correctly_named_copied_fixture_is_valid(self):
+        self.assertEqual(
+            "fictional-template-university",
+            validate_and_compile(self.directory)["university"]["slug"],
+        )
+    def test_template_permission_does_not_allow_incorrectly_named_copy(self):
+        incorrect = Path(self.temp.name) / "university-template"
+        self.directory.rename(incorrect)
+        with self.assertRaisesRegex(DataError, "does not match slug"):
+            validate_and_compile(incorrect, allow_template_directory=True)
+    def test_template_permission_does_not_allow_incorrect_production_directory(self):
+        production = Path(tempfile.mkdtemp(prefix="incorrect-template-", dir=ROOT / "universities"))
+        try:
+            shutil.copytree(FIXTURE, production, dirs_exist_ok=True)
+            with self.assertRaisesRegex(DataError, "does not match slug"):
+                validate_and_compile(production, allow_template_directory=True)
+        finally:
+            shutil.rmtree(production, ignore_errors=True)
     def test_registry_schema_name_and_path_contract(self):
         path = Path(self.temp.name) / "index.json"
         path.write_text(json.dumps({"schema_version": 2, "universities": [{"slug":"fictional-template-university", "name":"Wrong", "path":"wrong.json"}]}))
