@@ -17,6 +17,7 @@ class ReleaseBuilderTests(unittest.TestCase):
             self.assertEqual(hashlib.sha256(first.read_bytes()).digest(), hashlib.sha256(second.read_bytes()).digest())
             with zipfile.ZipFile(first) as archive:
                 self.assertEqual(set(archive.namelist()), set(RELEASE_FILES))
+                self.assertIn("LICENSE", archive.namelist())
             inspect_and_extract(first, root / "extracted")
 
     def test_inspection_rejects_traversal(self):

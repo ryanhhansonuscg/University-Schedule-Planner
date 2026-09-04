@@ -25,6 +25,7 @@ VERSION_RE = re.compile(r"^[0-9]+(?:\.[0-9]+){1,2}(?:[-.][A-Za-z0-9]+)*$")
 # replace it with a broad copy of tracked files: tests and real source datasets
 # must never leak into an end-user archive.
 RELEASE_FILES = (
+    "LICENSE",
     "README.md",
     "index.html",
     "planner.html",
