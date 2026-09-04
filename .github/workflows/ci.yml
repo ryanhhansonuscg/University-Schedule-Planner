@@ -36,7 +36,7 @@ jobs:
             "$tmp/first.json" "$tmp/first.db" \
             "$tmp/fictional-template-university/catalog.json" \
             "$tmp/fictional-template-university/courses.db"
-      - name: Accessibility smoke checks
-        run: node --test tests/browser-smoke.test.js
+      - name: Semantic markup smoke checks
+        run: node --test tests/semantic-markup-smoke.test.js
       - name: Final repository QA
         run: python tools/final_qa.py

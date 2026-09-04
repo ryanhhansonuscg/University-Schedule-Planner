@@ -103,7 +103,7 @@ python -m compileall -q tools tests
 npm run check
 python tools/validate_university.py --template template/university-template
 python tools/check_prohibited_terms.py
-node --test tests/browser-smoke.test.js
+node --test tests/semantic-markup-smoke.test.js
 python tools/final_qa.py
 ```
 
@@ -124,6 +124,16 @@ python tools/check_generated.py \
 
 Use the exact epoch `1767225600` (`2026-01-01T00:00:00+00:00`) for both builds, as CI and `tools/final_qa.py` do. The verifier compares the complete catalogs (including `generated_at`), SQLite schemas, and deterministically ordered rows from every table; it also runs SQLite integrity and foreign-key checks. Raw database bytes are checked as an additional diagnostic, not as the sole content comparison.
 
-The browser smoke checks exercise the pages' navigation/loading contracts plus calendar switching, Enter-key scheduling, local-storage serialization, CSV round-tripping, catalog failure handling, and accessible landmarks without adding a browser automation dependency.
+The semantic markup smoke checks inspect source markup and JavaScript contracts for navigation, loading states, calendar switching, Enter-key scheduling, local-storage serialization, CSV round-tripping, catalog failure handling, and accessible landmarks. They do not run a browser or an accessibility tree checker, so they must not be treated as automated accessibility conformance tests.
+
+### Manual accessibility checks
+
+Before release, serve the site locally and check both pages with a populated university catalog:
+
+- **Keyboard navigation:** use only Tab, Shift+Tab, Enter, Space, and arrow keys. Confirm every filter, course, graph node, planner action, and import control is reachable; focus remains visible; selection and import messages are announced; and focus moves to actionable import errors.
+- **Zoom and reflow:** test at 200% and 400% browser zoom, including a viewport 320 CSS pixels wide. Confirm content reflows without horizontal page scrolling, clipping, overlap, or loss of controls and relationship text.
+- **Forced colors:** enable the operating system/browser forced-colors or high-contrast mode. Confirm focus indicators, selected courses, graph nodes, relationship lines, issue states, and buttons remain distinguishable without relying on color alone.
+- **Dark mode:** select the system dark color scheme and confirm text, borders, focus indicators, badges, selected states, and links retain readable contrast.
+- **Screen reader relationship navigation:** with a screen reader, select several courses, navigate the Relationship summary by heading and list, and confirm the selected course, prerequisites, corequisites, and dependents are understandable. Then navigate graph buttons and confirm each accessible name states its course and relationship. Ensure graph redraws are not announced wholesale and only concise selection/result-count status messages are spoken.
 
 `tools/final_qa.py` is the final release gate. It detects unresolved merge markers, missing required files and local HTML assets, malformed tracked JSON, test or syntax failures, institution-specific content, and non-reproducible template artifacts. Run it after merging parallel work to ensure no conflict residue or required element was lost.

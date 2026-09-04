@@ -63,15 +63,26 @@
             <h2 id="map-heading">Prerequisite neighborhood</h2>
             <span class="legend"><i></i> prerequisite <i class="coreq"></i> corequisite</span>
           </div>
-          <div id="graph" class="graph" aria-live="polite">
+          <div id="graph" class="graph" aria-labelledby="map-heading" aria-describedby="relationship-summary">
             <svg aria-hidden="true"><g></g></svg>
             <div class="graph-nodes"></div>
           </div>
+          <section id="relationship-summary" class="relationship-summary" aria-labelledby="relationship-summary-heading">
+            <h3 id="relationship-summary-heading">Relationship summary</h3>
+            <div class="relationship-groups">
+              <section><h4>Selected course</h4><ul id="summary-selected"></ul></section>
+              <section><h4>Prerequisites</h4><ul id="summary-prerequisites"></ul></section>
+              <section><h4>Corequisites</h4><ul id="summary-corequisites"></ul></section>
+              <section><h4>Dependents</h4><ul id="summary-dependents"></ul></section>
+            </div>
+          </section>
           <article id="details" class="details"></article>
         </section>
       </div>
     </section>
   </main>
+
+  <div id="explorer-status" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 
   <footer id="site-footer">Always confirm requirements and availability with the university before registration.</footer>
   <script src="assets/loader.js" defer></script>

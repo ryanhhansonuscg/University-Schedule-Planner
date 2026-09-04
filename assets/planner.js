@@ -300,21 +300,26 @@
     URL.revokeObjectURL(url);
   }
 
+  function reportImportError(message) {
+    plannerMessage.textContent = message;
+    plannerMessage.focus?.();
+  }
+
   async function importSchedule(file) {
     const maxFileSize = 1024 * 1024; const maxRows = 10000;
-    if (Number.isFinite(file.size) && file.size > maxFileSize) { plannerMessage.textContent = 'The CSV is too large. Choose a file no larger than 1 MB.'; return; }
+    if (Number.isFinite(file.size) && file.size > maxFileSize) { reportImportError('The CSV is too large. Choose a file no larger than 1 MB.'); return; }
     let text;
-    try { text = await file.text(); } catch { plannerMessage.textContent = 'The CSV could not be read. Choose another file and try again.'; return; }
+    try { text = await file.text(); } catch { reportImportError('The CSV could not be read. Choose another file and try again.'); return; }
     let result;
     try { result = PlannerCore.importRows(text, activeCalendar()?.terms || [], courses, activeCalendarId, plan); }
-    catch { plannerMessage.textContent = 'The CSV could not be parsed. Check its formatting and try again.'; return; }
-    if (result.rowCount > maxRows) { plannerMessage.textContent = `The CSV has too many rows. The limit is ${maxRows.toLocaleString()}.`; return; }
-    if (result.error) { plannerMessage.textContent = result.error; return; }
+    catch { reportImportError('The CSV could not be parsed. Check its formatting and try again.'); return; }
+    if (result.rowCount > maxRows) { reportImportError(`The CSV has too many rows. The limit is ${maxRows.toLocaleString()}.`); return; }
+    if (result.error) { reportImportError(result.error); return; }
     const headerErrors = result.errors.filter(error => error.row === 1);
-    if (headerErrors.length) { plannerMessage.textContent = `The CSV header is invalid: ${headerErrors.map(error => `${error.message} (row ${error.row}, column ${error.column})`).join(' ')}`; return; }
+    if (headerErrors.length) { reportImportError(`The CSV header is invalid: ${headerErrors.map(error => `${error.message} (row ${error.row}, column ${error.column})`).join(' ')}`); return; }
     const rejected = result.failures;
     const failureSummary = rejected.map(item => `row ${item.row}: ${item.category}`).join('; ');
-    if (!result.additions.length) { plannerMessage.textContent = `No courses were imported.${rejected.length ? ` Rejected ${failureSummary}.` : ''}`; return; }
+    if (!result.additions.length) { reportImportError(`No courses were imported.${rejected.length ? ` Rejected ${failureSummary}.` : ''}`); return; }
     if (rejected.length && !window.confirm(`Import ${result.additions.length} valid course${result.additions.length === 1 ? '' : 's'} and reject ${rejected.length} row${rejected.length === 1 ? '' : 's'}? ${failureSummary}`)) {
       plannerMessage.textContent = 'Import cancelled; the schedule was not changed.'; return;
     }
