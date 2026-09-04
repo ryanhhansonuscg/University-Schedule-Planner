@@ -30,10 +30,21 @@ REGISTRY_SCHEMA_VERSION = 1
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 DEPARTMENT_RE = re.compile(r"^[A-Z][A-Z0-9]{1,11}$")
 COURSE_NUMBER_RE = re.compile(r"^[0-9]{1,4}[A-Z]?$")
+CREDITS_RE = re.compile(r"^(?:0|[1-9]\d*)(?:\.\d+)?(?:-(?:0|[1-9]\d*)(?:\.\d+)?)?$")
 
 
 class DataError(ValueError):
     pass
+
+
+def normalize_credits(value: object) -> str | None:
+    """Return the validator's canonical credit text, or None when unsupported."""
+    credit_text = str(value) if isinstance(value, (int, float)) and not isinstance(value, bool) else value
+    if not isinstance(credit_text, str) or not CREDITS_RE.fullmatch(credit_text):
+        return None
+    if "-" in credit_text and float(credit_text.split("-")[0]) > float(credit_text.split("-")[1]):
+        return None
+    return credit_text
 
 
 def generated_at() -> str:
@@ -434,13 +445,11 @@ def validate_and_compile(university_dir: Path, *, allow_template_directory: bool
             if course["level"] not in COURSE_LEVELS:
                 raise DataError(f"Course {course['code']} has unsupported level {course['level']!r}")
             course_codes.add(course["code"])
-            credits = course["credits"]
-            credit_text = str(credits) if isinstance(credits, (int, float)) and not isinstance(credits, bool) else credits
-            if not isinstance(credit_text, str) or not re.fullmatch(r"(?:0|[1-9]\d*)(?:\.\d+)?(?:-(?:0|[1-9]\d*)(?:\.\d+)?)?", credit_text):
+            credit_text = normalize_credits(course["credits"])
+            if credit_text is None:
                 errors.add(path, f"$.courses[{course_index}].credits", "must be a non-negative number or numeric string/range such as '3' or '1-4'")
-            elif "-" in credit_text and float(credit_text.split("-")[0]) > float(credit_text.split("-")[1]):
-                errors.add(path, f"$.courses[{course_index}].credits", "range minimum must not exceed maximum")
-            course["credits"] = credit_text
+            else:
+                course["credits"] = credit_text
             for field in ("description", "prerequisites", "corequisites", "restrictions", "repeatable"):
                 course.setdefault(field, "")
             course["source_url"] = course.get("source_url") or department.get("source_url", university.get("catalog_url", ""))
