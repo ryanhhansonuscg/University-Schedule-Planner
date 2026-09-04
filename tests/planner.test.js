@@ -40,8 +40,9 @@ function catalog() {
       { code: 'CS102', title: 'Next', credits: 4, offering_history: [
         { term_code: 'OLD', term_type: 'fall', term_status: 'historical', offering_status: 'held' },
       ] },
+      { code: 'ART200', title: 'Studio', credits: 3, repeatable: 'May be repeated for up to 9 credits.', offering_history: [] },
     ],
-    edges: [],
+    edges: [{ source: 'EXTERNAL100', target: 'CS102', kind: 'prerequisite', source_in_database: false }],
     academic_calendars: [
       { id: 'semester', name: 'Semester', system_type: 'semester', is_primary: true, terms: [
         { code: 'S27', name: 'Spring', academic_year: '2026-2027', sequence: 1, term_type: 'spring', planning_enabled: true, start_date: '2027-01-01', end_date: '2027-05-01' },
@@ -307,4 +308,40 @@ test('clearing completed courses uses guarded removal after the debounce', async
   await new Promise(resolve => setTimeout(resolve, 350));
   assert.equal(removals, 1);
   assert.match(app.elements['storage-warning'].textContent, /will not survive a reload/);
+});
+
+test('unknown completed-course tokens are displayed as issues', async () => {
+  const app = await setup();
+  app.elements['completed-courses'].value = 'CS999';
+  await app.elements['completed-courses'].dispatch('input');
+  assert.match(app.elements['issue-list'].children[0].children[1].children[0].textContent, /Unknown completed course: CS999/);
+  assert.match(app.elements['issue-list'].children[0].children[1].children[1].textContent, /not a course in this catalog/);
+});
+
+test('a scheduled completed non-repeatable course is reported', async () => {
+  const app = await setup();
+  app.elements['completed-courses'].value = 'CS 101';
+  await app.elements['completed-courses'].dispatch('input');
+  await addCourse(app, 'CS101', 'S27');
+  assert.match(app.elements['issue-list'].children[0].children[1].children[0].textContent, /Already completed: CS101/);
+  assert.match(app.elements['issue-list'].children[0].children[1].children[1].textContent, /does not explicitly permit repeating/);
+});
+
+test('repeatable completed courses retain the catalog wording', async () => {
+  const app = await setup();
+  app.elements['completed-courses'].value = 'ART200';
+  await app.elements['completed-courses'].dispatch('input');
+  await addCourse(app, 'ART200', 'S27');
+  const issue = app.elements['issue-list'].children[0];
+  assert.match(issue.children[1].children[0].textContent, /Repeatable completed course: ART200/);
+  assert.match(issue.children[1].children[1].textContent, /May be repeated for up to 9 credits/);
+});
+
+test('supported external prerequisites entered as completed satisfy requirements', async () => {
+  const app = await setup();
+  app.elements['completed-courses'].value = 'external 100';
+  await app.elements['completed-courses'].dispatch('input');
+  await addCourse(app, 'CS102', 'S27');
+  const titles = app.elements['issue-list'].children.map(issue => issue.children[1]?.children[0]?.textContent || '');
+  assert.ok(!titles.some(title => /missing prerequisite/i.test(title)));
 });

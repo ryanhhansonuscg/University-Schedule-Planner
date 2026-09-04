@@ -316,10 +316,15 @@
 
   function checkPlan(terms) {
     issueList.replaceChildren();
-    const completed = new Set(completedCourses.value.toUpperCase().split(/[\s,;]+/).filter(Boolean));
+    const completedResult = PlannerCore.parseCompletedCourses(completedCourses.value, courses, edges);
+    const completed = new Set(completedResult.codes);
     const seen = new Set(completed);
     const scheduled = new Set();
     let issues = 0;
+    completedResult.unknownTokens.forEach(token => {
+      addIssue('error', `Unknown completed course: ${token}`, `“${token}” is not a course in this catalog or a supported external requirement code. Check the code or remove it.`);
+      issues += 1;
+    });
     terms.forEach(term => {
       const sameTerm = new Set(plan[term.code] || []);
       sameTerm.forEach(code => {
@@ -333,6 +338,15 @@
           addIssue('error', `Unknown course: ${code}`, `The selected university catalog does not contain ${code}.`);
           issues += 1;
           return;
+        }
+        if (completed.has(code)) {
+          const repeatable = PlannerCore.repeatabilityWording(course);
+          if (repeatable) {
+            addIssue('warning', `Repeatable completed course: ${code}`, `${term.name}: ${code} is already listed as completed. The catalog permits a repeat: ${repeatable}`);
+          } else {
+            addIssue('error', `Already completed: ${code}`, `${term.name}: ${code} is already listed as completed, and the catalog does not explicitly permit repeating it.`);
+          }
+          issues += 1;
         }
         const missing = PlannerCore.evaluateRequirements(edges, code, 'prerequisite', seen);
         if (missing.length) {
