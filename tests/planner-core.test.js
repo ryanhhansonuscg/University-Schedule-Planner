@@ -13,6 +13,13 @@ test('storage adapter contains denied, quota, and removal failures', () => {
   assert.equal(adapter.remove('plan').error.operation, 'remove');
 });
 
+test('storage adapter guards access to the storage object itself', () => {
+  const adapter = core.createStorageAdapter(() => { throw new DOMException('denied', 'SecurityError'); });
+  assert.equal(adapter.read('plan').error.operation, 'read');
+  assert.equal(adapter.write('plan', '{}').error.operation, 'write');
+  assert.equal(adapter.remove('plan').error.operation, 'remove');
+});
+
 test('versioned storage validator checks nested maps and migration data', () => {
   const valid = { version: 2, calendars: { semester: { F27: ['CS101'] } }, migration: { unmatched: { OLD: ['MATH9'] } } };
   assert.equal(core.validateStoredPlans(valid, 2), true);

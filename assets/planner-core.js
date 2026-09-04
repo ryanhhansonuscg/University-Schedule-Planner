@@ -105,17 +105,20 @@
   }
 
   function createStorageAdapter(storage) {
+    // A provider function also guards browsers that throw merely while the
+    // localStorage property is being accessed (before getItem is called).
+    const getStorage = () => (typeof storage === 'function' ? storage() : storage);
     return {
       read(key) {
-        try { return { ok: true, value: storage.getItem(key) }; }
+        try { return { ok: true, value: getStorage().getItem(key) }; }
         catch (error) { return { ok: false, value: null, error: storageError('read', error) }; }
       },
       write(key, value) {
-        try { storage.setItem(key, value); return { ok: true }; }
+        try { getStorage().setItem(key, value); return { ok: true }; }
         catch (error) { return { ok: false, error: storageError('write', error) }; }
       },
       remove(key) {
-        try { storage.removeItem(key); return { ok: true }; }
+        try { getStorage().removeItem(key); return { ok: true }; }
         catch (error) { return { ok: false, error: storageError('remove', error) }; }
       },
     };
