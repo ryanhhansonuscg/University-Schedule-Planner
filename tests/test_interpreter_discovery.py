@@ -38,6 +38,16 @@ class InterpreterDiscoveryTests(unittest.TestCase):
         executable = Path("D:/Portable/conda/Library/bin/conda.bat")
         self.assertEqual(Path("D:/Portable/conda"), _conda_root(executable))
 
+    def test_windows_bootstrap_checks_anaconda_python_and_reports_probe_failures(self):
+        bootstrap = (Path(__file__).resolve().parents[1] / "0.launch-planner.bat").read_text()
+        self.assertIn(r'%USERPROFILE%\anaconda3\python.exe', bootstrap)
+        self.assertIn("file does not exist", bootstrap)
+        self.assertIn("is older than Python 3.10", bootstrap)
+        self.assertIn("tkinter could not be imported", bootstrap)
+        self.assertIn("Using \"%~1\"", bootstrap)
+        self.assertNotIn("sys.version_info ^>=", bootstrap)
+        self.assertIn("sys.version_info.minor in range(10)", bootstrap)
+
     @mock.patch("tools.launcher.subprocess.run")
     def test_probe_rejects_invalid_and_incompatible_executables(self, run):
         run.side_effect = OSError("not executable")

@@ -16,7 +16,7 @@ from tools.build_release import (
 class ReleaseBuilderTests(unittest.TestCase):
     def test_release_contract_contains_launcher_server_bootstraps_and_ui(self):
         self.assertTrue({
-            ".nojekyll", "launch-planner.bat", "launch-planner.command",
+            ".nojekyll", "0.launch-planner.bat", "0.launch-planner.command",
             "tools/launcher.py", "tools/import_university.py", "tools/serve.py",
             "index.html", "planner.html", "editor.html", "assets/app.js", "assets/loader.js",
             "assets/editor-core.js", "assets/editor.js",
