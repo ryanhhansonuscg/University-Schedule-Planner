@@ -23,6 +23,7 @@ class ServeTests(unittest.TestCase):
         process = subprocess.Popen(
             [sys.executable, str(SERVE), "--port", "0", "--ready-file", str(ready)],
             stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if sys.platform == "win32" else 0,
         )
         deadline = time.monotonic() + 5
         while time.monotonic() < deadline and not ready.exists() and process.poll() is None:
@@ -53,7 +54,7 @@ class ServeTests(unittest.TestCase):
             self.assertEqual(metadata, json.load(response))
         self.assertEqual(metadata, server_health(url, ROOT))
 
-        process.send_signal(signal.SIGTERM)
+        process.send_signal(signal.CTRL_BREAK_EVENT if sys.platform == "win32" else signal.SIGTERM)
         self.assertEqual(0, process.wait(timeout=3))
         with self.assertRaises(OSError):
             socket.create_connection((metadata["host"], metadata["port"]), timeout=0.2)

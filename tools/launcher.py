@@ -134,8 +134,9 @@ def reset_interpreter_override(path: Path | None = None) -> None:
         target.unlink(missing_ok=True)
 
 
-def _conda_candidates(prefix: Path) -> Iterable[Path]:
-    executable = "python.exe" if os.name == "nt" else "bin/python"
+def _conda_candidates(prefix: Path, *, windows: bool | None = None) -> Iterable[Path]:
+    """Yield candidates for the requested platform, including simulated ones in tests."""
+    executable = "python.exe" if (os.name == "nt" if windows is None else windows) else "bin/python"
     yield prefix / executable
     envs = prefix / "envs"
     if envs.is_dir():
@@ -160,7 +161,8 @@ def candidate_commands(platform: str | None = None, environ: dict[str, str] | No
     conda_roots: list[Path] = []
     if env.get("CONDA_PREFIX"):
         prefix = Path(env["CONDA_PREFIX"])
-        items.append(((str(prefix / ("python.exe" if platform == "win32" else "bin/python")),),
+        executable = str(prefix / ("python.exe" if platform == "win32" else "bin/python"))
+        items.append(((executable.replace("\\", "/"),),
                       "active Conda environment"))
     if env.get("CONDA_EXE"):
         conda_roots.append(_conda_root(Path(env["CONDA_EXE"])))
@@ -181,7 +183,8 @@ def candidate_commands(platform: str | None = None, environ: dict[str, str] | No
         conda_roots.extend([Path("/opt/miniconda3"), Path("/opt/anaconda3"),
                             Path("/opt/homebrew/Caskroom/miniconda/base")])
     for root in conda_roots:
-        items.extend(((str(path),), "discoverable Conda environment") for path in _conda_candidates(root))
+        items.extend(((str(path).replace("\\", "/"),), "discoverable Conda environment")
+                     for path in _conda_candidates(root, windows=platform == "win32"))
     override = load_interpreter_override(config_path(platform, env))
     if override:
         items.append(((str(override),), "user-selected path"))
