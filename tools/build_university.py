@@ -278,7 +278,7 @@ def validate_prerequisite_graph(
                 cycle = node_stack[start:] + [target]
                 files = edge_stack[start:] + [filename]
                 source_files = sorted(
-                    {str(path.relative_to(university_dir)) for path in files}
+                    {path.relative_to(university_dir).as_posix() for path in files}
                 )
                 raise DataError(
                     "Prerequisite cycle detected: "

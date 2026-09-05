@@ -66,7 +66,11 @@ class ReleaseBuilderTests(unittest.TestCase):
                 root = Path(temporary)
                 archive_path = root / "bad.zip"
                 with zipfile.ZipFile(archive_path, "w") as archive:
-                    archive.writestr(name, "bad")
+                    # ZipInfo normalizes backslashes on Windows during construction.
+                    # Assign afterward so the archive contains the exact hostile name.
+                    member = zipfile.ZipInfo("placeholder")
+                    member.filename = name
+                    archive.writestr(member, "bad")
                 with self.assertRaisesRegex(ValueError, "Unsafe"):
                     inspect_and_extract(archive_path, root / "output")
                 self.assertFalse((root / "output").exists())

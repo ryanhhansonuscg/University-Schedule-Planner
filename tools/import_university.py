@@ -174,7 +174,7 @@ def _transaction(source:Path, source_origin:Path, source_files:tuple[str,...], *
     return output/"index.html"
 
 def import_archive(archive:Path,*,replace:bool=False,repo_root:Path=ROOT,max_files:int=MAX_FILES,max_expanded_bytes:int=MAX_EXPANDED_BYTES,manifest_callback=None,worker_count:int|None=None,cancel_event=None,progress=None)->Path:
-    archive=archive.resolve(); repo_root=repo_root.resolve(); root,members=inspect_archive(archive,max_files=max_files,max_expanded_bytes=max_expanded_bytes)
+    archive=archive.resolve(); repo_root=Path(os.path.abspath(repo_root)); root,members=inspect_archive(archive,max_files=max_files,max_expanded_bytes=max_expanded_bytes)
     files=tuple(sorted(PurePosixPath(*PurePosixPath(m.filename.replace("\\","/")).parts[1:]).as_posix() for m in members if not m.is_dir()))
     with tempfile.TemporaryDirectory(prefix=".launcher-import-",dir=repo_root) as name:
         scratch=Path(name); extracted=scratch/"extracted"; extracted.mkdir(); _extract(archive,extracted,members,max_expanded_bytes); source=extracted/root
@@ -183,7 +183,7 @@ def import_archive(archive:Path,*,replace:bool=False,repo_root:Path=ROOT,max_fil
         return _transaction(source,archive,files,replace=replace,repo_root=repo_root,manifest_callback=manifest_callback,worker_count=worker_count,cancel_event=cancel_event,progress=progress)
 
 def import_directory(directory:Path,*,replace:bool=False,repo_root:Path=ROOT,max_files:int=MAX_FILES,max_expanded_bytes:int=MAX_EXPANDED_BYTES,manifest_callback=None,worker_count:int|None=None,cancel_event=None,progress=None)->Path:
-    root,files=inspect_directory(directory,max_files=max_files,max_expanded_bytes=max_expanded_bytes); repo_root=repo_root.resolve()
+    root,files=inspect_directory(directory,max_files=max_files,max_expanded_bytes=max_expanded_bytes); repo_root=Path(os.path.abspath(repo_root))
     with tempfile.TemporaryDirectory(prefix=".launcher-import-",dir=repo_root) as name:
         staged=Path(name)/"source"; staged.mkdir(); _copy_directory(root,staged,files,max_expanded_bytes)
         slug = validate_and_compile(staged, check_directory_name=False)["university"]["slug"]
