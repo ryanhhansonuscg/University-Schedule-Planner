@@ -143,40 +143,42 @@ def _conda_candidates(prefix: Path) -> Iterable[Path]:
             yield environment / executable
 
 
+def _conda_root(executable: Path) -> Path:
+    """Infer the installation root from a conda executable or shim path."""
+    parent = executable.expanduser().parent
+    if parent.name.lower() in {"bin", "condabin", "scripts"}:
+        return parent.parent
+    return parent
+
+
 def candidate_commands(platform: str | None = None, environ: dict[str, str] | None = None) -> list[tuple[tuple[str, ...], str]]:
     """Build a stable, broad candidate list without asserting who installed Python."""
     platform, env = platform or sys.platform, environ or os.environ
     items: list[tuple[tuple[str, ...], str]] = []
-    active_root = None
+    conda_roots: list[Path] = []
+    if env.get("CONDA_EXE"):
+        conda_roots.append(_conda_root(Path(env["CONDA_EXE"])))
+    found_conda = shutil.which("conda", path=env.get("PATH"))
+    if found_conda:
+        conda_roots.append(_conda_root(Path(found_conda).resolve()))
     if env.get("CONDA_PREFIX"):
         prefix = Path(env["CONDA_PREFIX"])
-        items.append(((str(prefix / ("python.exe" if platform == "win32" else "bin/python")),), "active Conda environment"))
         if "envs" in prefix.parts:
-            active_root = Path(*prefix.parts[:prefix.parts.index("envs")])
-    items.append(((sys.executable,), "current interpreter"))
-    items.extend([(("py", "-3"), "Python launcher"), (("python3",), "PATH"), (("python",), "PATH")])
-    conda_roots: list[Path] = []
-    if active_root:
-        conda_roots.append(active_root)
-    for name in ("conda", "mamba"):
-        found = shutil.which(name)
-        if found:
-            conda_roots.append(Path(found).resolve().parent.parent)
+            conda_roots.append(Path(*prefix.parts[:prefix.parts.index("envs")]))
     home = Path(env.get("USERPROFILE" if platform == "win32" else "HOME", Path.home()))
     conda_roots.extend([home / "miniconda3", home / "anaconda3"])
     if platform == "win32":
         conda_roots.extend([home / "Miniconda3", home / "Anaconda3"])
-        local = Path(env.get("LOCALAPPDATA", home / "AppData" / "Local"))
-        program = Path(env.get("ProgramFiles", "C:/Program Files"))
-        items.extend([((str(local / "Programs/Python/Python313/python.exe"),), "common Windows location"),
-                      ((str(local / "Programs/Python/Python312/python.exe"),), "common Windows location"),
-                      ((str(program / "Python313/python.exe"),), "common Windows location"),
-                      ((str(program / "Python312/python.exe"),), "common Windows location")])
+        program_data = Path(env.get("ProgramData", "C:/ProgramData"))
+        conda_roots.extend([program_data / "Miniconda3", program_data / "Anaconda3"])
     elif platform == "darwin":
-        items.extend([(("/opt/homebrew/bin/python3",), "Homebrew"), (("/usr/local/bin/python3",), "local installation"),
-                      (("/Library/Frameworks/Python.framework/Versions/Current/bin/python3",), "macOS framework")])
+        conda_roots.extend([Path("/opt/miniconda3"), Path("/opt/anaconda3"),
+                            Path("/opt/homebrew/Caskroom/miniconda/base")])
     for root in conda_roots:
         items.extend(((str(path),), "discoverable Conda environment") for path in _conda_candidates(root))
+    override = load_interpreter_override(config_path(platform, env))
+    if override:
+        items.append(((str(override),), "user-selected path"))
     return items
 
 
@@ -192,7 +194,12 @@ def probe_interpreter(command: tuple[str, ...], source: str, timeout: float = 3.
     lines = result.stdout.strip().splitlines()
     if result.returncode or len(lines) < 2:
         detail = result.stderr.strip().splitlines()[-1] if result.stderr.strip() else f"exit status {result.returncode}"
-        return InterpreterCandidate(command, source, reason=f"rejected: version/Tk probe failed ({detail})")
+        environment = Path(command[0]).expanduser().parent
+        if environment.name.lower() in {"bin", "scripts"}:
+            environment = environment.parent
+        directions = f"install it into this environment with: conda install -p {environment} tk"
+        return InterpreterCandidate(command, source,
+                                    reason=f"rejected: version/Tk probe failed ({detail}); {directions}")
     try:
         version = tuple(int(part) for part in lines[-1].split("."))
         resolved = Path(lines[-2]).resolve()

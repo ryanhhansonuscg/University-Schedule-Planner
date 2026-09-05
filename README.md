@@ -64,8 +64,12 @@ recovered; GPU availability alone is not evidence that imports will be faster.
 
 1. Download the versioned release ZIP and verify its published SHA-256 checksum.
 2. Extract the ZIP into a new folder; do not run it from inside the ZIP viewer.
-3. Confirm Python 3.10 or newer includes tkinter, then double-click the platform
-   bootstrap to open the **University Schedule Planner Launcher**.
+3. Confirm the base environment in Anaconda or Miniconda uses Python 3.10 or
+   newer and includes tkinter, then double-click the platform bootstrap. The
+   bootstrap checks `CONDA_EXE`, `conda` on `PATH`, standard install locations,
+   and finally offers a file picker for the conda executable. If the selected
+   base environment lacks a requirement, the error identifies that environment
+   and prints the exact `conda install -n base ...` command to run.
 4. Import both a university ZIP and, when needed, its extracted university folder.
    The command-line importer remains available as an automation and accessibility
    fallback: `python tools/launcher.py --import-archive SOURCE [--replace]`.
