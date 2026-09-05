@@ -16,7 +16,7 @@ university schedule data.
 3. Attach the complete [LLM scraping guide](template/university-template/LLM-SCRAPING-GUIDE.md)
    in that conversation. The guide is the authoritative source for collection,
    safety, validation, and output requirements; do not replace it with directions
-   copied from this README.
+   copied from this README. Provide it with any non-public materials which many improve the results.
 4. Review the LLM's validation report, especially every inaccessible page and
    ambiguity. Resolve any concern before accepting the result.
 5. In the **University Schedule Planner Launcher**, choose **Import University ZIP…** for the returned ZIP, or
