@@ -146,6 +146,8 @@ def _conda_candidates(prefix: Path) -> Iterable[Path]:
 def _conda_root(executable: Path) -> Path:
     """Infer the installation root from a conda executable or shim path."""
     parent = executable.expanduser().parent
+    if parent.name.lower() == "bin" and parent.parent.name.lower() == "library":
+        return parent.parent.parent
     if parent.name.lower() in {"bin", "condabin", "scripts"}:
         return parent.parent
     return parent
@@ -156,6 +158,10 @@ def candidate_commands(platform: str | None = None, environ: dict[str, str] | No
     platform, env = platform or sys.platform, environ or os.environ
     items: list[tuple[tuple[str, ...], str]] = []
     conda_roots: list[Path] = []
+    if env.get("CONDA_PREFIX"):
+        prefix = Path(env["CONDA_PREFIX"])
+        items.append(((str(prefix / ("python.exe" if platform == "win32" else "bin/python")),),
+                      "active Conda environment"))
     if env.get("CONDA_EXE"):
         conda_roots.append(_conda_root(Path(env["CONDA_EXE"])))
     found_conda = shutil.which("conda", path=env.get("PATH"))

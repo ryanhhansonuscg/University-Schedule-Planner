@@ -2,21 +2,15 @@
 setlocal EnableExtensions
 cd /d "%~dp0"
 
-rem Required discovery order: CONDA_EXE, PATH, standard installs, user selection.
+rem Prefer the already-active environment. This avoids guessing an installation
+rem directory and also works when "where conda" returns a Library\bin shim first.
+if defined CONDA_PREFIX call :try_python "%CONDA_PREFIX%\python.exe"
+if defined CONDA_HANDLED exit /b %CONDA_RESULT%
+
+rem Remaining discovery order: CONDA_EXE, every PATH result, user selection.
 if defined CONDA_EXE call :consider "%CONDA_EXE%"
 if defined CONDA_HANDLED exit /b %CONDA_RESULT%
-set "PATH_CONDA="
-for /f "delims=" %%C in ('where conda 2^>nul') do if not defined PATH_CONDA set "PATH_CONDA=%%C"
-if defined PATH_CONDA call :consider "%PATH_CONDA%"
-if defined CONDA_HANDLED exit /b %CONDA_RESULT%
-call :consider "%USERPROFILE%\Miniconda3\Scripts\conda.exe"
-if defined CONDA_HANDLED exit /b %CONDA_RESULT%
-call :consider "%USERPROFILE%\Anaconda3\Scripts\conda.exe"
-if defined CONDA_HANDLED exit /b %CONDA_RESULT%
-call :consider "%ProgramData%\Miniconda3\Scripts\conda.exe"
-if defined CONDA_HANDLED exit /b %CONDA_RESULT%
-call :consider "%ProgramData%\Anaconda3\Scripts\conda.exe"
-if defined CONDA_HANDLED exit /b %CONDA_RESULT%
+for /f "delims=" %%C in ('where conda 2^>nul') do if not defined CONDA_HANDLED call :consider "%%C"
 
 set "SELECTED_CONDA="
 for /f "usebackq delims=" %%C in (`powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; $d=New-Object System.Windows.Forms.OpenFileDialog; $d.Title='Select the conda executable'; $d.Filter='Conda executable (conda.exe;conda.bat)|conda.exe;conda.bat|All files (*.*)|*.*'; if($d.ShowDialog() -eq 'OK'){$d.FileName}"`) do set "SELECTED_CONDA=%%C"
@@ -37,7 +31,8 @@ exit /b 0
 if not exist "%~1" exit /b 1
 set "CONDA_CANDIDATE=%~1"
 set "CONDA_BASE="
-for /f "usebackq delims=" %%B in (`"%CONDA_CANDIDATE%" info --base 2^>nul`) do set "CONDA_BASE=%%B"
+rem CALL is required for conda.bat; without it control may not return to us.
+for /f "usebackq delims=" %%B in (`call "%CONDA_CANDIDATE%" info --base 2^>nul`) do set "CONDA_BASE=%%B"
 if not defined CONDA_BASE exit /b 1
 if not exist "%CONDA_BASE%\python.exe" (
   echo Conda was found at %CONDA_CANDIDATE%, but its base environment has no Python. 1>&2
@@ -59,4 +54,13 @@ if errorlevel 1 (
   exit /b 2
 )
 "%CONDA_BASE%\python.exe" "tools\launcher.py"
+exit /b 0
+
+:try_python
+if not exist "%~1" exit /b 1
+"%~1" -c "import sys,tkinter;raise SystemExit(0 if sys.version_info ^>= (3,10) else 42)" >nul 2>&1
+if errorlevel 1 exit /b 1
+"%~1" "tools\launcher.py"
+set "CONDA_RESULT=%ERRORLEVEL%"
+set "CONDA_HANDLED=1"
 exit /b 0

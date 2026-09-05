@@ -6,7 +6,7 @@ from pathlib import Path
 from unittest import mock
 
 from tools.launcher import (
-    InterpreterCandidate, candidate_commands, discover_interpreters,
+    InterpreterCandidate, _conda_root, candidate_commands, discover_interpreters,
     load_interpreter_override, probe_interpreter, reset_interpreter_override,
     save_interpreter_override, select_interpreter,
 )
@@ -24,6 +24,19 @@ class InterpreterDiscoveryTests(unittest.TestCase):
         self.assertEqual("/opt/conda/bin/python", flattened[1])
         self.assertIn("/Users/me/miniconda3/bin/python", flattened)
         self.assertIn("/Users/me/anaconda3/bin/python", flattened)
+
+    @mock.patch("tools.launcher.shutil.which", return_value=None)
+    def test_active_windows_conda_environment_is_first(self, _which):
+        commands = candidate_commands("win32", {
+            "CONDA_PREFIX": "D:/Portable/conda",
+            "USERPROFILE": "D:/Profile",
+            "PATH": "",
+        })
+        self.assertEqual((("D:/Portable/conda/python.exe",), "active Conda environment"), commands[0])
+
+    def test_windows_library_bin_shim_resolves_installation_root(self):
+        executable = Path("D:/Portable/conda/Library/bin/conda.bat")
+        self.assertEqual(Path("D:/Portable/conda"), _conda_root(executable))
 
     @mock.patch("tools.launcher.subprocess.run")
     def test_probe_rejects_invalid_and_incompatible_executables(self, run):
