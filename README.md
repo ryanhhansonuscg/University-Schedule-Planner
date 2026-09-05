@@ -5,6 +5,12 @@ university schedule data.
 
 1. Open the extracted project folder, then double-click `launch-planner.bat` on
    Windows or `launch-planner.command` on macOS.
+   If Windows blocks the batch file, first confirm that you downloaded the
+   official release and verified its published checksum. Then right-click
+   `launch-planner.bat`, select **Properties**, select **Unblock** on the
+   **General** tab, and choose **Apply**. If Microsoft Defender SmartScreen
+   appears when you open it, select **More info**, verify that the displayed
+   file is `launch-planner.bat`, and select **Run anyway**.
 2. Start a conversation with a browsing-capable LLM and enter only the university
    name or one official university URL.
 3. Attach the complete [LLM scraping guide](template/university-template/LLM-SCRAPING-GUIDE.md)
