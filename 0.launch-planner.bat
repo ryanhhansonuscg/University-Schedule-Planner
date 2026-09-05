@@ -54,10 +54,10 @@ if not exist "%CONDA_BASE%\python.exe" (
   pause
   exit /b 2
 )
-"%CONDA_BASE%\python.exe" -c "import sys,tkinter;raise SystemExit(0 if sys.version_info ^>= (3,10) else 42)" >nul 2>&1
+"%CONDA_BASE%\python.exe" -c "import sys,tkinter;too_old=sys.version_info.major in range(3) or (sys.version_info.major == 3 and sys.version_info.minor in range(10));raise SystemExit(42 if too_old else 0)" >nul 2>&1
 if errorlevel 42 (
   echo Conda was found at %CONDA_CANDIDATE%, but its base environment uses Python older than 3.10. 1>&2
-  echo Update that environment with: "%CONDA_CANDIDATE%" install -n base "python^>=3.10" tk 1>&2
+  echo Update that environment with: "%CONDA_CANDIDATE%" install -n base "python>=3.10" tk 1>&2
   pause
   exit /b 2
 )
@@ -75,7 +75,7 @@ if not exist "%~1" (
   echo Rejected "%~1": file does not exist. 1>&2
   exit /b 1
 )
-"%~1" -c "import sys;raise SystemExit(0 if sys.version_info ^>= (3,10) else 42)" >nul 2>&1
+"%~1" -c "import sys;too_old=sys.version_info.major in range(3) or (sys.version_info.major == 3 and sys.version_info.minor in range(10));raise SystemExit(42 if too_old else 0)" >nul 2>&1
 set "PYTHON_PROBE_RESULT=%ERRORLEVEL%"
 if "%PYTHON_PROBE_RESULT%"=="42" (
   set "PYTHON_VERSION="
@@ -85,7 +85,8 @@ if "%PYTHON_PROBE_RESULT%"=="42" (
 )
 if not "%PYTHON_PROBE_RESULT%"=="0" (
   echo Rejected "%~1": Python could not run the version check ^(exit code %PYTHON_PROBE_RESULT%^). 1>&2
-  echo Run this command for details: "%~1" --version 1>&2
+  echo Exact version-probe error: 1>&2
+  "%~1" -c "import sys;too_old=sys.version_info.major in range(3) or (sys.version_info.major == 3 and sys.version_info.minor in range(10));raise SystemExit(42 if too_old else 0)"
   exit /b 1
 )
 "%~1" -c "import tkinter;print('tkinter', tkinter.TkVersion)" >nul 2>&1

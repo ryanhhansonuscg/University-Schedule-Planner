@@ -45,6 +45,8 @@ class InterpreterDiscoveryTests(unittest.TestCase):
         self.assertIn("is older than Python 3.10", bootstrap)
         self.assertIn("tkinter could not be imported", bootstrap)
         self.assertIn("Using \"%~1\"", bootstrap)
+        self.assertNotIn("sys.version_info ^>=", bootstrap)
+        self.assertIn("sys.version_info.minor in range(10)", bootstrap)
 
     @mock.patch("tools.launcher.subprocess.run")
     def test_probe_rejects_invalid_and_incompatible_executables(self, run):
