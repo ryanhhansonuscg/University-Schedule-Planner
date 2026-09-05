@@ -241,7 +241,10 @@ def select_interpreter(candidates: list[InterpreterCandidate], override: Path | 
 
 def repository_root() -> Path:
     """Return the repository root independently of the process working directory."""
-    root = Path(__file__).resolve().parents[1]
+    # The Windows one-directory distribution deliberately places application
+    # resources beside the executable.  PyInstaller's module paths point into
+    # its internal bundle and therefore cannot be used as the writable root.
+    root = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]
     if not (root / "tools" / "serve.py").is_file():
         raise RuntimeError(f"Cannot locate tools/serve.py beneath repository root {root}")
     return root
@@ -348,8 +351,12 @@ class LauncherService:
         os.close(descriptor)
         readiness = Path(readiness_name)
         readiness.unlink(missing_ok=True)
-        command = (str(self.executable), str(self.root / "tools" / "serve.py"),
-                   "--host", HOST, "--port", "0", "--ready-file", str(readiness))
+        if getattr(sys, "frozen", False) and self.executable.resolve() == Path(sys.executable).resolve():
+            command = (str(self.executable), "--serve", "--host", HOST, "--port", "0",
+                       "--ready-file", str(readiness))
+        else:
+            command = (str(self.executable), str(self.root / "tools" / "serve.py"),
+                       "--host", HOST, "--port", "0", "--ready-file", str(readiness))
         startup_flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
         try:
             process = subprocess.Popen(
@@ -774,6 +781,9 @@ class LauncherWindow:
 
 def main() -> int:
     if len(sys.argv) > 1:
+        if sys.argv[1] == "--serve":
+            from tools.serve import main as serve_main
+            return serve_main(sys.argv[2:])
         if sys.argv[1] == "--import-archive":
             return import_cli(sys.argv[2:])
         print(f"Usage: {Path(sys.argv[0]).name} [--import-archive SOURCE [--replace]]", file=sys.stderr)
