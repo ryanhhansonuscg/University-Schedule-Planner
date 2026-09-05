@@ -85,7 +85,7 @@ Use `logic_group` only to encode a relationship explicitly supported by the cata
 - `AND` applies **within that group** and requires every source course.
 - `OR` applies **within that group** and requires at least one source course.
 
-Multiple groups for the same target are independent and combine with an implicit AND: every group must be satisfied. Ungrouped edges are each equivalent to a separate one-member AND group. The same rules apply separately to prerequisite and corequisite edges. Prerequisites must be completed earlier; corequisites may instead be enrolled in the same term.
+Multiple groups for the same target are independent and combine with an implicit AND: every group must be satisfied. Ungrouped edges are each equivalent to a separate one-member AND group. The same rules apply separately to prerequisite and corequisite edges. Prerequisites must be completed earlier; corequisites may instead be enrolled in the same term. Use a `corequisite` for a sequence-like catalog rule such as “DATA101 may be completed previously or taken concurrently,” even when the course numbers make the pair look sequential. The fictional `SAMPLE` and `DATA` department files demonstrate both cross-department prerequisites and this earlier-or-concurrent timing.
 
 For example, these edges begin a clearly documented alternative group:
 

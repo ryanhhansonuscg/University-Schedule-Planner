@@ -39,7 +39,12 @@ class BuildUniversityTests(unittest.TestCase):
 
     def test_successful_compilation_does_not_write_during_validation(self):
         catalog = build(self.directory, validate_only=True)
-        self.assertEqual(["SAMPLE101", "SAMPLE201"], [c["code"] for c in catalog["courses"]])
+        self.assertEqual(12, len(catalog["courses"]))
+        self.assertEqual({"DATA", "SAMPLE"}, {c["department"] for c in catalog["courses"]})
+        self.assertIn(
+            {"source": "SAMPLE201", "target": "DATA201", "kind": "corequisite", "source_in_database": True},
+            catalog["edges"],
+        )
         self.assertFalse((self.directory / "catalog.json").exists())
     def test_valid_source_date_epoch(self):
         with mock.patch.dict("os.environ", {"SOURCE_DATE_EPOCH": "0"}, clear=True):
@@ -128,7 +133,8 @@ class BuildUniversityTests(unittest.TestCase):
         self.assert_invalid("departments/SAMPLE.json", lambda d: d["courses"][0].update(number="10-1"), "must equal normalized")
     def test_department_codes_are_normalized_for_comparison(self):
         doc=self.load("departments/SAMPLE.json"); doc["courses"][0]["department"]=" sample "; self.save("departments/SAMPLE.json",doc)
-        self.assertEqual("SAMPLE", validate_and_compile(self.directory)["courses"][0]["department"])
+        course = next(c for c in validate_and_compile(self.directory)["courses"] if c["code"] == "SAMPLE101")
+        self.assertEqual("SAMPLE", course["department"])
     def test_credit_contract(self):
         for credits in (True, "variable", "4-1", -1):
             shutil.rmtree(self.directory); shutil.copytree(FIXTURE, self.directory)
@@ -231,8 +237,6 @@ class BuildUniversityTests(unittest.TestCase):
         self.assertIn("departments/OTHER.json, departments/SAMPLE.json", message)
     def test_acyclic_prerequisite_diamond_is_valid(self):
         doc = self.load("departments/SAMPLE.json")
-        self.add_course(doc, 202)
-        self.add_course(doc, 301)
         doc["edges"] = [
             {"source": "SAMPLE101", "target": "SAMPLE201", "kind": "prerequisite"},
             {"source": "SAMPLE101", "target": "SAMPLE202", "kind": "prerequisite"},
@@ -240,12 +244,13 @@ class BuildUniversityTests(unittest.TestCase):
             {"source": "SAMPLE202", "target": "SAMPLE301", "kind": "prerequisite"},
         ]
         self.save("departments/SAMPLE.json", doc)
+        data = self.load("departments/DATA.json"); data["edges"] = []; self.save("departments/DATA.json", data)
         self.assertEqual(4, len(validate_and_compile(self.directory)["edges"]))
     def test_external_prerequisite_source_is_not_a_graph_vertex(self):
         doc = self.load("departments/SAMPLE.json")
         doc["edges"] = [{"source": "EXTERNAL101", "target": "SAMPLE101", "kind": "prerequisite"}]
         self.save("departments/SAMPLE.json", doc)
-        edge = validate_and_compile(self.directory)["edges"][0]
+        edge = next(e for e in validate_and_compile(self.directory)["edges"] if e["source"] == "EXTERNAL101")
         self.assertFalse(edge["source_in_database"])
     def test_corequisite_cycle_is_permissible(self):
         doc = self.load("departments/SAMPLE.json")
@@ -254,6 +259,7 @@ class BuildUniversityTests(unittest.TestCase):
             {"source": "SAMPLE201", "target": "SAMPLE101", "kind": "corequisite"},
         ]
         self.save("departments/SAMPLE.json", doc)
+        data = self.load("departments/DATA.json"); data["edges"] = []; self.save("departments/DATA.json", data)
         self.assertEqual(2, len(validate_and_compile(self.directory)["edges"]))
     def test_mixed_cycle_is_permissible_when_corequisite_removal_breaks_it(self):
         doc = self.load("departments/SAMPLE.json")
@@ -262,6 +268,7 @@ class BuildUniversityTests(unittest.TestCase):
             {"source": "SAMPLE201", "target": "SAMPLE101", "kind": "corequisite"},
         ]
         self.save("departments/SAMPLE.json", doc)
+        data = self.load("departments/DATA.json"); data["edges"] = []; self.save("departments/DATA.json", data)
         self.assertEqual(2, len(validate_and_compile(self.directory)["edges"]))
     def test_source_membership_is_always_recomputed(self):
         doc = self.load("departments/SAMPLE.json")
@@ -276,8 +283,9 @@ class BuildUniversityTests(unittest.TestCase):
         )
         self.save("departments/SAMPLE.json", departments)
         catalog = validate_and_compile(self.directory)
-        self.assertEqual(["a", "z"], catalog["courses"][0]["tags"])
-        offering = catalog["courses"][0]["offering_history"][0]
+        course = next(c for c in catalog["courses"] if c["code"] == "SAMPLE101")
+        self.assertEqual(["a", "z"], course["tags"])
+        offering = course["offering_history"][0]
         self.assertNotEqual("fabricated", offering["term_name"])
         self.assertNotEqual("fabricated", offering["term_type"])
         self.assertNotEqual("fabricated", offering["term_status"])
@@ -290,7 +298,7 @@ class BuildUniversityTests(unittest.TestCase):
         build(self.directory)
         with closing(sqlite3.connect(self.directory / "courses.db")) as db:
             self.assertEqual("ok", db.execute("PRAGMA integrity_check").fetchone()[0])
-            self.assertEqual(2, db.execute("SELECT count(*) FROM courses").fetchone()[0])
+            self.assertEqual(12, db.execute("SELECT count(*) FROM courses").fetchone()[0])
             self.assertGreater(db.execute("SELECT count(*) FROM academic_terms WHERE start_date IS NULL AND dates_status = 'unpublished'").fetchone()[0], 0)
             self.assertEqual(0, len(db.execute("PRAGMA foreign_key_check").fetchall()))
 
