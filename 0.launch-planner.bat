@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 cd /d "%~dp0"
 
 rem Prefer the already-active environment. This avoids guessing an installation
@@ -7,17 +7,31 @@ rem directory and also works when "where conda" returns a Library\bin shim first
 if defined CONDA_PREFIX call :try_python "%CONDA_PREFIX%\python.exe"
 if defined CONDA_HANDLED exit /b %CONDA_RESULT%
 
-rem Remaining discovery order: CONDA_EXE, every PATH result, user selection.
+rem Try the normal per-user install locations directly. A working Anaconda
+rem Python does not need conda.exe to be on PATH in order to start the launcher.
+call :try_python "%USERPROFILE%\miniconda3\python.exe"
+if defined CONDA_HANDLED exit /b %CONDA_RESULT%
+call :try_python "%USERPROFILE%\anaconda3\python.exe"
+if defined CONDA_HANDLED exit /b %CONDA_RESULT%
+
+rem Remaining discovery order: CONDA_EXE, every PATH result, standard conda
+rem executable locations, then user selection.
 if defined CONDA_EXE call :consider "%CONDA_EXE%"
 if defined CONDA_HANDLED exit /b %CONDA_RESULT%
 for /f "delims=" %%C in ('where conda 2^>nul') do if not defined CONDA_HANDLED call :consider "%%C"
+call :consider "%USERPROFILE%\miniconda3\Scripts\conda.exe"
+if defined CONDA_HANDLED exit /b %CONDA_RESULT%
+call :consider "%USERPROFILE%\anaconda3\Scripts\conda.exe"
+if defined CONDA_HANDLED exit /b %CONDA_RESULT%
 
 set "SELECTED_CONDA="
 for /f "usebackq delims=" %%C in (`powershell -NoProfile -Command "Add-Type -AssemblyName System.Windows.Forms; $d=New-Object System.Windows.Forms.OpenFileDialog; $d.Title='Select the conda executable'; $d.Filter='Conda executable (conda.exe;conda.bat)|conda.exe;conda.bat|All files (*.*)|*.*'; if($d.ShowDialog() -eq 'OK'){$d.FileName}"`) do set "SELECTED_CONDA=%%C"
 if defined SELECTED_CONDA call :consider "%SELECTED_CONDA%"
 if defined CONDA_HANDLED exit /b %CONDA_RESULT%
 
-echo Conda not found. Install Anaconda or Miniconda, add conda to PATH, set CONDA_EXE, or run this launcher again and select the conda executable. 1>&2
+echo No compatible Python was found, and no usable conda executable was detected. 1>&2
+echo Review each Rejected line above for the exact missing-file, version, or tkinter result. 1>&2
+echo You can also run this launcher again and select the conda executable. 1>&2
 pause
 exit /b 1
 
@@ -57,9 +71,34 @@ if errorlevel 1 (
 exit /b 0
 
 :try_python
-if not exist "%~1" exit /b 1
-"%~1" -c "import sys,tkinter;raise SystemExit(0 if sys.version_info ^>= (3,10) else 42)" >nul 2>&1
-if errorlevel 1 exit /b 1
+if not exist "%~1" (
+  echo Rejected "%~1": file does not exist. 1>&2
+  exit /b 1
+)
+"%~1" -c "import sys;raise SystemExit(0 if sys.version_info ^>= (3,10) else 42)" >nul 2>&1
+set "PYTHON_PROBE_RESULT=%ERRORLEVEL%"
+if "%PYTHON_PROBE_RESULT%"=="42" (
+  set "PYTHON_VERSION="
+  for /f "delims=" %%V in ('"%~1" --version 2^>^&1') do set "PYTHON_VERSION=%%V"
+  echo Rejected "%~1": !PYTHON_VERSION! is older than Python 3.10. 1>&2
+  exit /b 1
+)
+if not "%PYTHON_PROBE_RESULT%"=="0" (
+  echo Rejected "%~1": Python could not run the version check ^(exit code %PYTHON_PROBE_RESULT%^). 1>&2
+  echo Run this command for details: "%~1" --version 1>&2
+  exit /b 1
+)
+"%~1" -c "import tkinter;print('tkinter', tkinter.TkVersion)" >nul 2>&1
+set "TK_PROBE_RESULT=%ERRORLEVEL%"
+if not "%TK_PROBE_RESULT%"=="0" (
+  echo Rejected "%~1": Python is new enough, but tkinter could not be imported ^(exit code %TK_PROBE_RESULT%^). 1>&2
+  echo Run this command to see the exact import error: 1>&2
+  echo   "%~1" -c "import tkinter; print(tkinter.__file__)" 1>&2
+  exit /b 1
+)
+set "PYTHON_VERSION="
+for /f "delims=" %%V in ('"%~1" --version 2^>^&1') do set "PYTHON_VERSION=%%V"
+echo Using "%~1" ^(!PYTHON_VERSION!, tkinter available^).
 "%~1" "tools\launcher.py"
 set "CONDA_RESULT=%ERRORLEVEL%"
 set "CONDA_HANDLED=1"
