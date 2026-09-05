@@ -30,8 +30,8 @@ RELEASE_FILES = (
     ".nojekyll",
     "LICENSE",
     "README.md",
-    "launch-planner.bat",
-    "launch-planner.command",
+    "0.launch-planner.bat",
+    "0.launch-planner.command",
     "index.html",
     "editor.html",
     "planner.html",
@@ -132,7 +132,7 @@ def inspect_and_extract(archive_path: Path, destination: Path) -> None:
 def smoke_test_extracted_release(extracted: Path) -> None:
     """Exercise an extracted release without relying on the source checkout."""
     required_release_files = (
-        "launch-planner.bat", "launch-planner.command", "tools/launcher.py",
+        "0.launch-planner.bat", "0.launch-planner.command", "tools/launcher.py",
         "tools/import_university.py", "tools/serve.py", "index.html", "planner.html", "editor.html",
         "assets/app.js", "assets/editor-core.js", "assets/editor.js", "assets/loader.js", "assets/planner-core.js",
         "assets/planner.js", "assets/styles.css",
