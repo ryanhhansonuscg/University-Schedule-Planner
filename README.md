@@ -89,3 +89,17 @@ bootstrap scripts, and all non-generated planner UI resources. Release QA verifi
 the exact allowlisted manifest and safe extraction, imports from both ZIP and
 folder sources in an isolated extracted copy, checks generated registry and site
 artifacts, and exercises server readiness, health, and shutdown.
+
+Windows releases may also provide the optional
+`university-schedule-planner-v1.0.0-windows-x64.zip`. It contains a one-directory
+`UniversitySchedulePlanner.exe` build, so extract the complete directory before
+running the executable; the adjacent application resources are required. This
+option bundles the launcher runtime and does not replace the portable source ZIP.
+Verify it in PowerShell before extraction by downloading the matching `.sha256`
+file into the same directory and running:
+
+```powershell
+$expected = (Get-Content .\university-schedule-planner-v1.0.0-windows-x64.zip.sha256).Split()[0]
+$actual = (Get-FileHash -Algorithm SHA256 .\university-schedule-planner-v1.0.0-windows-x64.zip).Hash
+if ($actual -ine $expected) { throw "Checksum verification failed" }
+```
