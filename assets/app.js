@@ -129,7 +129,9 @@
   function relationshipToSelected(code, layers) {
     if (code === selectedCode) return 'selected course';
     const directIncoming = (incoming.get(selectedCode) || []).find(edge => edge.source === code);
-    if (directIncoming) return directIncoming.kind === 'corequisite' ? 'corequisite of selected course' : 'prerequisite of selected course';
+    if (directIncoming) return directIncoming.kind === 'corequisite'
+      ? 'may be completed earlier or taken concurrently with selected course'
+      : 'prerequisite of selected course';
     const directOutgoing = (outgoing.get(selectedCode) || []).find(edge => edge.target === code);
     if (directOutgoing) return 'dependent on selected course';
     const selectedLayer = layers.get(selectedCode);
@@ -154,7 +156,8 @@
     return PlannerCore.requirementGroups(edges, selectedCode, kind).map(group => {
       const joiner = group.operator === 'OR' ? ' or ' : ' and ';
       const instruction = group.operator === 'OR' ? 'one of' : 'all of';
-      return `${group.operator} — ${instruction}: ${group.sources.map(requirementLabel).join(joiner)}`;
+      const timing = kind === 'corequisite' ? 'complete earlier or register concurrently; ' : '';
+      return `${group.operator} — ${timing}${instruction}: ${group.sources.map(requirementLabel).join(joiner)}`;
     });
   }
 
@@ -165,7 +168,9 @@
     replaceSummaryList(summaryLists.corequisite, summarizedRequirementGroups('corequisite'), 'None listed');
     replaceSummaryList(summaryLists.dependent, (outgoing.get(selectedCode) || []).map(edge => {
       const course = courseByCode.get(edge.target);
-      const kind = edge.kind === 'corequisite' ? 'corequisite relationship' : 'prerequisite relationship';
+      const kind = edge.kind === 'corequisite'
+        ? 'completion or concurrent-registration relationship'
+        : 'prerequisite relationship';
       return `${course ? `${course.code} — ${course.title}` : edge.target} (${kind})`;
     }), 'None listed');
   }
@@ -254,10 +259,16 @@
     description.textContent = course.description || 'No description listed.';
     const definitionList = document.createElement('dl');
     addDetailRow(definitionList, 'Prerequisites', course.prerequisites || 'None listed');
-    addDetailRow(definitionList, 'Corequisites', course.corequisites || 'None listed');
+    addDetailRow(definitionList, 'Completion or concurrent registration (official wording)', course.corequisites || 'None listed');
     ['prerequisite', 'corequisite'].forEach(kind => {
       const groups = PlannerCore.requirementGroups(edges, course.code, kind);
-      if (groups.length) addDetailRow(definitionList, `Structured ${kind} groups`, PlannerCore.describeRequirementGroups(groups));
+      if (groups.length) {
+        const label = kind === 'corequisite' ? 'Structured completion/concurrent groups' : 'Structured prerequisite groups';
+        const wording = kind === 'corequisite'
+          ? `Complete earlier or register concurrently: ${groups.map(group => `${group.operator === 'OR' ? 'one' : 'all'} of ${group.sources.join(group.operator === 'OR' ? ' or ' : ' and ')}`).join('; and ')}`
+          : PlannerCore.describeRequirementGroups(groups);
+        addDetailRow(definitionList, label, wording);
+      }
     });
     addDetailRow(definitionList, 'Restrictions', course.restrictions || 'None listed');
 

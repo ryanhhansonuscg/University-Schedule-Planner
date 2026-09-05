@@ -31,6 +31,7 @@ test('course graph has a persistent semantic relationship summary and dedicated 
   assert.match(js, /renderRelationshipSummary\(\)/);
   assert.match(js, /PlannerCore\.requirementGroups\(edges, selectedCode, kind\)/);
   assert.match(html, /class="external"[^>]*aria-hidden="true"[^>]*>\s*<\/i> external requirement/);
+  assert.match(html, /completion or concurrent registration/);
   assert.match(js, /setAttribute\('aria-label',[\s\S]*relationshipToSelected/);
 });
 
