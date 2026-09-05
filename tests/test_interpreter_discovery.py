@@ -16,13 +16,12 @@ class InterpreterDiscoveryTests(unittest.TestCase):
     def result(self, path, version="3.10.0", returncode=0, stderr=""):
         return subprocess.CompletedProcess([], returncode, f"{path}\n{version}\n", stderr)
 
-    def test_order_starts_current_then_active_conda_then_common_commands(self):
-        commands = candidate_commands("darwin", {"CONDA_PREFIX": "/Users/me/miniconda3/envs/work", "HOME": "/Users/me"})
-        self.assertEqual("active Conda environment", commands[0][1])
-        self.assertEqual(("/Users/me/miniconda3/envs/work/bin/python",), commands[0][0])
-        self.assertEqual("current interpreter", commands[1][1])
-        self.assertEqual([("py", "-3"), ("python3",), ("python",)], [item[0] for item in commands[2:5]])
+    @mock.patch("tools.launcher.shutil.which", return_value="/opt/conda/condabin/conda")
+    def test_order_starts_conda_exe_then_path_then_standard_locations(self, _which):
+        commands = candidate_commands("darwin", {"CONDA_EXE": "/custom/conda/bin/conda", "HOME": "/Users/me", "PATH": "/bin"})
         flattened = [command[0] for command, _source in commands]
+        self.assertEqual("/custom/conda/bin/python", flattened[0])
+        self.assertEqual("/opt/conda/bin/python", flattened[1])
         self.assertIn("/Users/me/miniconda3/bin/python", flattened)
         self.assertIn("/Users/me/anaconda3/bin/python", flattened)
 
