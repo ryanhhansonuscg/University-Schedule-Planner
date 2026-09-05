@@ -362,7 +362,7 @@
         }
         const missingCoreq = PlannerCore.evaluateRequirements(edges, code, 'corequisite', seen, sameTerm);
         if (missingCoreq.length) {
-          addIssue('error', `Missing corequisite for ${code}`, `${term.name}: ${PlannerCore.describeRequirementGroups(missingCoreq, 'add')} in this or an earlier term.`);
+          addIssue('error', `Missing completion/concurrent requirement for ${code}`, `${term.name}: complete earlier or ${PlannerCore.describeRequirementGroups(missingCoreq, 'add')} in this term.`);
           issues += 1;
         }
         const offering = PlannerCore.evaluateOffering(course, term);

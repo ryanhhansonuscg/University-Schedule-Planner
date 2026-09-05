@@ -172,13 +172,6 @@ field (such as `description` or `restrictions`) or in the university provenance
   and cross-listing text. Course `code` is uppercase subject plus printed number
   with spaces removed; retain the printed number separately. Sort courses by code
   using natural numeric order and make codes unique.
-- Add a relationship edge only when official text explicitly names its source
-  course; its target must exist in the collected data. Set `source_in_database`
-  accurately. Use only `prerequisite`, `corequisite`, or `recommended`. Preserve
-  full prose after extracting edges. Encode explicit alternatives/conjunctions
-  with a shared `logic_group` and uppercase `OR`/`AND`; do not encode ambiguous or
-  nested prose, grades, standing, placement, programs, or permission as invented
-  edges.
 - An offering requires a term-specific official schedule record. Use only `held`,
   `scheduled`, or `cancelled`, and cite that record's URL. A catalog entry or stated
   rotation is not evidence that a course ran. Sort offering history by term
@@ -187,6 +180,58 @@ field (such as `description` or `restrictions`) or in the university provenance
   URLs, inaccessible sources, deliberate omissions, and ambiguities. Do not place
   credentials or copied page content in it.
 
+**Mandatory prerequisite completeness pass:** For every collected course, open
+its individual official catalog or course-description record and explicitly
+inspect all prerequisite, corequisite, recommended preparation, prior-coursework,
+concurrent-registration, minimum-grade, placement, and permission language. A
+blank `prerequisites` or `corequisites` field is permitted only after verifying
+that the official course record contains no corresponding requirement. Never rely
+solely on program curriculum tables, course lists, search-result snippets, or
+abbreviated catalog indexes when a detailed official course record is available.
+
+**Relationship reconciliation:** After capturing the complete prose, extract
+every explicitly named prerequisite, corequisite, or recommended course into an
+edge whenever the relationship can be represented without inventing semantics.
+The named required course is `source`; the course whose record contains the
+requirement is `target`. The target must exist in the collected data. A source
+course outside the requested collection scope must not be silently dropped;
+retain the edge and set `source_in_database: false`. Preserve the complete
+official prose even when an edge is also created.
+
+**Complex logic:** Do not flatten ambiguous, nested, minimum-grade, placement,
+permission, or mixed “prior or concurrent” rules into invented Boolean logic.
+Preserve those rules in prose. Encode `AND`/`OR` groups only when the official text
+makes the grouping unambiguous. Extract independently unambiguous relationships
+and flag any remainder for human review rather than silently dropping it.
+When the official wording clearly says that a named course may be completed before
+or taken concurrently, annotate that relationship with `kind: "corequisite"` so
+the planner displays and evaluates both allowed timings; do not label it only as a
+prerequisite. Keep the catalog's exact completion/concurrent wording in
+`corequisites`, including any grades or other qualifications the edge cannot
+represent.
+
+**Pre-delivery prerequisite audit:** Before packaging, compare every collected
+course against its official source. Fail validation if the source contains
+prerequisite, corequisite, or recommended-course language but the corresponding
+JSON field is blank, or if an explicitly named course relationship has been
+silently omitted without a course-specific explanation in `README.md`.
+
+Perform capture and reconciliation as separate passes so a successful course-list
+scrape cannot conceal missing requirement text. Keep an internal coverage ledger
+with one row per course: course code, exact source URL or structured-record
+identifier, whether the official record was inspected, whether prerequisite and
+corequisite prose were present, the named course references found, the edges
+emitted, and any course-specific documented exceptions. Re-check blank prose in
+the second pass. The ledger is working material and must not be placed in the ZIP.
+Every collected course must have an inspected row, and every named course
+reference must reconcile to an edge or a specific documented exception; generic
+statements such as “complex prerequisites omitted” are insufficient.
+
+Conservative handling applies only to how ambiguous logic is encoded. It never
+permits omission of official requirement prose, omission of a clearly named and
+representable course edge, or treating an uninspected record as having no
+requirements.
+
 ### 5. Validate before delivery
 
 Extract the ZIP into a new empty temporary directory (never over existing files),
@@ -194,7 +239,18 @@ then verify the filename, slug regex, single-root layout, exact file allowlist,
 ordinary-file types, absence of symlinks, and absence of path traversal. Parse all
 JSON and check filename/code matches, unique courses and term codes, relationship
 targets, offering term references, enum values, URLs, dates, and four-academic-year
-calendar coverage.
+calendar coverage. Re-run the prerequisite reconciliation from the final extracted
+JSON: ensure every course appears in the coverage ledger, compare every non-empty
+requirement field with its official source, and account for every named course
+reference as an edge or a course-specific documented exception. Treat any missing
+inspection, unaccounted reference, or unexplained blank as validation failure.
+Report these five counts separately for every department: (1) total courses,
+(2) courses with prerequisite prose, (3) courses with corequisite prose,
+(4) relationship edges, and (5) edges whose source course is outside the collected
+dataset. Reinspect the official detail records whenever any prerequisite,
+corequisite, or edge count is unexpectedly zero or near zero. A plausible-looking
+aggregate is not evidence of completeness, and reinspection must not be replaced
+with inferred requirements.
 
 When the repository tools are available, also run from its root:
 
@@ -219,7 +275,9 @@ VALIDATION REPORT
 Archive: <slug>.zip
 Snapshot date: YYYY-MM-DD
 Departments: <total>
-- <CODE>: <course count>
+- <CODE>: <total> courses; <prerequisite-prose> with prerequisite prose;
+  <corequisite-prose> with corequisite prose; <edges> relationship edges;
+  <external-source-edges> edges with sources outside the collected dataset
 Courses total: <total>
 Inaccessible sources:
 - <URL and reason, or "None">
@@ -228,10 +286,17 @@ Ambiguities:
 Checks:
 - Archive layout and prohibited-content check: PASS
 - JSON/schema/reference check: PASS
+- Prerequisite coverage: PASS (<inspected>/<total> courses; <references> named
+  course references reconciled to <edges> edges and <exceptions> documented
+  exceptions)
 - Repository validator: PASS | NOT AVAILABLE (reason)
 ```
 
-Counts must be computed from the files in the final ZIP, not from scraping notes.
+Counts must be computed from the files in the final ZIP, except the inspected
+course count, which must be reconciled against the coverage ledger. A prerequisite
+coverage result may say `PASS` only when every course was inspected and every
+named course reference was reconciled; otherwise do not deliver the archive as
+complete. List the affected course codes under Ambiguities or Inaccessible sources.
 Do not hide inaccessible sources or ambiguities to produce a cleaner report. Ask
 for human review of prerequisite logic and samples from each official source
 format.

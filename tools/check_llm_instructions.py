@@ -16,12 +16,28 @@ REQUIRED_SAFETY_PARAGRAPH = (
     "Never provide credentials or ask it to bypass access controls."
 )
 REQUIRED_README_LINK = f"]({GUIDE_PATH.as_posix()})"
+REQUIRED_PREREQUISITE_DIRECTIONS = (
+    "**Mandatory prerequisite completeness pass:**",
+    "recommended preparation, prior-coursework",
+    "**Relationship reconciliation:**",
+    "source course outside the requested collection scope must not be silently dropped",
+    "**Complex logic:**",
+    "mixed “prior or concurrent” rules",
+    'annotate that relationship with `kind: "corequisite"`',
+    "planner displays and evaluates both allowed timings",
+    "**Pre-delivery prerequisite audit:**",
+    "Keep an internal coverage ledger",
+    "Report these five counts separately for every department",
+    "edges with sources outside the collected dataset",
+    "- Prerequisite coverage: PASS",
+)
 
 
 def instruction_errors(root: Path = ROOT) -> list[str]:
     """Return violations of the guide/README source-of-truth contract."""
     guide = (root / GUIDE_PATH).read_text(encoding="utf-8")
     readme = (root / "README.md").read_text(encoding="utf-8")
+    normalized_guide = " ".join(guide.split())
     errors: list[str] = []
 
     if guide.count(REQUIRED_SAFETY_PARAGRAPH) != 1:
@@ -30,6 +46,11 @@ def instruction_errors(root: Path = ROOT) -> list[str]:
         errors.append("README must link to the authoritative LLM scraping guide")
     if REQUIRED_SAFETY_PARAGRAPH in readme:
         errors.append("README must link to, rather than duplicate, the safety paragraph")
+    for direction in REQUIRED_PREREQUISITE_DIRECTIONS:
+        if normalized_guide.count(direction) != 1:
+            errors.append(
+                f"LLM guide must contain prerequisite completeness direction exactly once: {direction!r}"
+            )
     return errors
 
 

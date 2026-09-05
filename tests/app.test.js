@@ -161,7 +161,17 @@ test('browser smoke: external corequisite appears in graph and semantic summary'
     { source: 'LAB-CONSENT', target: 'CS300', kind: 'corequisite', source_in_database: false },
   ]);
   assert.equal(app.externalNodes.length, 1);
-  assert.match(app.elements['summary-corequisites'].children[0].textContent, /LAB-CONSENT — External or uncataloged requirement/);
+  assert.match(app.elements['summary-corequisites'].children[0].textContent,
+    /AND — complete earlier or register concurrently; all of: LAB-CONSENT — External or uncataloged requirement/);
+  assert.match(app.externalNodes[0]['aria-label'], /may be completed earlier or taken concurrently with selected course/);
+
+  const details = app.elements.details.children[3];
+  const officialWording = details.children.findIndex(child => child.textContent === 'Completion or concurrent registration (official wording)');
+  const structured = details.children.findIndex(child => child.textContent === 'Structured completion/concurrent groups');
+  assert.notEqual(officialWording, -1);
+  assert.equal(details.children[officialWording + 1].textContent, 'None listed');
+  assert.notEqual(structured, -1);
+  assert.match(details.children[structured + 1].textContent, /Complete earlier or register concurrently: all of LAB-CONSENT/);
 });
 
 test('browser smoke: grouped external alternatives retain OR semantics', async () => {
