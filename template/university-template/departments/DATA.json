@@ -1,0 +1,129 @@
+{
+  "schema_version": 3,
+  "department": {
+    "code": "DATA",
+    "name": "Data Practice",
+    "school": "Fictional School of Sample Studies",
+    "source_url": "https://catalog.example.invalid/courses/data/"
+  },
+  "courses": [
+    {
+      "code": "DATA101",
+      "department": "DATA",
+      "number": "101",
+      "level": "undergraduate",
+      "title": "Foundations of Data Practice",
+      "credits": "3",
+      "description": "Introduces responsible collection and description of fictional data.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/data/101",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "data",
+        "foundations"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "DATA201",
+      "department": "DATA",
+      "number": "201",
+      "level": "undergraduate",
+      "title": "Data Methods",
+      "credits": "4",
+      "description": "Builds reproducible data workflows for interdisciplinary projects.",
+      "prerequisites": "DATA101.",
+      "corequisites": "SAMPLE201 may be completed previously or taken concurrently.",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/data/201",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "methods",
+        "cross-disciplinary"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "DATA210",
+      "department": "DATA",
+      "number": "210",
+      "level": "undergraduate",
+      "title": "Visualizing Samples",
+      "credits": "3",
+      "description": "Communicates sample evidence through accessible visual displays.",
+      "prerequisites": "DATA101 and SAMPLE110.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/data/210",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "visualization",
+        "communication"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "DATA301",
+      "department": "DATA",
+      "number": "301",
+      "level": "undergraduate",
+      "title": "Applied Data Project",
+      "credits": "4",
+      "description": "Combines data methods and visualization in an interdisciplinary project.",
+      "prerequisites": "DATA201 and DATA210.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/data/301",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "project",
+        "advanced"
+      ],
+      "offering_history": []
+    }
+  ],
+  "edges": [
+    {
+      "source": "DATA101",
+      "target": "DATA201",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "SAMPLE201",
+      "target": "DATA201",
+      "kind": "corequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "DATA101",
+      "target": "DATA210",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "SAMPLE110",
+      "target": "DATA210",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "DATA201",
+      "target": "DATA301",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "DATA210",
+      "target": "DATA301",
+      "kind": "prerequisite",
+      "source_in_database": true
+    }
+  ]
+}

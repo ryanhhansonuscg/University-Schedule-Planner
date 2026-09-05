@@ -44,6 +44,26 @@
       ]
     },
     {
+      "code": "SAMPLE110",
+      "department": "SAMPLE",
+      "number": "110",
+      "level": "undergraduate",
+      "title": "Sample Communication",
+      "credits": "3",
+      "description": "Practice communicating fictional sample results to varied audiences.",
+      "prerequisites": "",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/sample/110",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "communication",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
       "code": "SAMPLE201",
       "department": "SAMPLE",
       "number": "201",
@@ -68,6 +88,106 @@
           "source_url": "https://classes.example.invalid/2026-spring/sample201"
         }
       ]
+    },
+    {
+      "code": "SAMPLE202",
+      "department": "SAMPLE",
+      "number": "202",
+      "level": "undergraduate",
+      "title": "Sample Analysis Studio",
+      "credits": "4",
+      "description": "Extends intermediate analysis through collaborative studio work.",
+      "prerequisites": "SAMPLE201.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/sample/202",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "studio",
+        "undergraduate"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "SAMPLE220",
+      "department": "SAMPLE",
+      "number": "220",
+      "level": "undergraduate",
+      "title": "Evidence for Sample Studies",
+      "credits": "3",
+      "description": "Introduces evidence management using methods from Data Practice.",
+      "prerequisites": "SAMPLE101.",
+      "corequisites": "DATA101 may be completed previously or taken concurrently.",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/sample/220",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "evidence",
+        "cross-disciplinary"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "SAMPLE301",
+      "department": "SAMPLE",
+      "number": "301",
+      "level": "undergraduate",
+      "title": "Advanced Sample Inquiry",
+      "credits": "4",
+      "description": "Develops advanced inquiry plans from analytical and evidence foundations.",
+      "prerequisites": "SAMPLE202 and SAMPLE220.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/sample/301",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "inquiry",
+        "advanced"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "SAMPLE310",
+      "department": "SAMPLE",
+      "number": "310",
+      "level": "undergraduate",
+      "title": "Computational Sample Models",
+      "credits": "4",
+      "description": "Applies data models to questions in Sample Studies.",
+      "prerequisites": "SAMPLE220 and DATA201.",
+      "corequisites": "",
+      "restrictions": "",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/sample/310",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "modeling",
+        "cross-disciplinary"
+      ],
+      "offering_history": []
+    },
+    {
+      "code": "SAMPLE401",
+      "department": "SAMPLE",
+      "number": "401",
+      "level": "undergraduate",
+      "title": "Sample Studies Capstone",
+      "credits": "4",
+      "description": "Integrates sample analysis, evidence, and communication in a final project.",
+      "prerequisites": "SAMPLE301 and either SAMPLE310 or DATA301.",
+      "corequisites": "",
+      "restrictions": "Senior standing.",
+      "repeatable": "No",
+      "source_url": "https://catalog.example.invalid/courses/sample/401",
+      "source_catalog": "2026-2027 undergraduate catalog",
+      "tags": [
+        "capstone",
+        "undergraduate"
+      ],
+      "offering_history": []
     }
   ],
   "edges": [
@@ -76,6 +196,70 @@
       "target": "SAMPLE201",
       "kind": "prerequisite",
       "source_in_database": true
+    },
+    {
+      "source": "SAMPLE201",
+      "target": "SAMPLE202",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "SAMPLE101",
+      "target": "SAMPLE220",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "DATA101",
+      "target": "SAMPLE220",
+      "kind": "corequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "SAMPLE202",
+      "target": "SAMPLE301",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "SAMPLE220",
+      "target": "SAMPLE301",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "SAMPLE220",
+      "target": "SAMPLE310",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "DATA201",
+      "target": "SAMPLE310",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "SAMPLE301",
+      "target": "SAMPLE401",
+      "kind": "prerequisite",
+      "source_in_database": true
+    },
+    {
+      "source": "SAMPLE310",
+      "target": "SAMPLE401",
+      "kind": "prerequisite",
+      "source_in_database": true,
+      "logic_group": "sample401-advanced-choice",
+      "logic_operator": "OR"
+    },
+    {
+      "source": "DATA301",
+      "target": "SAMPLE401",
+      "kind": "prerequisite",
+      "source_in_database": true,
+      "logic_group": "sample401-advanced-choice",
+      "logic_operator": "OR"
     }
   ]
 }
